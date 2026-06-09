@@ -3,127 +3,70 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Henry</title>
+    <title>Henry — dealt one card at a time</title>
     <meta
       name="description"
-      content="Henry's minimal typing portfolio with projects, hackathons, grades, robot car, submarine, and experiments."
+      content="Henry's portfolio, dealt like a deck of cards as you scroll: Lily (a morning AI call for an aging parent), a voice drive-thru with a live kitchen display, Glasscast (free open-source Screen Studio), robotics, a submarine, and open-source work."
     />
+    <meta name="theme-color" content="#07090d" />
+
+    <meta property="og:title" content="Henry — dealt one card at a time" />
+    <meta property="og:description" content="A portfolio dealt like a deck of cards as you scroll. Voice AI, robotics, a submarine, and open source — built by a 13 year old." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://henry93.vercel.app/" />
+    <meta property="og:image" content="https://henry93.vercel.app/assets/share.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Henry — dealt one card at a time" />
+    <meta name="twitter:description" content="A portfolio dealt like a deck of cards as you scroll." />
+    <meta name="twitter:image" content="https://henry93.vercel.app/assets/share.jpg" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;0,800;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main id="pageShell" class="page-shell terminal-closed">
-      <header class="hero" aria-label="Henry portfolio">
-        <div>
-          <p class="kicker">Henry</p>
-          <h1>I build things that move, think, dive, glitch, and sometimes actually work.</h1>
-        </div>
-        <div class="hero-actions">
-          <button id="openTerminal" class="open-button" type="button">open terminal</button>
-          <a class="github-link" href="https://github.com/henrybrewer00-dotcom" target="_blank" rel="noreferrer">
-            github
-          </a>
-        </div>
+    <!-- Scroll-driven deck stage (enhanced experience) -->
+    <main id="stage" class="stage">
+      <div class="stage__vignette" aria-hidden="true"></div>
+
+      <header class="intro" id="intro">
+        <p class="intro__kicker">Henry · portfolio</p>
+        <h1 class="intro__title">I build things that move,<br />think, dive, and ship.</h1>
+        <p class="intro__sub">Eight projects and a wild card — dealt one at a time.</p>
+        <p class="intro__hint" aria-hidden="true">scroll to deal <span class="intro__arrow">↓</span></p>
       </header>
 
-      <section class="home-block" aria-label="Portfolio intro">
-        <p>
-          Yo, I’m Henry. I’m a 13 year old entrepreneur building software, robotics projects, winning (and losing) hackathons, and
-          open source work. I’ve made some open source contributions to platforms such as OpenClaw, Ollama, Astro,
-          Appwrite, and Grafana. Straight A’s, 99.5 in math. Try to
-          <button type="button" data-command="/typing-game">outtype me</button>, run the
-          <button type="button" data-command="/hire-game">hire challenge</button>, or open the
-          <button type="button" data-command="/contact">contact card</button>.
-        </p>
-        <div class="home-commands" aria-label="Home commands">
-          <button type="button" data-command="/whoami">/whoami</button>
-          <button type="button" data-command="/github">/github</button>
-          <button type="button" data-command="/grades">/grades</button>
-          <button type="button" data-command="/nano grades">/nano grades</button>
-        </div>
-      </section>
+      <div id="deck" class="deck"></div>
 
-      <div class="workspace">
-        <aside class="side-rail command-rail" aria-label="Command index">
-          <p class="rail-label">commands</p>
-          <button type="button" data-command="/whoami">/whoami</button>
-          <button type="button" data-command="ls">ls</button>
-          <button type="button" data-command="/robot-car">/robot-car</button>
-          <button type="button" data-command="/hackathons">/hackathons</button>
-          <button type="button" data-command="/submarine">/submarine</button>
-          <button type="button" data-command="/grades">/grades</button>
-          <button type="button" data-command="/github">/github</button>
-          <button type="button" data-command="/contact">/contact</button>
-          <button type="button" data-command="/nano grades">/nano grades</button>
-          <button type="button" data-command="/typing-game">/typing-game</button>
-          <button type="button" data-command="/hire-game">/hire-game</button>
-          <button type="button" data-command="/randomstuff">/randomstuff</button>
-          <button type="button" data-command="/clear">/clear</button>
-        </aside>
-
-        <section class="typing-space" aria-label="Typing portfolio">
-          <div id="terminalOutput" class="output-stream" aria-live="polite"></div>
-
-          <form id="terminalForm" class="typing-row" autocomplete="off">
-            <label class="prompt" for="terminalInput">&gt;</label>
-            <input
-              id="terminalInput"
-              name="command"
-              type="text"
-              spellcheck="false"
-              autocomplete="off"
-              aria-label="Type a portfolio command"
-              placeholder="type a command"
-            />
-            <button class="send-button" type="submit">enter</button>
-          </form>
-
-          <div class="hint-row" aria-label="Suggested commands">
-            <button type="button" data-command="/whoami">/whoami</button>
-            <button type="button" data-command="/robot-car">/robot-car</button>
-            <button type="button" data-command="/hackathons">/hackathons</button>
-            <button type="button" data-command="/submarine">/submarine</button>
-            <button type="button" data-command="/grades">/grades</button>
-            <button type="button" data-command="/github">/github</button>
-            <button type="button" data-command="/contact">/contact</button>
-            <button type="button" data-command="/typing-game">/typing-game</button>
-            <button type="button" data-command="/hire-game">/hire-game</button>
-            <button type="button" data-command="/randomstuff">/randomstuff</button>
-          </div>
-
-          <div id="gameTimer" class="game-timer" aria-live="polite"></div>
-        </section>
-
-        <aside class="side-rail notes-rail" aria-label="Project snapshot">
-          <p class="rail-label">snapshot</p>
-          <div class="note-block">
-            <span>focus</span>
-            <strong>hardware + code</strong>
-          </div>
-          <div class="note-block">
-            <span>current files</span>
-            <strong>robot-car.log<br />submarine-notes.md<br />open-source.md<br />grades.csv</strong>
-          </div>
-          <div class="note-block">
-            <span>best commands</span>
-            <strong>/robot-car<br />/submarine<br />/randomstuff</strong>
-          </div>
-          <div class="note-block">
-            <span>status</span>
-            <strong>portfolio shell online</strong>
-          </div>
-          <a class="rail-link" href="https://github.com/henrybrewer00-dotcom" target="_blank" rel="noreferrer">
-            github.com/henrybrewer00-dotcom
-          </a>
-        </aside>
+      <div class="hud" id="hud" aria-hidden="true">
+        <span class="hud__count"><b id="hudNum">00</b> / <span id="hudTotal">09</span></span>
+        <span class="hud__name" id="hudName">the deck</span>
+        <div class="hud__bar"><i id="hudBar"></i></div>
       </div>
     </main>
 
-    <script src="script.js"></script>
+    <!-- No-JS / reduced-motion / mobile fallback: the same cards, laid out as a readable hand -->
+    <section id="fallback" class="fallback">
+      <header class="fallback__hero">
+        <p class="fallback__kicker">Henry · portfolio</p>
+        <h1>I build things that move, think, dive, and ship.</h1>
+        <p class="fallback__sub">A 13-year-old builder. Voice AI, robotics, a submarine, and open source. Here's the whole hand.</p>
+      </header>
+      <div id="fallbackGrid" class="fallback__grid"></div>
+    </section>
+
+    <footer class="site-foot">
+      <p>Henry · henrybrewer00@gmail.com · <a href="https://github.com/henrybrewer00-dotcom" target="_blank" rel="noreferrer">github.com/henrybrewer00-dotcom</a></p>
+      <p class="site-foot__dim">Built with a deck of cards and too much scroll. · <a class="site-foot__old" href="old/">the old terminal portfolio →</a></p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+    <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js" defer></script>
+    <script src="script.js" defer></script>
   </body>
 </html>

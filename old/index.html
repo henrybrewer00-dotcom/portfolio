@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Henry</title>
+    <meta
+      name="description"
+      content="Henry's minimal typing portfolio with projects, hackathons, grades, robot car, submarine, and experiments."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main id="pageShell" class="page-shell terminal-closed">
+      <header class="hero" aria-label="Henry portfolio">
+        <div>
+          <p class="kicker">Henry</p>
+          <h1>I build things that move, think, dive, glitch, and sometimes actually work.</h1>
+        </div>
+        <div class="hero-actions">
+          <button id="openTerminal" class="open-button" type="button">open terminal</button>
+          <a class="github-link" href="https://github.com/henrybrewer00-dotcom" target="_blank" rel="noreferrer">
+            github
+          </a>
+        </div>
+      </header>
+
+      <section class="home-block" aria-label="Portfolio intro">
+        <p>
+          Yo, I’m Henry. I’m a 13 year old entrepreneur building software, robotics projects, winning (and losing) hackathons, and
+          open source work. I’ve made some open source contributions to platforms such as OpenClaw, Ollama, Astro,
+          Appwrite, and Grafana. Straight A’s, 99.5 in math. Try to
+          <button type="button" data-command="/typing-game">outtype me</button>, run the
+          <button type="button" data-command="/hire-game">hire challenge</button>, or open the
+          <button type="button" data-command="/contact">contact card</button>.
+        </p>
+        <div class="home-commands" aria-label="Home commands">
+          <button type="button" data-command="/whoami">/whoami</button>
+          <button type="button" data-command="/github">/github</button>
+          <button type="button" data-command="/grades">/grades</button>
+          <button type="button" data-command="/nano grades">/nano grades</button>
+        </div>
+      </section>
+
+      <div class="workspace">
+        <aside class="side-rail command-rail" aria-label="Command index">
+          <p class="rail-label">commands</p>
+          <button type="button" data-command="/whoami">/whoami</button>
+          <button type="button" data-command="ls">ls</button>
+          <button type="button" data-command="/robot-car">/robot-car</button>
+          <button type="button" data-command="/hackathons">/hackathons</button>
+          <button type="button" data-command="/submarine">/submarine</button>
+          <button type="button" data-command="/grades">/grades</button>
+          <button type="button" data-command="/github">/github</button>
+          <button type="button" data-command="/contact">/contact</button>
+          <button type="button" data-command="/nano grades">/nano grades</button>
+          <button type="button" data-command="/typing-game">/typing-game</button>
+          <button type="button" data-command="/hire-game">/hire-game</button>
+          <button type="button" data-command="/randomstuff">/randomstuff</button>
+          <button type="button" data-command="/clear">/clear</button>
+        </aside>
+
+        <section class="typing-space" aria-label="Typing portfolio">
+          <div id="terminalOutput" class="output-stream" aria-live="polite"></div>
+
+          <form id="terminalForm" class="typing-row" autocomplete="off">
+            <label class="prompt" for="terminalInput">&gt;</label>
+            <input
+              id="terminalInput"
+              name="command"
+              type="text"
+              spellcheck="false"
+              autocomplete="off"
+              aria-label="Type a portfolio command"
+              placeholder="type a command"
+            />
+            <button class="send-button" type="submit">enter</button>
+          </form>
+
+          <div class="hint-row" aria-label="Suggested commands">
+            <button type="button" data-command="/whoami">/whoami</button>
+            <button type="button" data-command="/robot-car">/robot-car</button>
+            <button type="button" data-command="/hackathons">/hackathons</button>
+            <button type="button" data-command="/submarine">/submarine</button>
+            <button type="button" data-command="/grades">/grades</button>
+            <button type="button" data-command="/github">/github</button>
+            <button type="button" data-command="/contact">/contact</button>
+            <button type="button" data-command="/typing-game">/typing-game</button>
+            <button type="button" data-command="/hire-game">/hire-game</button>
+            <button type="button" data-command="/randomstuff">/randomstuff</button>
+          </div>
+
+          <div id="gameTimer" class="game-timer" aria-live="polite"></div>
+        </section>
+
+        <aside class="side-rail notes-rail" aria-label="Project snapshot">
+          <p class="rail-label">snapshot</p>
+          <div class="note-block">
+            <span>focus</span>
+            <strong>hardware + code</strong>
+          </div>
+          <div class="note-block">
+            <span>current files</span>
+            <strong>robot-car.log<br />submarine-notes.md<br />open-source.md<br />grades.csv</strong>
+          </div>
+          <div class="note-block">
+            <span>best commands</span>
+            <strong>/robot-car<br />/submarine<br />/randomstuff</strong>
+          </div>
+          <div class="note-block">
+            <span>status</span>
+            <strong>portfolio shell online</strong>
+          </div>
+          <a class="rail-link" href="https://github.com/henrybrewer00-dotcom" target="_blank" rel="noreferrer">
+            github.com/henrybrewer00-dotcom
+          </a>
+        </aside>
+      </div>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

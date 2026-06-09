@@ -1,643 +1,428 @@
-const output = document.querySelector("#terminalOutput");
-const form = document.querySelector("#terminalForm");
-const input = document.querySelector("#terminalInput");
-const promptLabel = document.querySelector(".prompt");
-const pageShell = document.querySelector("#pageShell");
-const openTerminal = document.querySelector("#openTerminal");
-const gameTimer = document.querySelector("#gameTimer");
+/* =========================================================================
+   Henry's deck — a portfolio dealt one card at a time.
+   Scroll-driven (GSAP ScrollTrigger + Lenis), with a static fallback hand for
+   no-JS / reduced-motion / small screens.  See styles.css for the card look.
+   Live projects are dealt first.
+   ========================================================================= */
 
-const state = {
-  history: [],
-  historyIndex: 0,
-  terminalOpen: false,
-  game: null,
-  timerId: null,
-  cwd: "~",
-};
+const DUEL_TARGET = "i build things that move, think, dive, and ship";
 
-const commandList = [
-  ["/help", "show the full command list"],
-  ["/whoami", "quick bio and what Henry likes building"],
-  ["/whoamii", "same as /whoami, typo friendly"],
-  ["ls", "list portfolio files"],
-  ["cat projects.txt", "print the project index"],
-  ["/robot-car", "autonomous robot car build log"],
-  ["/hackathons", "hackathon projects and wins"],
-  ["/submarine", "underwater engineering notes"],
-  ["/grades", "academics, classes, and study stats"],
-  ["/github", "GitHub profile and open source contributions"],
-  ["/opensource", "open source contribution summary"],
-  ["/nano <folder>", "open a simulated nano note for any folder or file"],
-  ["/typing-game", "try your hand at outtyping a 13 year old"],
-  ["/hire-game", "race to create hire_henry=true in a file"],
-  ["/randomstuff", "misc experiments, tiny tools, and half-serious ideas"],
-  ["/skills", "hardware, software, design, and team skills"],
-  ["/timeline", "selected milestones"],
-  ["/contact", "ways to reach Henry"],
-  ["/now", "what is currently in progress"],
-  ["/stack", "favorite tools and technologies"],
-  ["/black", "keep the site locked to pure black"],
-  ["/minimal", "explain the current design mode"],
-  ["/clear", "clear the screen"],
-  ["pwd", "print current directory"],
-  ["cd robot-car", "enter a project directory"],
-  ["clear", "clear the screen"],
-  ["history", "show commands used this session"],
-  ["date", "print the current date"],
-  ["echo hello", "repeat text back"],
-  ["/resume", "wow, already here"],
-  ["sudo make me cool", "try it, obviously"],
-];
-
-const fileSystem = {
-  "~": {
-    dirs: ["robot-car", "hackathons", "submarine", "grades", "randomstuff"],
-    files: ["about.md", "projects.txt", "open-source.md", "github.url", "contact.card"],
-  },
-  "~/robot-car": {
-    dirs: [],
-    files: ["README.md", "robot-car.log", "wiring.txt"],
-  },
-  "~/hackathons": {
-    dirs: [],
-    files: ["README.md", "rap-battle-maker.md", "pawbot.md", "hackathons.json"],
-  },
-  "~/submarine": {
-    dirs: [],
-    files: ["README.md", "submarine-notes.md"],
-  },
-  "~/grades": {
-    dirs: [],
-    files: ["grades.csv"],
-  },
-  "~/randomstuff": {
-    dirs: [],
-    files: ["README.md", "tiny-tools.md", "ideas.txt"],
-  },
-};
-
-const projectCards = [
+const PROJECTS = [
   {
-    title: "Robot Car",
-    desc: "A compact autonomous car concept with sensors, steering logic, calibration notes, and a dashboard mindset.",
-    tags: ["Arduino", "sensors", "control"],
+    rank: "A", suit: "♥", color: "red", suitName: "hearts",
+    kicker: "voice ai · care",
+    title: "Lily",
+    tagline: "Morning check-ins for your parent",
+    desc: "Calls my grandma in Arkansas — who has Alzheimer's — every morning, actually talks with her, then texts the family a short brief. Family can text back to steer tomorrow's call. Built on one rule: it never offers to do something it can't really do.",
+    tags: ["React", "InsForge", "ElevenLabs", "Twilio"],
+    live: "https://lily.insforge.site",
+    repo: "https://github.com/henrybrewer00-dotcom/lily",
   },
   {
-    title: "Submarine",
-    desc: "A small underwater build idea focused on buoyancy, watertight electronics, thrusters, and careful testing.",
-    tags: ["marine", "CAD", "physics"],
+    rank: "K", suit: "♠", color: "black", suitName: "spades",
+    kicker: "open source · video",
+    title: "Glasscast",
+    tagline: "Cinematic screen recordings. Zero editing.",
+    desc: "A free, open-source Screen Studio that edits while you record: real 3D zoom with spring physics, auto-zoom on clicks, captions that write themselves, webcam bubbles, and cross-device sync. Bring your own AI keys.",
+    tags: ["Electron", "TypeScript", "Whisper", "AGPLv3"],
+    live: "https://glasscast.insforge.site",
+    repo: "https://github.com/henrybrewer00-dotcom/Glasscast",
   },
   {
-    title: "Hackathons",
-    desc: "Fast prototypes, clean demos, and practical ideas shipped under pressure with a team.",
-    tags: ["prototype", "pitch", "teamwork"],
+    rank: "Q", suit: "♦", color: "red", suitName: "diamonds",
+    kicker: "voice ai · commerce",
+    title: "Lily's Drive-Thru",
+    tagline: "Talk to the window. Watch the kitchen react.",
+    desc: "Pull up and order out loud. The AI attendant takes it, sizes it, upsells once, applies promo codes, and reads back a tax-aware total — then fires a live ticket to a kitchen display over SSE.",
+    tags: ["ElevenLabs", "Express", "SSE"],
+    repo: "https://github.com/henrybrewer00-dotcom/voice-drive-thru",
   },
   {
-    title: "Random Stuff",
-    desc: "Small utilities, weird experiments, browser toys, scripts, notes, and ideas too good to delete.",
-    tags: ["experiments", "web", "fun"],
+    rank: "J", suit: "♣", color: "black", suitName: "clubs",
+    kicker: "ai · audio",
+    title: "Eleven Mile",
+    tagline: "Two AIs. One mic. Pick the smoke.",
+    desc: "An AI rap-battle generator that writes the bars and spits them too. Pick two opponents and a topic — Claude writes the wordplay, ElevenLabs delivers it.",
+    tags: ["Claude", "ElevenLabs"],
+    repo: "https://github.com/henrybrewer00-dotcom/eleven-mile",
+  },
+  {
+    rank: "10", suit: "♥", color: "red", suitName: "hearts",
+    kicker: "accessibility",
+    title: "PawBot",
+    tagline: "A patient guide for first-time computer users",
+    desc: "A hackathon build that helps seniors navigate a computer — gentle, step-by-step help for people who didn't grow up with one.",
+    tags: ["Accessibility", "Assistive"],
+    repo: "https://github.com/henrybrewer00-dotcom/PawBot",
+  },
+  {
+    rank: "9", suit: "♠", color: "black", suitName: "spades",
+    kicker: "robotics",
+    title: "S.I.E.G.E.",
+    tagline: "An autonomous robot car that chases dogs",
+    desc: "I needed something to chase my dogs while I was busy building other things, so I built a compact autonomous car — sensors, steering logic, calibration, and a wiring job that looks worse than it works.",
+    tags: ["Arduino", "Sensors", "C++"],
+  },
+  {
+    rank: "8", suit: "♦", color: "red", suitName: "diamonds",
+    kicker: "marine engineering",
+    title: "ROV Submarine",
+    tagline: "Engineering that survives real water",
+    desc: "A small remotely-operated sub built like an engineering notebook: buoyancy, watertight seals, thrusters, and battery safety — all tested before the scary part.",
+    tags: ["CAD", "Marine", "Physics"],
+    status: "currently building",
+  },
+  {
+    rank: "7", suit: "♣", color: "black", suitName: "clubs",
+    kicker: "open source",
+    title: "Open Source",
+    tagline: "Patches to tools I actually use",
+    desc: "Real pull requests to projects I rely on every day — OpenClaw, Ollama, Astro, Appwrite, and Grafana.",
+    tags: ["OpenClaw", "Ollama", "Astro", "Appwrite", "Grafana"],
+    repo: "https://github.com/henrybrewer00-dotcom?tab=repositories",
+  },
+  {
+    rank: "JOKER", suit: "★", color: "gold", suitName: "joker",
+    kicker: "the wild card",
+    title: "Hire Henry",
+    tagline: "13. Straight A's. 99.5 in math. 125 WPM.",
+    desc: "I'm Henry — I build software, robots, and the occasional submarine. Want to work together? Beat me at typing first.",
+    tags: ["Available", "Curious", "Fast"],
+    repo: "https://github.com/henrybrewer00-dotcom",
+    contact: { email: "henrybrewer00@gmail.com", phone: "925 962 7535" },
+    duel: true,
   },
 ];
 
-const commands = {
-  "/help": () => renderHelp(),
-  "help": () => renderHelp(),
-  "/whoami": () => [
-    text("Yo! My names Henry, im a 13 year old entrupener.", "output-block"),
-    text("Main lane is building software, tho love robotics, open source, hackathons, and school projects.", "output-block"),
-    text("Made some open source contributions to platforms such as OpenClaw, Ollama, Astro, Appwrite, and Grafana.", "output-block"),
-    text("Try /robot-car, /submarine, /hackathons, /grades, /github, or /randomstuff.", "accent-cyan"),
-  ],
-  "/whoamii": () => commands["/whoami"](),
-  "ls": () => listDirectory(),
-  "dir": () => commands.ls(),
-  "pwd": () => text(state.cwd, "output-block"),
-  "cat projects.txt": () => (state.cwd === "~" ? renderCards(projectCards) : readFile("projects.txt")),
-  "/projects": () => renderCards(projectCards),
-  "/robot-car": () =>
-    renderDetail("robot-car.log", [
-      [
-        "mission",
-        "lowkey needed smth to chase my dogs around because I was too busy building stuff, so I built S.I.E.G.E. (Self-Intelligent Entity for Guided Exploration).",
-      ],
-      ["next", "Gonna make it lower latency, add route replay, and clean up the wiring."],
-      ["wiring", "Looks worse than those comical wiring jobs."],
-    ]),
-  "/hackathons": () =>
-    renderDetail("hackathons.json", [
-      ["style", "Make the demo understandable in ten seconds, then make the internals surprisingly solid."],
-      ["Rap Battle Maker", "Makes a rap battle between any 2 ppl."],
-      ["PawBot", "Helps seniors navigate computers."],
-      ["role", "Built the entire thing."],
-    ]),
-  "/submarine": () =>
-    renderDetail("submarine-notes.md", [
-      ["goal", "Explore a small remotely operated submarine concept that survives real water, not just diagrams."],
-      ["focus", "Buoyancy, seals, wiring, thrust, battery safety, and test plans before the scary part."],
-      ["vibe", "Less sci-fi submarine, more careful engineering notebook with a very cool payoff."],
-    ]),
-  "/grades": () =>
-    renderDetail("grades.csv", [
-      ["Math", "99.5"],
-      ["PE", "99"],
-      ["Science", "97"],
-      ["Spanish", "94"],
-      ["English", "95"],
-      ["History", "96.3"],
-    ]),
-  "/github": () => renderGithub(),
-  "/opensource": () => renderGithub(),
-  "/typing-game": () => startTypingGame(),
-  "/type-game": () => startTypingGame(),
-  "/hire-game": () => startHireGame(),
-  "/hire": () => startHireGame(),
-  "/randomstuff": () =>
-    renderCards([
-      {
-        title: "Tiny Tools",
-        desc: "One-evening utilities that solve a problem before the problem gets dramatic.",
-        tags: ["scripts", "browser", "automation"],
-      },
-      {
-        title: "Design Experiments",
-        desc: "Interfaces, micro-interactions, terminal tricks, and polished details.",
-        tags: ["UI", "motion", "details"],
-      },
-      {
-        title: "Build Notes",
-        desc: "Photos, part lists, test logs, and the honest middle stage where projects become real.",
-        tags: ["notes", "logs", "iteration"],
-      },
-      {
-        title: "Odd Ideas",
-        desc: "Half serious concepts kept around because they might become the next project.",
-        tags: ["ideas", "sketches", "what-if"],
-      },
-    ]),
-  "/skills": () =>
-    renderDetail("skills.md", [
-      ["hardware", "Sensors, microcontrollers, soldering basics, CAD thinking, and mechanical debugging."],
-      ["software", "HTML, CSS, JavaScript, Python, data dashboards, small automations, and API experiments."],
-      ["people", "Hackathon teamwork, explaining tradeoffs, demo writing, and keeping calm when the build gets spicy."],
-    ]),
-  "/timeline": () =>
-    renderDetail("timeline.log", [
-      ["now", "Building a cleaner portfolio and collecting project evidence."],
-      ["recent", "Robot car, submarine planning, hackathon prototypes, and grade highlights."],
-      ["next", "Publish deeper case studies with photos, diagrams, and demo videos."],
-    ]),
-  "/contact": () =>
-    renderDetail("contact.card", [
-      ["phone", "925 962 7535"],
-      ["email", "henrybrewer00@gmail.com"],
-      ["github", "github.com/henrybrewer00-dotcom"],
-      ["note", "Best way to reach me is phone or email."],
-    ]),
-  "/now": () => text("Current status: polishing project writeups, building things that move, and making this portfolio feel alive.", "output-block"),
-  "/stack": () =>
-    text("JavaScript · Python · Arduino · CAD · Git · sensors · web UI · data visualization · duct-tape-level persistence", "output-block"),
-  "/black": () => text("black only. no fake window, no theme switch, no decorative glow.", "output-block"),
-  "/minimal": () => text("one page, one input, plain text, sharp edges. the content does the work.", "output-block"),
-  "clear": () => {
-    state.game = null;
-    stopGameTimer();
-    input.placeholder = "type a command";
-    output.innerHTML = "";
-    return null;
-  },
-  "/clear": () => commands.clear(),
-  "history": () => text(state.history.map((item, index) => `${index + 1}  ${item}`).join("\n") || "No commands yet.", "output-block"),
-  "date": () => text(new Date().toLocaleString(undefined, { dateStyle: "full", timeStyle: "short" }), "output-block"),
-  "/resume": () => text("wow, already here.", "output-block"),
-  "resume": () => commands["/resume"](),
-  "open resume": () => commands["/resume"](),
-  "sudo make me cool": () => text("Permission denied: already cool enough. Try /projects.", "accent-green"),
-};
+const N = PROJECTS.length;
 
-function text(content, className = "output-block") {
-  const pre = document.createElement("pre");
-  pre.className = className;
-  pre.textContent = content;
-  return pre;
+/* ---------- build a single card element (back + face) ---------- */
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c]));
 }
 
-function renderHelp() {
-  const wrap = document.createElement("div");
-  wrap.className = "command-grid";
+function cardEl(p) {
+  const el = document.createElement("article");
+  el.className = "pc";
+  el.dataset.color = p.color;
+  el.dataset.suit = p.suitName;
 
-  commandList.forEach(([name, description]) => {
-    const item = document.createElement("div");
-    item.className = "command-item";
-    item.innerHTML = `<span class="command-name">${escapeHtml(name)}</span><span class="command-desc">${escapeHtml(description)}</span>`;
-    wrap.append(item);
+  const index = `<b>${esc(p.rank)}</b><i>${esc(p.suit)}</i>`;
+
+  const links = [];
+  if (p.live) links.push(`<a class="pc__btn pc__btn--solid" href="${esc(p.live)}" target="_blank" rel="noreferrer">Live ↗</a>`);
+  if (p.repo) links.push(`<a class="pc__btn" href="${esc(p.repo)}" target="_blank" rel="noreferrer">Code ↗</a>`);
+  if (p.contact) {
+    // the joker: a pre-filled "you're hired" email + github + call, instead of live/code
+    links.length = 0;
+    const mail =
+      `mailto:${p.contact.email}` +
+      `?subject=${encodeURIComponent("You're hired")}` +
+      `&body=${encodeURIComponent("Hi Henry,\n\nHere's what I'd love to build with you:\n\n")}`;
+    links.push(`<a class="pc__btn pc__btn--solid" href="${esc(mail)}">You're hired ↗</a>`);
+    links.push(`<a class="pc__btn" href="${esc(p.repo)}" target="_blank" rel="noreferrer">GitHub ↗</a>`);
+    links.push(`<a class="pc__btn" href="tel:${esc(p.contact.phone.replace(/\s+/g, ""))}">Call ↗</a>`);
+  }
+
+  const status = p.status
+    ? `<p class="pc__status"><i aria-hidden="true"></i>${esc(p.status)}</p>`
+    : "";
+
+  const duel = p.duel
+    ? `<div class="duel">
+         <p class="duel__target">${esc(DUEL_TARGET)}</p>
+         <input class="duel__input" type="text" spellcheck="false" autocomplete="off" placeholder="type it to challenge me" aria-label="typing challenge" />
+         <p class="duel__result" aria-live="polite"></p>
+       </div>`
+    : "";
+
+  el.innerHTML = `
+    <div class="pc__inner">
+      <div class="pc__face pc__back" aria-hidden="true"></div>
+      <div class="pc__face pc__front">
+        <span class="pc__index pc__index--tl" aria-hidden="true">${index}</span>
+        <span class="pc__index pc__index--br" aria-hidden="true">${index}</span>
+        <div class="pc__watermark" aria-hidden="true">${esc(p.suit)}</div>
+        <div class="pc__content">
+          <p class="pc__kicker">${esc(p.kicker)}</p>
+          <h2 class="pc__title">${esc(p.title)}</h2>
+          ${status}
+          <p class="pc__tagline">${esc(p.tagline)}</p>
+          <p class="pc__desc">${esc(p.desc)}</p>
+          <div class="pc__tags">${p.tags.map((t) => `<span>${esc(t)}</span>`).join("")}</div>
+          ${duel}
+          <div class="pc__links">${links.join("")}</div>
+        </div>
+      </div>
+    </div>`;
+  return el;
+}
+
+/* ---------- joker typing duel ---------- */
+function wireDuel(scope) {
+  const inp = scope.querySelector(".duel__input");
+  const res = scope.querySelector(".duel__result");
+  if (!inp || !res) return;
+  const target = DUEL_TARGET;
+  let start = null;
+  inp.addEventListener("keydown", (e) => {
+    e.stopPropagation();                       // typing here must never scroll the deck
+    if (start === null && e.key.length === 1) start = performance.now();
+  });
+  inp.addEventListener("input", () => {
+    const v = inp.value.trim().toLowerCase();
+    if (start === null && v.length > 0) start = performance.now();
+    if (v === target) {
+      const mins = (performance.now() - start) / 60000;
+      const words = target.split(/\s+/).length;
+      const wpm = Math.max(1, Math.round(words / mins));
+      res.textContent = wpm >= 125 ? `${wpm} WPM — fine, you can hire me.` : `${wpm} WPM. Henry does 125. run it back?`;
+    } else if (v.length === 0) {
+      res.textContent = "";
+    } else if (target.startsWith(v)) {
+      res.textContent = `${target.length - v.length} to go…`;
+    } else {
+      res.textContent = "typo — match it exactly";
+    }
+  });
+}
+
+/* ---------- preload generated art (graceful if missing) ---------- */
+function loadArt() {
+  const back = new Image();
+  back.onload = () => {
+    document.documentElement.style.setProperty("--back-img", 'url("assets/card-back.webp")');
+    document.querySelectorAll(".pc__back").forEach((b) => b.classList.add("has-art"));
+  };
+  back.src = "assets/card-back.webp";
+
+  const table = new Image();
+  table.onload = () => {
+    const s = document.getElementById("stage");
+    if (!s) return;
+    s.style.backgroundImage =
+      'linear-gradient(rgba(5,7,10,0.74), rgba(5,7,10,0.82)), url("assets/table.jpg")';
+    s.style.backgroundSize = "cover";
+    s.style.backgroundPosition = "center";
+  };
+  table.src = "assets/table.jpg";
+}
+
+/* ---------- math helpers ---------- */
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+
+/* ========================================================================= */
+/*  DECK MODE — the scroll-dealt experience                                  */
+/* ========================================================================= */
+const INTRO = 0.55;          // units of "hold" before the first card deals
+const DEAL = 0.4;            // fraction of a unit spent flying out + flipping
+const LEAVE = 0.42;          // fraction spent gliding to the tableau
+const ACTIVE_S = 1.1;        // active card scale
+const FAN_S = 0.46;          // parked card scale
+const MAX_POS = N - 1 + 0.72;
+const TOTAL_UNITS = MAX_POS + INTRO;
+
+function initDeck() {
+  document.body.classList.add("deck-mode");
+
+  const stage = document.getElementById("stage");
+  const deck = document.getElementById("deck");
+  const intro = document.getElementById("intro");
+  const hud = document.getElementById("hud");
+  const hudNum = document.getElementById("hudNum");
+  const hudName = document.getElementById("hudName");
+  const hudBar = document.getElementById("hudBar");
+  document.getElementById("hudTotal").textContent = String(N).padStart(2, "0");
+
+  const cards = PROJECTS.map((p) => {
+    const el = cardEl(p);
+    deck.appendChild(el);
+    return el;
+  });
+  cards.forEach((el) => {
+    if (el.querySelector(".duel")) wireDuel(el);
+    el.querySelectorAll("a").forEach((a) => a.addEventListener("click", (e) => e.stopPropagation()));
+  });
+  const inners = cards.map((c) => c.querySelector(".pc__inner"));
+
+  // jaunty resting angle per card (deterministic)
+  const jitter = PROJECTS.map((_, i) => ((i * 37) % 7) - 3);
+
+  // geometry, recomputed on refresh/resize
+  const G = {};
+  function measure() {
+    const W = stage.clientWidth;
+    const H = stage.clientHeight;
+    G.deckX = W * 0.24;
+    G.deckY = -H * 0.04;
+    G.deckRot = -4;
+    G.activeX = 0;
+    G.activeY = H * 0.05;
+    G.tableauY = H * 0.34;
+    G.arc = H * 0.06;
+    G.gapX = Math.min(W * 0.085, 64);
+    G.mid = (N - 1) / 2;
+  }
+  const fanX = (i) => (i - G.mid) * G.gapX;
+  const fanRot = (i) => (i - G.mid) * 4.2;
+  const fanY = (i) => G.tableauY + Math.abs(i - G.mid) * 4;
+
+  function render(prog) {
+    const pos = -INTRO + prog * TOTAL_UNITS;
+
+    for (let i = 0; i < N; i++) {
+      const d = pos - i;
+      let x, y, rot, s, flip, z;
+      const faceUp = d > DEAL; // dealt + flipped face-up → clickable + focusable
+
+      if (d <= 0) {                              // resting in the deck
+        const depth = -d;
+        x = G.deckX - depth * 0.6;
+        y = G.deckY - depth * 0.8;
+        rot = G.deckRot + jitter[i];
+        s = 1;
+        flip = 0;
+        z = Math.round(240 - depth);
+      } else if (d <= DEAL) {                    // dealing out + flipping
+        const t = d / DEAL;
+        const e = easeOutCubic(t);
+        x = lerp(G.deckX, G.activeX, e);
+        y = lerp(G.deckY, G.activeY, e) - G.arc * Math.sin(Math.PI * e);
+        rot = lerp(G.deckRot + jitter[i], 0, e);
+        s = lerp(1, ACTIVE_S, e);
+        flip = 180 * easeInOut(clamp(t * 1.05));
+        z = 340;
+      } else if (d <= 1) {                       // sitting centre, readable
+        x = G.activeX; y = G.activeY; rot = 0; s = ACTIVE_S; flip = 180; z = 340;
+      } else if (d <= 1 + LEAVE) {               // gliding to the tableau
+        const t = (d - 1) / LEAVE;
+        const e = easeInOut(t);
+        x = lerp(G.activeX, fanX(i), e);
+        y = lerp(G.activeY, fanY(i), e);
+        rot = lerp(0, fanRot(i), e);
+        s = lerp(ACTIVE_S, FAN_S, e);
+        flip = 180;
+        z = 300 - i;
+      } else {                                   // parked in the fanned hand
+        x = fanX(i); y = fanY(i); rot = fanRot(i); s = FAN_S; flip = 180;
+        z = 150 + i;
+      }
+
+      const el = cards[i];
+      el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${rot.toFixed(2)}deg) scale(${s.toFixed(3)})`;
+      el.style.zIndex = String(z);
+      // keep every dealt card clickable (active + fanned hand); hide face-down/dealing cards from mouse + keyboard + AT
+      el.style.pointerEvents = faceUp ? "auto" : "none";
+      el.inert = !faceUp;
+    }
+
+    // intro fades out exactly as the first card begins to deal (pos -> 0)
+    const introT = clamp((pos + INTRO) / INTRO);
+    intro.style.opacity = String(1 - introT);
+    intro.style.transform = `translateY(${(-introT * 26).toFixed(1)}px)`;
+
+    // HUD names the card currently centred (window pos in (i+DEAL, i+1+DEAL])
+    const dealt = pos > 0;
+    hud.classList.toggle("is-on", dealt);
+    const cur = clamp(Math.floor(pos - DEAL), 0, N - 1);
+    hudNum.textContent = dealt ? String(cur + 1).padStart(2, "0") : "00";
+    hudName.textContent = dealt ? PROJECTS[cur].title : "the deck";
+    hudBar.style.width = `${(clamp(prog) * 100).toFixed(1)}%`;
+  }
+
+  // smooth scroll
+  const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+  lenis.on("scroll", ScrollTrigger.update);
+  gsap.ticker.add((t) => lenis.raf(t * 1000));
+  gsap.ticker.lagSmoothing(0);
+
+  measure();
+  render(0);
+
+  ScrollTrigger.create({
+    trigger: stage,
+    start: "top top",
+    end: () => "+=" + window.innerHeight * TOTAL_UNITS * 0.9,
+    pin: stage,
+    scrub: 0.6,
+    invalidateOnRefresh: true,
+    // settle each card dead-centre so casual / fast scrollers always land one readable
+    snap: {
+      snapTo: (value) => {
+        const pos = -INTRO + value * TOTAL_UNITS;
+        const i = clamp(Math.round(pos - 0.85), 0, N - 1);
+        return clamp((i + 0.85 + INTRO) / TOTAL_UNITS, 0, 1);
+      },
+      duration: { min: 0.15, max: 0.4 },
+      delay: 0.06,
+      ease: "power1.inOut",
+    },
+    onRefresh: (self) => { measure(); render(self.progress); },
+    onUpdate: (self) => render(self.progress),
   });
 
-  return wrap;
+  // expose for debugging
+  window.__deck = { render, measure, lenis };
 }
 
-function renderCards(cards) {
-  const grid = document.createElement("div");
-  grid.className = "card-grid";
+/* ========================================================================= */
+/*  STATIC MODE — the whole hand, laid out and readable                      */
+/* ========================================================================= */
+function initStatic() {
+  document.body.classList.add("static-mode");
 
-  cards.forEach((card) => {
-    const article = document.createElement("article");
-    article.className = "project-card";
-    article.innerHTML = `
-      <h3>${escapeHtml(card.title)}</h3>
-      <p>${escapeHtml(card.desc)}</p>
-      <div class="tag-row">${card.tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>
-    `;
-    grid.append(article);
+  const grid = document.getElementById("fallbackGrid");
+  const els = PROJECTS.map((p) => {
+    const el = cardEl(p);
+    grid.appendChild(el);
+    return el;
   });
+  els.forEach((el) => { if (el.querySelector(".duel")) wireDuel(el); });
 
-  return grid;
-}
-
-function renderDetail(title, rows) {
-  const block = document.createElement("div");
-  block.className = "output-block";
-  const heading = document.createElement("p");
-  heading.innerHTML = `<strong>${escapeHtml(title)}</strong>`;
-  block.append(heading);
-
-  rows.forEach(([key, value]) => {
-    const row = document.createElement("p");
-    row.innerHTML = `<span class="accent-cyan">${escapeHtml(key)}</span>: ${escapeHtml(value)}`;
-    block.append(row);
-  });
-
-  return block;
-}
-
-function listDirectory() {
-  const node = fileSystem[state.cwd];
-  const dirs = node.dirs.map((dir) => `${dir}/`);
-  return text([...dirs, ...node.files].join("    "), "output-block");
-}
-
-function changeDirectory(rawTarget) {
-  const target = rawTarget.trim() || "~";
-  let nextPath;
-
-  if (target === "~" || target === "/" || target === "home") {
-    nextPath = "~";
-  } else if (target === "..") {
-    nextPath = state.cwd === "~" ? "~" : "~";
-  } else if (target.startsWith("~/")) {
-    nextPath = target;
+  if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.15 });
+    els.forEach((el) => io.observe(el));
   } else {
-    nextPath = state.cwd === "~" ? `~/${target.replace(/\/$/, "")}` : `${state.cwd}/${target.replace(/\/$/, "")}`;
+    els.forEach((el) => el.classList.add("in"));
   }
-
-  if (!fileSystem[nextPath]) return text(`cd: ${target}: no such directory`, "line error");
-  state.cwd = nextPath;
-  updatePrompt();
-  return text(state.cwd, "output-block");
 }
 
-function readFile(rawName) {
-  const name = rawName.trim();
-  const node = fileSystem[state.cwd];
-  if (!node.files.includes(name)) return text(`cat: ${name}: file not found`, "line error");
-
-  if (state.cwd === "~" && name === "projects.txt") return renderCards(projectCards);
-  if (state.cwd === "~" && name === "open-source.md") return renderGithub();
-  if (state.cwd === "~" && name === "github.url") return text("https://github.com/henrybrewer00-dotcom", "output-block");
-  if (state.cwd === "~" && name === "contact.card") return commands["/contact"]();
-  if (state.cwd === "~" && name === "about.md") return commands["/whoami"]();
-  if (state.cwd === "~/robot-car") return commands["/robot-car"]();
-  if (state.cwd === "~/hackathons") return commands["/hackathons"]();
-  if (state.cwd === "~/submarine") return commands["/submarine"]();
-  if (state.cwd === "~/grades") return commands["/grades"]();
-  if (state.cwd === "~/randomstuff") return commands["/randomstuff"]();
-
-  return text(`${name}: nothing written yet.`, "output-block");
-}
-
-function renderGithub() {
-  const block = document.createElement("div");
-  block.className = "output-block";
-  block.innerHTML = `
-    <p><strong>github.url</strong></p>
-    <p><a class="output-link" href="https://github.com/henrybrewer00-dotcom" target="_blank" rel="noreferrer">github.com/henrybrewer00-dotcom</a></p>
-    <p>Made some open source contributions to platforms such as OpenClaw, Ollama, Astro, Appwrite, and Grafana.</p>
-  `;
-  return block;
-}
-
-function renderNano(rawTarget) {
-  const target = rawTarget.trim() || "untitled";
-  const knownNotes = {
-    grades: ["Straight A's", "Math: 99.5", "Science / engineering / CS / math focus"],
-    "grades.csv": ["subject,grade", "math,99.5", "overall,straight A's"],
-    github: ["github.com/henrybrewer00-dotcom", "Open source: OpenClaw, Ollama, Astro, Appwrite, Grafana"],
-    "open-source.md": ["# open source", "Made some open source contributions to OpenClaw, Ollama, Astro, Appwrite, and Grafana."],
-    "robot-car": ["# robot-car", "Sensors, steering logic, calibration, route replay ideas."],
-    randomstuff: ["# randomstuff", "Tiny tools, web experiments, half-serious ideas."],
-    submarine: ["# submarine", "Buoyancy, seals, thrusters, battery safety, test plans."],
-  };
-  const lines = knownNotes[target] || [
-    `# ${target}`,
-    "New folder note opened.",
-    "Type any /nano name and this portfolio will make a readable note for it.",
-  ];
-
-  const block = document.createElement("div");
-  block.className = "nano-window";
-  block.innerHTML = `
-    <div class="nano-bar">GNU nano 7.2 <span>${escapeHtml(target)}</span></div>
-    <pre>${escapeHtml(lines.join("\n"))}</pre>
-    <div class="nano-footer">^G help   ^O write out   ^X exit</div>
-  `;
-  return block;
-}
-
-function startTypingGame() {
-  const phrase = "software robots and open source ship faster when you stay curious";
-  state.game = {
-    type: "typing",
-    phrase,
-    ready: true,
-    start: null,
-  };
-  input.placeholder = "type start";
-
-  const block = document.createElement("div");
-  block.className = "game-card";
-  block.innerHTML = `
-    <p><strong>typing-game</strong></p>
-    <p>Try your hand at outtyping a 13 year old. Henry types at 125 WPM.</p>
-    <p class="game-target">${escapeHtml(phrase)}</p>
-    <p>Type <strong>start</strong> when you are ready. Timer starts after that.</p>
-  `;
-  return block;
-}
-
-function startHireGame() {
-  state.game = {
-    type: "hire",
-    step: 0,
-    ready: true,
-    start: null,
-    expected: ["mkdir henry", "cd henry", "touch file", "echo hire_henry=true > file"],
-  };
-  input.placeholder = "type start";
-
-  const block = document.createElement("div");
-  block.className = "game-card";
-  block.innerHTML = `
-    <p><strong>hire-game</strong></p>
-    <p>Set up a new directory, cd into it, create a file named <strong>file</strong>, then put <strong>hire_henry=true</strong> inside.</p>
-    <p>No command list. Type <strong>start</strong> when you are ready. Timer starts after that.</p>
-  `;
-  return block;
-}
-
-function handleGameInput(command) {
-  if (state.game.ready) return armGame(command);
-  if (state.game.type === "typing") return finishTypingGame(command);
-  if (state.game.type === "hire") return advanceHireGame(command);
-  return text("game state got weird. type /clear and try again.", "line error");
-}
-
-function armGame(command) {
-  if (command !== "start") return text("type start when you are ready.", "line error");
-  state.game.ready = false;
-  state.game.start = Date.now();
-
-  if (state.game.type === "typing") {
-    startGameTimer("typing duel");
-    input.placeholder = "type the sentence exactly";
-    return text("timer started. type the target sentence now.", "output-block");
-  }
-
-  startGameTimer("hire challenge");
-  input.placeholder = state.game.expected[0];
-  return text("timer started. build it.", "output-block");
-}
-
-function finishTypingGame(command) {
-  const elapsedMs = Math.max(Date.now() - state.game.start, 1000);
-  const elapsedMinutes = elapsedMs / 60000;
-  const words = state.game.phrase.trim().split(/\s+/).length;
-  const wpm = Math.round(words / elapsedMinutes);
-  const accuracy = getAccuracy(command, state.game.phrase);
-  const won = wpm >= 125 && accuracy >= 90;
-  stopGameTimer();
-  state.game = null;
-  input.placeholder = "type a command";
-
-  return renderDetail("typing-game.result", [
-    ["wpm", `${wpm}`],
-    ["accuracy", `${accuracy}%`],
-    ["target", "125 WPM"],
-    ["result", won ? "Wow, so proud of you. You outtyped a 13 year old." : "damm you lost to a 13 year old."],
-  ]);
-}
-
-function advanceHireGame(command) {
-  const expected = state.game.expected[state.game.step];
-  if (command !== expected) {
-    return text("not it. think like a shell.", "line error");
-  }
-
-  state.game.step += 1;
-  if (state.game.step < state.game.expected.length) {
-    const next = state.game.expected[state.game.step];
-    input.placeholder = next;
-    return text(`ok. step ${state.game.step}/4 complete.`, "output-block");
-  }
-
-  const elapsedSeconds = ((Date.now() - state.game.start) / 1000).toFixed(1);
-  stopGameTimer();
-  state.game = null;
-  input.placeholder = "type a command";
-  return renderDetail("hire-game.complete", [
-    ["file", "hire_henry=true"],
-    ["time", `${elapsedSeconds}s`],
-    ["result", "directory built. file created. hire flag enabled."],
-  ]);
-}
-
-function getAccuracy(inputValue, targetValue) {
-  const length = Math.max(inputValue.length, targetValue.length, 1);
-  let matches = 0;
-  for (let index = 0; index < length; index += 1) {
-    if (inputValue[index] === targetValue[index]) matches += 1;
-  }
-  return Math.round((matches / length) * 100);
-}
-
-function startGameTimer(label) {
-  stopGameTimer();
-  gameTimer.classList.add("active");
-  gameTimer.textContent = `${label}: 0.0s`;
-  state.timerId = window.setInterval(() => {
-    if (!state.game) return;
-    const elapsedSeconds = ((Date.now() - state.game.start) / 1000).toFixed(1);
-    gameTimer.textContent = `${label}: ${elapsedSeconds}s`;
-  }, 100);
-}
-
-function stopGameTimer() {
-  if (state.timerId) window.clearInterval(state.timerId);
-  state.timerId = null;
-  gameTimer.classList.remove("active");
-  gameTimer.textContent = "";
-}
-
-function runCommand(rawCommand) {
-  const command = rawCommand.trim();
-  if (!command) return;
-  openTerminalView();
-
-  state.history.push(command);
-  state.historyIndex = state.history.length;
-  appendLine(`${state.cwd} $ ${command}`, "line command");
-
-  let response;
-  if (state.game && command !== "/clear" && command !== "clear") {
-    response = handleGameInput(command);
-  } else if (commands[command]) {
-    response = commands[command]();
-  } else if (command === "cd") {
-    response = changeDirectory("~");
-  } else if (command.startsWith("cd ")) {
-    response = changeDirectory(command.slice(3));
-  } else if (command.startsWith("/nano")) {
-    response = renderNano(command.replace(/^\/nano\s*/, ""));
-  } else if (command.startsWith("echo ")) {
-    response = text(command.slice(5), "output-block");
-  } else if (command.startsWith("cat ")) {
-    response = readFile(command.slice(4));
-  } else {
-    response = text(`Command not found: ${command}. Type /help for the map.`, "line error");
-  }
-
-  appendResponse(response);
-  input.value = "";
-  output.scrollTop = output.scrollHeight;
-  focusInput();
-}
-
-function appendLine(content, className) {
-  const p = document.createElement("p");
-  p.className = className;
-  p.textContent = content;
-  output.append(p);
-}
-
-function appendResponse(response) {
-  if (!response) return;
-  if (Array.isArray(response)) {
-    response.forEach((node) => output.append(node));
-    return;
-  }
-  output.append(response);
-}
-
+/* ========================================================================= */
 function boot() {
-  appendLine("henry.txt", "line dim");
-  appendLine("type /help, or just start typing", "line type-cursor");
-  updatePrompt();
-}
+  loadArt();
+  const libs = window.gsap && window.ScrollTrigger && window.Lenis;
+  if (libs) gsap.registerPlugin(ScrollTrigger);
 
-function autocomplete() {
-  const value = input.value.trim();
-  if (!value) return;
-  const current = fileSystem[state.cwd];
-  const all = [...commandList.map(([name]) => name), ...Object.keys(commands), ...current.dirs, ...current.files];
-  const match = all.find((item) => item.startsWith(value));
-  if (match) input.value = match;
-}
+  const mqSmall = matchMedia("(max-width: 820px)");
+  const mqMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  const wantStatic = mqSmall.matches || mqMotion.matches || !libs;
 
-function escapeHtml(value) {
-  return value.replace(/[&<>"']/g, (char) => {
-    const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" };
-    return map[char];
-  });
-}
-
-form.addEventListener("submit", (event) => {
-  event.preventDefault();
-  runCommand(input.value);
-});
-
-input.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    runCommand(input.value);
+  if (!wantStatic) {
+    try { initDeck(); }
+    catch (err) { console.error("deck init failed, falling back", err); document.body.classList.remove("deck-mode"); initStatic(); }
+  } else {
+    initStatic();
   }
 
-  if (event.key === "ArrowUp") {
-    event.preventDefault();
-    state.historyIndex = Math.max(0, state.historyIndex - 1);
-    input.value = state.history[state.historyIndex] || "";
-  }
-
-  if (event.key === "ArrowDown") {
-    event.preventDefault();
-    state.historyIndex = Math.min(state.history.length, state.historyIndex + 1);
-    input.value = state.history[state.historyIndex] || "";
-  }
-
-  if (event.key === "Tab") {
-    event.preventDefault();
-    autocomplete();
-  }
-});
-
-document.querySelectorAll("[data-command]").forEach((button) => {
-  button.addEventListener("click", () => {
-    openTerminalView();
-    runCommand(button.dataset.command);
-  });
-});
-
-openTerminal.addEventListener("click", () => {
-  if (state.terminalOpen) {
-    closeTerminalView();
-    return;
-  }
-  openTerminalView();
-  focusInput();
-});
-
-document.addEventListener("keydown", (event) => {
-  const tag = document.activeElement.tagName;
-  if (tag !== "INPUT" && tag !== "TEXTAREA" && event.key.length === 1) {
-    focusInput();
-  }
-});
-
-function focusInput() {
-  if (!window.matchMedia("(pointer: fine)").matches) return;
-  input.focus({ preventScroll: true });
+  // if the user crosses the breakpoint or toggles reduced-motion after load, re-pick the mode
+  const reeval = () => {
+    const nowStatic = mqSmall.matches || mqMotion.matches || !libs;
+    if (nowStatic !== wantStatic) location.reload();
+  };
+  mqSmall.addEventListener("change", reeval);
+  mqMotion.addEventListener("change", reeval);
 }
 
-function updatePrompt() {
-  promptLabel.textContent = `${state.cwd} $`;
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", boot);
+} else {
+  boot();
 }
-
-function openTerminalView() {
-  if (state.terminalOpen) return;
-  state.terminalOpen = true;
-  pageShell.classList.remove("terminal-closed");
-  pageShell.classList.add("terminal-open");
-  openTerminal.textContent = "home";
-}
-
-function closeTerminalView() {
-  state.terminalOpen = false;
-  pageShell.classList.remove("terminal-open");
-  pageShell.classList.add("terminal-closed");
-  openTerminal.textContent = "open terminal";
-  stopGameTimer();
-  state.game = null;
-  input.placeholder = "type a command";
-  window.scrollTo({ top: 0, left: 0 });
-}
-
-boot();
-if (state.terminalOpen) focusInput();
-window.scrollTo({ top: 0, left: 0 });
