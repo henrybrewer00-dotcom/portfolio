@@ -1,48 +1,47 @@
 /* =========================================================================
    Henry's deck — a portfolio dealt one card at a time.
-   Scroll-driven (GSAP ScrollTrigger + Lenis), with a static fallback hand for
-   no-JS / reduced-motion / small screens.  See styles.css for the card look.
-   Live projects are dealt first.
+   Scroll-driven (GSAP ScrollTrigger + Lenis), or tap a card to jump to it.
+   Static fallback hand for no-JS / reduced-motion / small screens.
    ========================================================================= */
 
-const DUEL_TARGET = "i build things that move, think, dive, and ship";
+const DUEL_TARGET = "henry builds robots software and one weird submarine";
 
 const PROJECTS = [
   {
     rank: "A", suit: "♥", color: "red", suitName: "hearts",
-    kicker: "voice ai · care",
+    kicker: "voice ai",
     title: "Lily",
-    tagline: "Morning check-ins for your parent",
-    desc: "Calls my grandma in Arkansas — who has Alzheimer's — every morning, actually talks with her, then texts the family a short brief. Family can text back to steer tomorrow's call. Built on one rule: it never offers to do something it can't really do.",
+    tagline: "It calls my grandma every morning",
+    desc: "My grandma in Arkansas has Alzheimer's, so I built something that phones her every morning and actually has a conversation with her. Afterward it texts the family how she sounded, and we can text back to tell it what to bring up next time. The one rule I gave it: never promise something it can't actually do.",
     tags: ["React", "InsForge", "ElevenLabs", "Twilio"],
     live: "https://lily.insforge.site",
     repo: "https://github.com/henrybrewer00-dotcom/lily",
   },
   {
     rank: "K", suit: "♠", color: "black", suitName: "spades",
-    kicker: "open source · video",
+    kicker: "open source",
     title: "Glasscast",
-    tagline: "Cinematic screen recordings. Zero editing.",
-    desc: "A free, open-source Screen Studio that edits while you record: real 3D zoom with spring physics, auto-zoom on clicks, captions that write themselves, webcam bubbles, and cross-device sync. Bring your own AI keys.",
+    tagline: "Cinematic recordings, zero editing",
+    desc: "Screen Studio costs money, so I made a free one. Glasscast records your screen and does the editing as you go: 3D zooms that move like a real camera, auto-zoom wherever you click, captions it writes for you, and a webcam bubble. You bring your own AI keys, so there's nothing to pay for.",
     tags: ["Electron", "TypeScript", "Whisper", "AGPLv3"],
     live: "https://glasscast.insforge.site",
     repo: "https://github.com/henrybrewer00-dotcom/Glasscast",
   },
   {
     rank: "Q", suit: "♦", color: "red", suitName: "diamonds",
-    kicker: "voice ai · commerce",
+    kicker: "voice ai",
     title: "Lily's Drive-Thru",
-    tagline: "Talk to the window. Watch the kitchen react.",
-    desc: "Pull up and order out loud. The AI attendant takes it, sizes it, upsells once, applies promo codes, and reads back a tax-aware total — then fires a live ticket to a kitchen display over SSE.",
+    tagline: "Order out loud, watch the kitchen react",
+    desc: "You order out loud like you're at a real drive-thru. The AI window attendant takes it, asks about sizes, tries to upsell you once, takes promo codes, and reads the total back with tax. When you're done it sends a live ticket to a kitchen screen so the cooks can keep up.",
     tags: ["ElevenLabs", "Express", "SSE"],
     repo: "https://github.com/henrybrewer00-dotcom/voice-drive-thru",
   },
   {
     rank: "J", suit: "♣", color: "black", suitName: "clubs",
-    kicker: "ai · audio",
+    kicker: "ai + audio",
     title: "Eleven Mile",
-    tagline: "Two AIs. One mic. Pick the smoke.",
-    desc: "An AI rap-battle generator that writes the bars and spits them too. Pick two opponents and a topic — Claude writes the wordplay, ElevenLabs delivers it.",
+    tagline: "Two AIs, one mic",
+    desc: "Pick two people and a topic and watch them rap-battle. Claude writes the bars and ElevenLabs actually raps them out loud. It's a little dumb and I love it.",
     tags: ["Claude", "ElevenLabs"],
     repo: "https://github.com/henrybrewer00-dotcom/eleven-mile",
   },
@@ -50,8 +49,8 @@ const PROJECTS = [
     rank: "10", suit: "♥", color: "red", suitName: "hearts",
     kicker: "accessibility",
     title: "PawBot",
-    tagline: "A patient guide for first-time computer users",
-    desc: "A hackathon build that helps seniors navigate a computer — gentle, step-by-step help for people who didn't grow up with one.",
+    tagline: "For people who didn't grow up with computers",
+    desc: "A hackathon project that helps older people use a computer without feeling dumb about it. It walks them through things one step at a time, kind of like how you'd help your grandparent figure out their email.",
     tags: ["Accessibility", "Assistive"],
     repo: "https://github.com/henrybrewer00-dotcom/PawBot",
   },
@@ -59,16 +58,16 @@ const PROJECTS = [
     rank: "9", suit: "♠", color: "black", suitName: "spades",
     kicker: "robotics",
     title: "S.I.E.G.E.",
-    tagline: "An autonomous robot car that chases dogs",
-    desc: "I needed something to chase my dogs while I was busy building other things, so I built a compact autonomous car — sensors, steering logic, calibration, and a wiring job that looks worse than it works.",
+    tagline: "A self-driving car that chases my dogs",
+    desc: "I wanted something to chase my dogs around while I was busy with other stuff, so I built a little self-driving car. Sensors, steering logic, a lot of calibration, and wiring that looks way worse than it actually works.",
     tags: ["Arduino", "Sensors", "C++"],
   },
   {
     rank: "8", suit: "♦", color: "red", suitName: "diamonds",
-    kicker: "marine engineering",
+    kicker: "hardware",
     title: "ROV Submarine",
-    tagline: "Engineering that survives real water",
-    desc: "A small remotely-operated sub built like an engineering notebook: buoyancy, watertight seals, thrusters, and battery safety — all tested before the scary part.",
+    tagline: "Trying to build something that survives real water",
+    desc: "A little remote-controlled submarine I'm building right now. Most of the work is the unglamorous part: keeping it watertight, getting the buoyancy right, and making sure the battery won't do anything scary underwater.",
     tags: ["CAD", "Marine", "Physics"],
     status: "currently building",
   },
@@ -76,8 +75,8 @@ const PROJECTS = [
     rank: "7", suit: "♣", color: "black", suitName: "clubs",
     kicker: "open source",
     title: "Open Source",
-    tagline: "Patches to tools I actually use",
-    desc: "Real pull requests to projects I rely on every day — OpenClaw, Ollama, Astro, Appwrite, and Grafana.",
+    tagline: "Fixing the tools I use",
+    desc: "Real, merged pull requests to projects I use all the time: OpenClaw, Ollama, Astro, Appwrite, and Grafana. Mostly small fixes, but they're shipped and people actually run them.",
     tags: ["OpenClaw", "Ollama", "Astro", "Appwrite", "Grafana"],
     repo: "https://github.com/henrybrewer00-dotcom?tab=repositories",
   },
@@ -85,8 +84,8 @@ const PROJECTS = [
     rank: "JOKER", suit: "★", color: "gold", suitName: "joker",
     kicker: "the wild card",
     title: "Hire Henry",
-    tagline: "13. Straight A's. 99.5 in math. 125 WPM.",
-    desc: "I'm Henry — I build software, robots, and the occasional submarine. Want to work together? Beat me at typing first.",
+    tagline: "13. straight A's. 99.5 in math. 125 wpm.",
+    desc: "I'm Henry. I'm 13, I build software and robots, and I type fast. If you want to work together the email button is right there. You just have to out-type me first.",
     tags: ["Available", "Curious", "Fast"],
     repo: "https://github.com/henrybrewer00-dotcom",
     contact: { email: "henrybrewer00@gmail.com", phone: "925 962 7535" },
@@ -226,6 +225,9 @@ const FAN_S = 0.46;          // parked card scale
 const MAX_POS = N - 1 + 0.72;
 const TOTAL_UNITS = MAX_POS + INTRO;
 
+// progress at which card i sits dead-centre (also the snap target)
+const progForCard = (i) => clamp((clamp(i, 0, N - 1) + 0.85 + INTRO) / TOTAL_UNITS, 0, 1);
+
 function initDeck() {
   document.body.classList.add("deck-mode");
 
@@ -238,16 +240,37 @@ function initDeck() {
   const hudBar = document.getElementById("hudBar");
   document.getElementById("hudTotal").textContent = String(N).padStart(2, "0");
 
+  let st = null;
+  let lenis = null;
+  let activeIndex = 0;
+
+  // tap a card to bring it to centre (tap the active one to advance)
+  function goToCard(i) {
+    if (!st) return;
+    i = clamp(i, 0, N - 1);
+    const y = st.start + progForCard(i) * (st.end - st.start);
+    if (lenis && lenis.scrollTo) lenis.scrollTo(y, { duration: 0.8 });
+    else window.scrollTo({ top: y, behavior: "smooth" });
+  }
+
   const cards = PROJECTS.map((p) => {
     const el = cardEl(p);
     deck.appendChild(el);
     return el;
   });
-  cards.forEach((el) => {
-    if (el.querySelector(".duel")) wireDuel(el);
-    el.querySelectorAll("a").forEach((a) => a.addEventListener("click", (e) => e.stopPropagation()));
-  });
   const inners = cards.map((c) => c.querySelector(".pc__inner"));
+  const focusables = cards.map((c) => Array.from(c.querySelectorAll("a, input")));
+
+  cards.forEach((el, i) => {
+    if (el.querySelector(".duel")) wireDuel(el);
+    // links open normally; don't let their click bubble to the card-nav handler
+    el.querySelectorAll("a").forEach((a) => a.addEventListener("click", (e) => e.stopPropagation()));
+    // tap the card body → jump to it (or advance if it's already centred)
+    el.addEventListener("click", (e) => {
+      if (e.target.closest("a, button, input")) return;
+      goToCard(i === activeIndex ? i + 1 : i);
+    });
+  });
 
   // jaunty resting angle per card (deterministic)
   const jitter = PROJECTS.map((_, i) => ((i * 37) % 7) - 3);
@@ -277,7 +300,7 @@ function initDeck() {
     for (let i = 0; i < N; i++) {
       const d = pos - i;
       let x, y, rot, s, flip, z;
-      const faceUp = d > DEAL; // dealt + flipped face-up → clickable + focusable
+      const faceUp = d > DEAL; // dealt + flipped face-up → readable + keyboard-focusable
 
       if (d <= 0) {                              // resting in the deck
         const depth = -d;
@@ -315,10 +338,10 @@ function initDeck() {
       const el = cards[i];
       el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${rot.toFixed(2)}deg) scale(${s.toFixed(3)})`;
       el.style.zIndex = String(z);
-      // keep every dealt card clickable (active + fanned hand); hide face-down/dealing cards from mouse + keyboard + AT
-      el.style.pointerEvents = faceUp ? "auto" : "none";
-      el.inert = !faceUp;
-      inners[i].style.transform = `rotateY(${flip.toFixed(1)}deg)`;  // 0 = back, 180 = face
+      el.style.pointerEvents = "auto"; // every card is tappable (scroll still drives the deal)
+      inners[i].style.transform = `rotateY(${flip.toFixed(1)}deg)`; // 0 = back, 180 = face
+      // keep face-down / dealing cards' links out of the keyboard tab order
+      focusables[i].forEach((f) => { f.tabIndex = faceUp ? 0 : -1; });
     }
 
     // intro fades out exactly as the first card begins to deal (pos -> 0)
@@ -326,17 +349,17 @@ function initDeck() {
     intro.style.opacity = String(1 - introT);
     intro.style.transform = `translateY(${(-introT * 26).toFixed(1)}px)`;
 
-    // HUD names the card currently centred (window pos in (i+DEAL, i+1+DEAL])
+    // HUD names the card currently centred
     const dealt = pos > 0;
+    activeIndex = clamp(Math.floor(pos - DEAL), 0, N - 1);
     hud.classList.toggle("is-on", dealt);
-    const cur = clamp(Math.floor(pos - DEAL), 0, N - 1);
-    hudNum.textContent = dealt ? String(cur + 1).padStart(2, "0") : "00";
-    hudName.textContent = dealt ? PROJECTS[cur].title : "the deck";
+    hudNum.textContent = dealt ? String(activeIndex + 1).padStart(2, "0") : "00";
+    hudName.textContent = dealt ? PROJECTS[activeIndex].title : "the deck";
     hudBar.style.width = `${(clamp(prog) * 100).toFixed(1)}%`;
   }
 
   // smooth scroll
-  const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+  lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
   lenis.on("scroll", ScrollTrigger.update);
   gsap.ticker.add((t) => lenis.raf(t * 1000));
   gsap.ticker.lagSmoothing(0);
@@ -344,7 +367,7 @@ function initDeck() {
   measure();
   render(0);
 
-  ScrollTrigger.create({
+  st = ScrollTrigger.create({
     trigger: stage,
     start: "top top",
     end: () => "+=" + window.innerHeight * TOTAL_UNITS * 0.9,
@@ -357,8 +380,7 @@ function initDeck() {
         const pos = -INTRO + value * TOTAL_UNITS;
         const rawI = Math.round(pos - 0.85);
         if (rawI < 0) return 0;                 // rest on the intro / undealt deck near the top
-        const i = clamp(rawI, 0, N - 1);
-        return clamp((i + 0.85 + INTRO) / TOTAL_UNITS, 0, 1);
+        return progForCard(rawI);
       },
       duration: { min: 0.15, max: 0.4 },
       delay: 0.06,
@@ -369,7 +391,7 @@ function initDeck() {
   });
 
   // expose for debugging
-  window.__deck = { render, measure, lenis };
+  window.__deck = { render, measure, goToCard, get lenis() { return lenis; }, get st() { return st; } };
 }
 
 /* ========================================================================= */

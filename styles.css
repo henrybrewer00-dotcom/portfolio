@@ -455,6 +455,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
    heading shows — never a blank page. JS picks deck vs static mode. */
 .fallback { display: none; }
 body.deck-mode .fallback { display: none !important; }
+body.deck-mode .pc { cursor: pointer; }
 body.static-mode .stage { display: none; }
 body.static-mode .fallback { display: block; }
 
