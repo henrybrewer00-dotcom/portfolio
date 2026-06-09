@@ -351,10 +351,13 @@ function initDeck() {
 
     // HUD names the card currently centred
     const dealt = pos > 0;
-    activeIndex = clamp(Math.floor(pos - DEAL), 0, N - 1);
+    const centered = clamp(Math.floor(pos - DEAL), 0, N - 1);
+    // a card only counts as "active" (tap = advance) once it's actually centred —
+    // otherwise the first tap on the resting deck would skip card 1 and deal card 2
+    activeIndex = pos > DEAL ? centered : -1;
     hud.classList.toggle("is-on", dealt);
-    hudNum.textContent = dealt ? String(activeIndex + 1).padStart(2, "0") : "00";
-    hudName.textContent = dealt ? PROJECTS[activeIndex].title : "the deck";
+    hudNum.textContent = dealt ? String(centered + 1).padStart(2, "0") : "00";
+    hudName.textContent = dealt ? PROJECTS[centered].title : "the deck";
     hudBar.style.width = `${(clamp(prog) * 100).toFixed(1)}%`;
   }
 
