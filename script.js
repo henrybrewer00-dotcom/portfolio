@@ -318,6 +318,7 @@ function initDeck() {
       // keep every dealt card clickable (active + fanned hand); hide face-down/dealing cards from mouse + keyboard + AT
       el.style.pointerEvents = faceUp ? "auto" : "none";
       el.inert = !faceUp;
+      inners[i].style.transform = `rotateY(${flip.toFixed(1)}deg)`;  // 0 = back, 180 = face
     }
 
     // intro fades out exactly as the first card begins to deal (pos -> 0)
@@ -354,7 +355,9 @@ function initDeck() {
     snap: {
       snapTo: (value) => {
         const pos = -INTRO + value * TOTAL_UNITS;
-        const i = clamp(Math.round(pos - 0.85), 0, N - 1);
+        const rawI = Math.round(pos - 0.85);
+        if (rawI < 0) return 0;                 // rest on the intro / undealt deck near the top
+        const i = clamp(rawI, 0, N - 1);
         return clamp((i + 0.85 + INTRO) / TOTAL_UNITS, 0, 1);
       },
       duration: { min: 0.15, max: 0.4 },
