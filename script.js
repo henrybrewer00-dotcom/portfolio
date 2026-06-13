@@ -16,6 +16,9 @@ const PROJECTS = [
     tags: ["React", "InsForge", "ElevenLabs", "Twilio"],
     live: "https://lily.insforge.site",
     repo: "https://github.com/henrybrewer00-dotcom/lily",
+    video: "assets/lily-demo.mp4",
+    poster: "assets/lily-demo-poster.jpg",
+    award: "Built at the a16z × Cursor hackathon — won 1st place. This is my on-stage demo, in front of 150 people.",
   },
   {
     rank: "K", suit: "♠", color: "black", suitName: "spades",
@@ -128,6 +131,15 @@ function cardEl(p) {
     ? `<p class="pc__status"><i aria-hidden="true"></i>${esc(p.status)}</p>`
     : "";
 
+  // optional demo video: a poster thumbnail that opens the lightbox, + an award caption
+  const video = p.video
+    ? `<button type="button" class="pc__video" data-video="${esc(p.video)}" data-poster="${esc(p.poster || "")}" data-title="${esc(p.title + " — on-stage demo")}" aria-label="Play the ${esc(p.title)} demo video">
+         <img class="pc__video-thumb" src="${esc(p.poster || "")}" alt="" loading="lazy" />
+         <span class="pc__video-play" aria-hidden="true"></span>
+       </button>
+       ${p.award ? `<p class="pc__award">${esc(p.award)}</p>` : ""}`
+    : "";
+
   const duel = p.duel
     ? `<div class="duel">
          <p class="duel__target">${esc(DUEL_TARGET)}</p>
@@ -148,6 +160,7 @@ function cardEl(p) {
           <h2 class="pc__title">${esc(p.title)}</h2>
           ${status}
           <p class="pc__tagline">${esc(p.tagline)}</p>
+          ${video}
           <p class="pc__desc">${esc(p.desc)}</p>
           <div class="pc__tags">${p.tags.map((t) => `<span>${esc(t)}</span>`).join("")}</div>
           ${duel}
@@ -208,6 +221,52 @@ function loadArt() {
   table.src = "assets/table.jpg";
 }
 
+/* ---------- shared video lightbox ---------- */
+function initLightbox() {
+  const box = document.createElement("div");
+  box.className = "lightbox";
+  box.setAttribute("aria-hidden", "true");
+  box.innerHTML = `
+    <div class="lightbox__backdrop" data-close></div>
+    <div class="lightbox__panel" role="dialog" aria-modal="true" aria-label="Demo video">
+      <button type="button" class="lightbox__close" data-close aria-label="Close video">✕</button>
+      <p class="lightbox__title"></p>
+      <video class="lightbox__video" controls playsinline preload="none"></video>
+    </div>`;
+  document.body.appendChild(box);
+
+  const vid = box.querySelector(".lightbox__video");
+  const title = box.querySelector(".lightbox__title");
+
+  function close() {
+    box.classList.remove("is-open");
+    box.setAttribute("aria-hidden", "true");
+    vid.pause();
+    vid.removeAttribute("src");
+    vid.load();
+  }
+  function open(src, poster, label) {
+    title.textContent = label || "";
+    if (poster) vid.poster = poster;
+    vid.src = src;
+    box.classList.add("is-open");
+    box.setAttribute("aria-hidden", "false");
+    const play = vid.play();
+    if (play && play.catch) play.catch(() => {});
+  }
+
+  box.addEventListener("click", (e) => { if (e.target.closest("[data-close]")) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && box.classList.contains("is-open")) close(); });
+
+  // any card's video button opens the lightbox (works in deck + static modes)
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".pc__video");
+    if (!btn) return;
+    e.stopPropagation();
+    open(btn.dataset.video, btn.dataset.poster, btn.dataset.title);
+  });
+}
+
 /* ---------- math helpers ---------- */
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -238,6 +297,7 @@ function initDeck() {
   const hudNum = document.getElementById("hudNum");
   const hudName = document.getElementById("hudName");
   const hudBar = document.getElementById("hudBar");
+  const deckEnd = document.getElementById("deckEnd");
   document.getElementById("hudTotal").textContent = String(N).padStart(2, "0");
 
   let st = null;
@@ -359,6 +419,14 @@ function initDeck() {
     hudNum.textContent = dealt ? String(centered + 1).padStart(2, "0") : "00";
     hudName.textContent = dealt ? PROJECTS[centered].title : "the deck";
     hudBar.style.width = `${(clamp(prog) * 100).toFixed(1)}%`;
+
+    // "full house" — fades in once the last card has been read and the hand fans out
+    if (deckEnd) {
+      const endT = easeInOut(clamp((pos - (MAX_POS - 0.3)) / 0.3));
+      deckEnd.style.opacity = String(endT);
+      deckEnd.style.transform = `translate(-50%, ${lerp(18, 0, endT).toFixed(1)}px)`;
+      deckEnd.style.pointerEvents = endT > 0.6 ? "auto" : "none";
+    }
   }
 
   // smooth scroll
@@ -426,6 +494,7 @@ function initStatic() {
 /* ========================================================================= */
 function boot() {
   loadArt();
+  initLightbox();
   const libs = window.gsap && window.ScrollTrigger && window.Lenis;
   if (libs) gsap.registerPlugin(ScrollTrigger);
 
