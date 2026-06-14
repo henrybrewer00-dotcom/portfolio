@@ -267,6 +267,87 @@ function initLightbox() {
   });
 }
 
+/* ---------- magnified card preview (full-house tap) ---------- */
+function initPreview() {
+  const overlay = document.createElement("div");
+  overlay.className = "preview";
+  overlay.setAttribute("aria-hidden", "true");
+  overlay.innerHTML = `
+    <div class="preview__backdrop" data-close></div>
+    <button type="button" class="preview__close" data-close aria-label="Close preview">✕</button>
+    <div class="preview__stage">
+      <div class="preview__card" id="previewCard"></div>
+      <img class="preview__glass" id="previewGlass" src="assets/magnifier.png" alt="" aria-hidden="true" />
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const host = overlay.querySelector("#previewCard");
+  const glass = overlay.querySelector("#previewGlass");
+  glass.addEventListener("error", () => { glass.style.display = "none"; });
+  let open = false;
+
+  function close() {
+    if (!open) return;
+    open = false;
+    overlay.classList.remove("is-open");
+    overlay.setAttribute("aria-hidden", "true");
+    host.innerHTML = "";
+  }
+
+  function show(project, originRect) {
+    const card = cardEl(project);
+    card.classList.add("pc--preview");
+    host.innerHTML = "";
+    host.appendChild(card);
+    const inner = card.querySelector(".pc__inner");
+    if (inner) inner.style.transform = "rotateY(180deg)";       // show the face
+    card.querySelectorAll("a").forEach((a) => a.addEventListener("click", (e) => e.stopPropagation()));
+    if (card.querySelector(".duel")) wireDuel(card);
+
+    overlay.classList.add("is-open");
+    overlay.setAttribute("aria-hidden", "false");
+    open = true;
+
+    // FLIP: start the big card at the tapped card's place + size, then settle to centre
+    const fr = host.getBoundingClientRect();
+    if (originRect && fr.width) {
+      const dx = (originRect.left + originRect.width / 2) - (fr.left + fr.width / 2);
+      const dy = (originRect.top + originRect.height / 2) - (fr.top + fr.height / 2);
+      const sx = originRect.width / fr.width;
+      host.animate(
+        [
+          { transform: `translate(${dx}px, ${dy}px) scale(${sx.toFixed(3)})`, opacity: 0.55 },
+          { transform: "translate(0px, 0px) scale(1)", opacity: 1 },
+        ],
+        { duration: 560, easing: "cubic-bezier(.2,.85,.25,1)" }
+      );
+    }
+
+    if (glass.style.display !== "none") {
+      // the glass sweeps diagonally across the card…
+      glass.animate(
+        [
+          { transform: "translate(-150%, -135%) scale(0.55) rotate(-10deg)", opacity: 0 },
+          { transform: "translate(-25%, -20%) scale(1) rotate(-2deg)", opacity: 1, offset: 0.45 },
+          { transform: "translate(15%, 18%) scale(1.08) rotate(3deg)", opacity: 1, offset: 0.72 },
+          { transform: "translate(85%, 80%) scale(0.62) rotate(9deg)", opacity: 0 },
+        ],
+        { duration: 1150, easing: "cubic-bezier(.4,0,.2,1)" }
+      );
+      // …and the card gives a little magnify pop as the lens passes over it
+      card.animate(
+        [{ transform: "scale(1)" }, { transform: "scale(1.045)", offset: 0.5 }, { transform: "scale(1)" }],
+        { duration: 1150, easing: "ease-in-out" }
+      );
+    }
+  }
+
+  overlay.addEventListener("click", (e) => { if (e.target.closest("[data-close]")) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && open) close(); });
+
+  return { show, close, get isOpen() { return open; } };
+}
+
 /* ---------- math helpers ---------- */
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -281,7 +362,9 @@ const DEAL = 0.4;            // fraction of a unit spent flying out + flipping
 const LEAVE = 0.42;          // fraction spent gliding to the tableau
 const ACTIVE_S = 1.1;        // active card scale
 const FAN_S = 0.46;          // parked card scale
-const MAX_POS = N - 1 + 0.72;
+const END_HOLD = 0.5;        // extra scroll past the last card so the full house can breathe
+// the last card fully fans out (1 + LEAVE), then we hold on the finished hand
+const MAX_POS = N - 1 + 1 + LEAVE + END_HOLD;
 const TOTAL_UNITS = MAX_POS + INTRO;
 
 // progress at which card i sits dead-centre (also the snap target)
@@ -303,6 +386,8 @@ function initDeck() {
   let st = null;
   let lenis = null;
   let activeIndex = 0;
+  let atEnd = false;
+  const preview = initPreview();
 
   // tap a card to bring it to centre (tap the active one to advance)
   function goToCard(i) {
@@ -325,9 +410,11 @@ function initDeck() {
     if (el.querySelector(".duel")) wireDuel(el);
     // links open normally; don't let their click bubble to the card-nav handler
     el.querySelectorAll("a").forEach((a) => a.addEventListener("click", (e) => e.stopPropagation()));
-    // tap the card body → jump to it (or advance if it's already centred)
+    // tap the card body → jump to it (or advance if it's already centred).
+    // once the whole hand is dealt (full house), a tap magnifies that one card instead.
     el.addEventListener("click", (e) => {
       if (e.target.closest("a, button, input")) return;
+      if (atEnd) { preview.show(PROJECTS[i], el.getBoundingClientRect()); return; }
       goToCard(i === activeIndex ? i + 1 : i);
     });
   });
@@ -420,12 +507,15 @@ function initDeck() {
     hudName.textContent = dealt ? PROJECTS[centered].title : "the deck";
     hudBar.style.width = `${(clamp(prog) * 100).toFixed(1)}%`;
 
-    // "full house" — fades in once the last card has been read and the hand fans out
+    // "full house" — grows in as the last card fans out, big on the finished hand
     if (deckEnd) {
-      const endT = easeInOut(clamp((pos - (MAX_POS - 0.3)) / 0.3));
+      const endT = easeInOut(clamp((pos - N) / (MAX_POS - N)));
       deckEnd.style.opacity = String(endT);
-      deckEnd.style.transform = `translate(-50%, ${lerp(18, 0, endT).toFixed(1)}px)`;
-      deckEnd.style.pointerEvents = endT > 0.6 ? "auto" : "none";
+      deckEnd.style.transform = `translate(-50%, ${lerp(26, 0, endT).toFixed(1)}px) scale(${lerp(0.9, 1, endT).toFixed(3)})`;
+      deckEnd.style.pointerEvents = endT > 0.5 ? "auto" : "none";
+      // once the hand is laid out, tapping a card opens it as a magnified preview
+      atEnd = endT > 0.5;
+      deckEnd.classList.toggle("is-on", atEnd);
     }
   }
 
@@ -451,6 +541,7 @@ function initDeck() {
         const pos = -INTRO + value * TOTAL_UNITS;
         const rawI = Math.round(pos - 0.85);
         if (rawI < 0) return 0;                 // rest on the intro / undealt deck near the top
+        if (rawI >= N) return 1;                // rest on the full-house finish
         return progForCard(rawI);
       },
       duration: { min: 0.15, max: 0.4 },
