@@ -277,13 +277,10 @@ function initPreview() {
     <button type="button" class="preview__close" data-close aria-label="Close preview">✕</button>
     <div class="preview__stage">
       <div class="preview__card" id="previewCard"></div>
-      <img class="preview__glass" id="previewGlass" src="assets/magnifier.png" alt="" aria-hidden="true" />
     </div>`;
   document.body.appendChild(overlay);
 
   const host = overlay.querySelector("#previewCard");
-  const glass = overlay.querySelector("#previewGlass");
-  glass.addEventListener("error", () => { glass.style.display = "none"; });
   let open = false;
 
   function close() {
@@ -320,24 +317,6 @@ function initPreview() {
           { transform: "translate(0px, 0px) scale(1)", opacity: 1 },
         ],
         { duration: 560, easing: "cubic-bezier(.2,.85,.25,1)" }
-      );
-    }
-
-    if (glass.style.display !== "none") {
-      // the glass sweeps diagonally across the card…
-      glass.animate(
-        [
-          { transform: "translate(-150%, -135%) scale(0.55) rotate(-10deg)", opacity: 0 },
-          { transform: "translate(-25%, -20%) scale(1) rotate(-2deg)", opacity: 1, offset: 0.45 },
-          { transform: "translate(15%, 18%) scale(1.08) rotate(3deg)", opacity: 1, offset: 0.72 },
-          { transform: "translate(85%, 80%) scale(0.62) rotate(9deg)", opacity: 0 },
-        ],
-        { duration: 1150, easing: "cubic-bezier(.4,0,.2,1)" }
-      );
-      // …and the card gives a little magnify pop as the lens passes over it
-      card.animate(
-        [{ transform: "scale(1)" }, { transform: "scale(1.045)", offset: 0.5 }, { transform: "scale(1)" }],
-        { duration: 1150, easing: "ease-in-out" }
       );
     }
   }

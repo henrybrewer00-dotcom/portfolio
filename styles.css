@@ -706,16 +706,6 @@ body.static-mode .fallback { display: block; }
   --cw: min(440px, 84vw);
   cursor: default;
 }
-.preview__glass {
-  position: absolute;
-  z-index: 2;
-  top: 12%;
-  left: 14%;
-  width: 72%;
-  pointer-events: none;
-  filter: drop-shadow(0 12px 26px rgba(0, 0, 0, 0.55));
-  will-change: transform, opacity;
-}
 .preview__close {
   position: fixed;
   top: clamp(14px, 3vw, 28px);
