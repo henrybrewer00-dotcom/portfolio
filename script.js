@@ -92,6 +92,7 @@ const PROJECTS = [
     tags: ["Available", "Curious", "Fast"],
     repo: "https://github.com/henrybrewer00-dotcom",
     contact: { email: "henrybrewer00@gmail.com", phone: "925 962 7535" },
+    book: "https://book.insforge.site",
     duel: true,
   },
 ];
@@ -123,6 +124,7 @@ function cardEl(p) {
       `?subject=${encodeURIComponent("You're hired")}` +
       `&body=${encodeURIComponent("Hi Henry,\n\nHere's what I'd love to build with you:\n\n")}`;
     links.push(`<a class="pc__btn pc__btn--solid" href="${esc(mail)}">You're hired ↗</a>`);
+    if (p.book) links.push(`<a class="pc__btn" href="${esc(p.book)}" target="_blank" rel="noreferrer">Book a call ↗</a>`);
     links.push(`<a class="pc__btn" href="${esc(p.repo)}" target="_blank" rel="noreferrer">GitHub ↗</a>`);
     links.push(`<a class="pc__btn" href="tel:${esc(p.contact.phone.replace(/\s+/g, ""))}">Call ↗</a>`);
   }
