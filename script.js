@@ -126,7 +126,6 @@ function cardEl(p) {
     links.push(`<a class="pc__btn pc__btn--solid" href="${esc(mail)}">You're hired ↗</a>`);
     if (p.book) links.push(`<a class="pc__btn" href="${esc(p.book)}" target="_blank" rel="noreferrer">Book a call ↗</a>`);
     links.push(`<a class="pc__btn" href="${esc(p.repo)}" target="_blank" rel="noreferrer">GitHub ↗</a>`);
-    links.push(`<a class="pc__btn" href="tel:${esc(p.contact.phone.replace(/\s+/g, ""))}">Call ↗</a>`);
   }
 
   const status = p.status
