@@ -8,6 +8,16 @@ const DUEL_TARGET = "henry builds robots software and one weird submarine";
 
 const PROJECTS = [
   {
+    rank: "A", suit: "♠", color: "black", suitName: "spades",
+    kicker: "founder · ai visibility",
+    title: "SiteLight",
+    tagline: "Are you visible to AI?",
+    desc: "The company I founded. SiteLight checks whether AI assistants actually recommend your local business when someone asks — \"best tacos near me,\" \"a POS for restaurants\" — and shows which competitors get named instead. Then it hands you a concrete, honest to-do list to become the answer: Google Business Profile, real reviews, an llms.txt file, FAQ + LocalBusiness schema, and a presence where AI reads, like Reddit and Quora.",
+    tags: ["Founder", "AI Visibility", "GEO", "React"],
+    live: "https://sitelight.xyz",
+    status: "founded & growing",
+  },
+  {
     rank: "A", suit: "♥", color: "red", suitName: "hearts",
     kicker: "voice ai",
     title: "Lily",
