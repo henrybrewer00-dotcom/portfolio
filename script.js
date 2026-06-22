@@ -12,7 +12,7 @@ const PROJECTS = [
     kicker: "founder · ai visibility",
     title: "SiteLight",
     tagline: "Are you visible to AI?",
-    desc: "The company I founded. SiteLight checks whether AI assistants actually recommend your local business when someone asks — \"best tacos near me,\" \"a POS for restaurants\" — and shows which competitors get named instead. Then it hands you a concrete, honest to-do list to become the answer: Google Business Profile, real reviews, an llms.txt file, FAQ + LocalBusiness schema, and a presence where AI reads, like Reddit and Quora. It's a one-time $2 fee — no subscription.",
+    desc: "The company I founded. SiteLight checks whether AI assistants actually recommend your local business when someone asks — \"best tacos near me,\" \"a POS for restaurants\" — and shows which competitors get named instead. Then it hands you a concrete, honest to-do list to become the answer: Google Business Profile, real reviews, an llms.txt file, FAQ + LocalBusiness schema, and a presence where AI reads, like Reddit and Quora. It's a **one-time $2 fee** — no subscription.",
     tags: ["Founder", "AI Visibility", "GEO", "$2 one-time"],
     live: "https://sitelight.xyz",
     status: "founded & growing",
@@ -115,6 +115,11 @@ function esc(s) {
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c]));
 }
 
+// escape first, then turn **bold** markers into <strong> (safe: content already escaped)
+function fmt(s) {
+  return esc(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+}
+
 function cardEl(p) {
   const el = document.createElement("article");
   el.className = "pc";
@@ -172,7 +177,7 @@ function cardEl(p) {
           ${status}
           <p class="pc__tagline">${esc(p.tagline)}</p>
           ${video}
-          <p class="pc__desc">${esc(p.desc)}</p>
+          <p class="pc__desc">${fmt(p.desc)}</p>
           <div class="pc__tags">${p.tags.map((t) => `<span>${esc(t)}</span>`).join("")}</div>
           ${duel}
           <div class="pc__links">${links.join("")}</div>
