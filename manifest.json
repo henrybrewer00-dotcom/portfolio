@@ -1,0 +1,23 @@
+{
+  "name": "Henry — dealt one card at a time",
+  "short_name": "Henry",
+  "description": "Henry's portfolio — dealt like a deck of cards as you scroll.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07090d",
+  "theme_color": "#07090d",
+  "icons": [
+    {
+      "src": "assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/share.jpg",
+      "sizes": "1200x630",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

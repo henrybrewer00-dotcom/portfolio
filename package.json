@@ -1,0 +1,20 @@
+{
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "A portfolio that deals itself like a deck of cards as you scroll. Each project is a real-looking playing card that flies out of the deck, flips face-up, and then settles into a fanned hand once you've read it.",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/henrybrewer00-dotcom/portfolio.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/henrybrewer00-dotcom/portfolio/issues"
+  },
+  "homepage": "https://github.com/henrybrewer00-dotcom/portfolio#readme"
+}

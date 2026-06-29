@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://henry93.vercel.app/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url><loc>https://henry93.vercel.app/#sitelight</loc><priority>0.8</priority></url>
+  <url><loc>https://henry93.vercel.app/#lily</loc><priority>0.8</priority></url>
+  <url><loc>https://henry93.vercel.app/#glasscast</loc><priority>0.8</priority></url>
+  <url><loc>https://henry93.vercel.app/#lilys-drive-thru</loc><priority>0.8</priority></url>
+  <url><loc>https://henry93.vercel.app/#eleven-mile</loc><priority>0.8</priority></url>
+  <url><loc>https://henry93.vercel.app/#pawbot</loc><priority>0.8</priority></url>
+  <url><loc>https://henry93.vercel.app/#siege</loc><priority>0.8</priority></url>
+  <url><loc>https://henry93.vercel.app/#rov-submarine</loc><priority>0.8</priority></url>
+  <url><loc>https://henry93.vercel.app/#open-source</loc><priority>0.8</priority></url>
+  <url><loc>https://henry93.vercel.app/#hire-henry</loc><priority>0.9</priority></url>
+</urlset>

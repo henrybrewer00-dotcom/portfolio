@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Book time with Henry</title>
+    <meta name="description" content="Deal yourself a time — pick a day-card, flip it, and book a 30-minute Google Meet with Henry." />
+    <meta name="theme-color" content="#05070a" />
+    <meta property="og:title" content="Book time with Henry" />
+    <meta property="og:description" content="Deal yourself a time. Pick a card, flip it, book a 30-minute Google Meet with Henry." />
+    <meta property="og:type" content="website" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #f4f1ea;
+        --dim: #9aa0ad;
+        --faint: #5b616e;
+
+        --felt-0: #05070a;
+        --felt-1: #0b0f15;
+        --felt-2: #11161f;
+
+        --gold: #d9b676;
+        --gold-deep: #9c7b3f;
+        --green: #6fbf8e;
+        --red: #c8302b;
+        --black: #15171c;
+
+        --font: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+        --serif: "Playfair Display", Georgia, "Times New Roman", serif;
+        --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+        --shadow: 0 26px 44px -12px rgba(0, 0, 0, 0.62);
+        --fcw: clamp(134px, 18vw, 178px); /* fan card width */
+        --crad: clamp(9px, 1.1vw, 13px);  /* real card corner radius */
+      }
+
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        min-height: 100svh;
+        font-family: var(--font);
+        color: var(--ink);
+        background:
+          linear-gradient(rgba(5, 7, 10, 0.82), rgba(5, 7, 10, 0.92)),
+          url("assets/table.jpg") center / cover fixed no-repeat,
+          radial-gradient(120% 80% at 50% 6%, var(--felt-2) 0%, var(--felt-1) 46%, var(--felt-0) 100%),
+          var(--felt-0);
+        overflow-x: hidden;
+      }
+      a { color: var(--gold); text-decoration: none; }
+      button { font: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+      ::selection { background: rgba(217, 182, 118, 0.3); }
+      body::after {
+        content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+        background:
+          radial-gradient(60% 45% at 50% 28%, rgba(217, 182, 118, 0.05), transparent 70%),
+          radial-gradient(130% 120% at 50% 50%, transparent 52%, rgba(0, 0, 0, 0.55) 100%);
+      }
+
+      .wrap {
+        position: relative; z-index: 1;
+        max-width: 1040px; margin: 0 auto;
+        padding: clamp(34px, 7vh, 76px) clamp(16px, 4vw, 40px) 56px;
+        text-align: center;
+      }
+
+      /* ---------------- header ---------------- */
+      .head__kicker {
+        font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.32em;
+        text-transform: uppercase; color: var(--gold); margin: 0 0 16px;
+      }
+      .head__title {
+        font-family: var(--serif); font-weight: 800;
+        font-size: clamp(2.2rem, 6.4vw, 3.7rem); line-height: 1.02;
+        letter-spacing: -0.015em; margin: 0;
+      }
+      .head__sub { color: var(--dim); margin: 18px auto 0; max-width: 46ch; font-size: clamp(0.96rem, 1.4vw, 1.1rem); line-height: 1.5; }
+      .meta {
+        display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 10px 18px;
+        margin: 22px 0 0; font-family: var(--mono); font-size: 0.72rem;
+        letter-spacing: 0.05em; color: var(--dim);
+      }
+      .meta span { display: inline-flex; align-items: center; gap: 7px; }
+      .meta svg { width: 15px; height: 15px; stroke: var(--gold); fill: none; }
+
+      /* deal button + prompt share one row so there's no layout jump */
+      .cta { min-height: 60px; display: flex; align-items: center; justify-content: center; margin-top: clamp(6px, 1.6vh, 18px); }
+      .dealbtn {
+        font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600;
+        color: #14100a; background: linear-gradient(180deg, #f0d49a, var(--gold) 45%, var(--gold-deep));
+        padding: 15px 32px; border-radius: 999px;
+        box-shadow: 0 14px 32px -10px rgba(217, 182, 118, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        transition: transform 0.16s ease, filter 0.16s ease, box-shadow 0.16s ease;
+        animation: pulseGlow 2.6s ease-in-out infinite;
+      }
+      .dealbtn:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 18px 38px -10px rgba(217, 182, 118, 0.7); }
+      @keyframes pulseGlow {
+        0%, 100% { box-shadow: 0 14px 32px -10px rgba(217, 182, 118, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.4); }
+        50% { box-shadow: 0 14px 40px -8px rgba(217, 182, 118, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.4); }
+      }
+      .prompt {
+        font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.22em;
+        text-transform: uppercase; color: var(--faint); margin: 0;
+        animation: fadeIn 0.5s ease;
+      }
+      .prompt b { color: var(--gold); font-weight: 500; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } }
+
+      /* ---------------- the fanned hand ---------------- */
+      .hand {
+        position: relative;
+        height: calc(var(--fcw) * 1.5 + clamp(40px, 7vh, 72px));
+        margin: clamp(14px, 3vh, 30px) auto 0;
+        perspective: 1700px;
+      }
+      .handcard {
+        position: absolute; top: clamp(16px, 3vh, 34px); left: 50%;
+        width: var(--fcw); height: calc(var(--fcw) * 1.5);
+        margin-left: calc(var(--fcw) / -2);
+        --ty: 0px;
+        transform: translateX(var(--tx)) translateY(var(--ty)) rotate(var(--rot));
+        transform-origin: 50% 132%;
+        transform-style: preserve-3d;
+        transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        will-change: transform;
+      }
+      .handcard:hover, .handcard:focus-visible {
+        transform: translateX(var(--tx)) translateY(calc(var(--ty) - 38px)) rotate(var(--rot)) scale(1.06);
+        z-index: 300 !important; outline: none;
+      }
+      .dealing .handcard { transition: none; } /* WAAPI drives the deal */
+
+      .card3d { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; }
+
+      .face {
+        position: absolute; inset: 0; border-radius: var(--crad);
+        backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden;
+      }
+      .face[data-color="red"] { --pip: var(--red); }
+      .face[data-color="black"] { --pip: var(--black); }
+
+      /* --- generated navy+gold card FRONT (Higsfield, matches the back) --- */
+      .front {
+        background: #0c1326 url("assets/card-front.webp") center / cover no-repeat;
+        color: var(--gold);
+        box-shadow: 0 18px 30px -12px rgba(0, 0, 0, 0.65);
+      }
+
+      .front__center {
+        position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; text-align: center; padding: 8px 10px;
+      }
+      .front__mono {
+        font-family: var(--serif); font-weight: 800; font-size: calc(var(--fcw) * 0.3);
+        line-height: 0.8;
+        background: linear-gradient(180deg, #f3dca8, #d6ad58 55%, #9c7b3f);
+        -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+      }
+      .front__dow { font-family: var(--serif); font-style: italic; font-size: clamp(0.78rem, 1.4vw, 1rem); color: #ecd6a3; margin-top: 7px; line-height: 1.02; }
+      .front__date { font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(217, 182, 118, 0.72); margin-top: 6px; }
+      .front__open {
+        margin-top: 9px; font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.06em;
+        color: #f3dca8; border: 1px solid rgba(217, 182, 118, 0.55);
+        border-radius: 999px; padding: 4px 10px; background: rgba(8, 12, 26, 0.72);
+      }
+
+      /* --- the real ornate navy+gold BACK (Henry's deck) --- */
+      .back {
+        transform: rotateY(180deg);
+        background: #0b1226 url("assets/card-back.webp") center / cover no-repeat;
+        box-shadow: 0 18px 30px -12px rgba(0, 0, 0, 0.65), inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+      }
+
+      .empty-state { color: var(--dim); font-family: var(--mono); font-size: 0.9rem; padding: 60px 0; }
+      .retry { border: 1px solid rgba(217, 182, 118, 0.4); border-radius: 999px; padding: 12px 22px; color: var(--gold); background: rgba(217, 182, 118, 0.06); cursor: pointer; transition: background 0.15s ease; }
+      .retry:hover { background: rgba(217, 182, 118, 0.14); }
+      .loading { color: var(--faint); font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.1em; padding: 70px 0; }
+      .spin { width: 26px; height: 26px; margin: 0 auto 14px; border: 2px solid rgba(217,182,118,0.25); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      /* ---------------- full-screen day view ---------------- */
+      .view { position: fixed; inset: 0; z-index: 90; display: none; place-items: center; padding: clamp(14px, 4vw, 44px); }
+      .view.is-open { display: grid; }
+      .view__bd { position: absolute; inset: 0; background: rgba(3, 5, 8, 0.9); backdrop-filter: blur(6px); opacity: 0; transition: opacity 0.3s ease; }
+      .view.is-open .view__bd { opacity: 1; }
+
+      .bigcard {
+        position: relative; z-index: 1; width: min(440px, 94vw); max-height: 92vh;
+        border-radius: clamp(14px, 1.8vw, 22px); display: flex; flex-direction: column; overflow: hidden;
+        background: linear-gradient(160deg, #101935, #0a1024 62%, #070b18), #0b1226;
+        color: var(--gold); border: 1px solid rgba(217, 182, 118, 0.45);
+        box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.85), inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+        will-change: transform, opacity;
+      }
+      /* gold double-frame echoing the cards */
+      .bigcard::before {
+        content: ""; position: absolute; inset: 10px; border-radius: 14px;
+        border: 1px solid rgba(217, 182, 118, 0.5); box-shadow: inset 0 0 0 3px rgba(217, 182, 118, 0.12);
+        pointer-events: none; z-index: 3;
+      }
+      .bigcard__head { position: relative; padding: 26px 28px 16px; flex: none; text-align: center; }
+      .bigcard__pip {
+        position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+        font-family: var(--serif); font-weight: 800; font-size: 6rem; line-height: 1;
+        color: var(--gold); opacity: 0.09; z-index: 0; pointer-events: none;
+      }
+      .bigcard__kicker { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.26em; text-transform: uppercase; color: var(--gold); position: relative; z-index: 2; }
+      .bigcard__title { font-family: var(--serif); font-weight: 800; font-size: clamp(1.7rem, 4vw, 2.25rem); margin: 9px 0 0; position: relative; z-index: 2; line-height: 1.02; color: #f6ead0; }
+      .bigcard__open { font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.06em; color: rgba(217, 182, 118, 0.72); margin-top: 9px; position: relative; z-index: 2; }
+      .bigIdx { position: absolute; z-index: 4; display: flex; flex-direction: column; align-items: center; line-height: 0.8; color: var(--gold); font-family: var(--serif); top: 16px; left: 18px; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6); }
+      .bigIdx b { font-size: 1.3rem; font-weight: 700; }
+      .bigIdx i { font-style: normal; font-size: 1rem; margin-top: 2px; }
+      .bigcard__close {
+        position: absolute; top: 14px; right: 14px; z-index: 5; width: 32px; height: 32px; border-radius: 50%;
+        border: 1px solid rgba(217, 182, 118, 0.4); background: rgba(217, 182, 118, 0.1); color: var(--gold);
+        font-size: 0.95rem; line-height: 1; display: grid; place-items: center;
+      }
+      .bigcard__close:hover { background: var(--red); border-color: var(--red); color: #fff; }
+      .times {
+        position: relative; z-index: 2; padding: 6px 26px 28px;
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 9px;
+        overflow-y: auto;
+      }
+      .time {
+        font-family: var(--mono); font-size: 0.82rem; padding: 11px 6px; border-radius: 999px; text-align: center;
+        border: 1px solid rgba(217, 182, 118, 0.5); color: #f3dca8; background: rgba(217, 182, 118, 0.05);
+        transition: transform 0.14s ease, background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+      }
+      .time:hover { transform: translateY(-1px); background: var(--gold); color: #14100a; border-color: var(--gold); }
+      .time.is-booked { opacity: 0.3; text-decoration: line-through; pointer-events: none; border-style: dashed; }
+      .times__none { grid-column: 1 / -1; text-align: center; font-family: var(--mono); font-size: 0.82rem; color: rgba(217, 182, 118, 0.7); padding: 26px 0; }
+
+      /* ---------------- booking modal ---------------- */
+      .modal { position: fixed; inset: 0; z-index: 120; display: none; place-items: center; padding: clamp(14px, 4vw, 40px); }
+      .modal.is-open { display: grid; }
+      .modal__bd { position: absolute; inset: 0; background: rgba(3, 5, 8, 0.84); backdrop-filter: blur(5px); }
+      .sheet {
+        position: relative; z-index: 1; width: min(440px, 100%);
+        background: linear-gradient(160deg, #11161f, #0b0f15 65%, #070b10);
+        border: 1px solid rgba(217, 182, 118, 0.32); border-radius: 20px; box-shadow: var(--shadow);
+        padding: clamp(24px, 3.4vw, 34px); max-height: 92vh; overflow-y: auto;
+        animation: rise 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      @keyframes rise { from { opacity: 0; transform: translateY(16px) scale(0.98); } }
+      .sheet__close {
+        position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.18); background: rgba(255, 255, 255, 0.05); color: var(--ink);
+        font-size: 1rem; display: grid; place-items: center;
+      }
+      .sheet__close:hover { background: var(--red); border-color: var(--red); }
+      .sheet__kicker { font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--gold); margin: 0 0 12px; }
+      .sheet__when {
+        background: rgba(217, 182, 118, 0.07); border: 1px solid rgba(217, 182, 118, 0.22);
+        border-radius: 12px; padding: 15px 17px; margin: 0 0 22px;
+      }
+      .sheet__date { font-family: var(--serif); font-weight: 700; font-size: 1.3rem; line-height: 1.1; }
+      .sheet__time { font-family: var(--serif); color: var(--gold); margin-top: 4px; font-size: 1.02rem; }
+      .field { margin: 0 0 16px; text-align: left; }
+      .field label { display: block; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); margin-bottom: 7px; }
+      .field input, .field textarea {
+        width: 100%; font-family: var(--font); font-size: 0.95rem; color: var(--ink);
+        background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(217, 182, 118, 0.25);
+        border-radius: 10px; padding: 12px 13px; outline: none; transition: border-color 0.15s ease;
+      }
+      .field input:focus, .field textarea:focus { border-color: var(--gold); }
+      .field textarea { resize: vertical; min-height: 76px; }
+      .err { color: #ef9a96; font-size: 0.82rem; margin: 0 0 14px; min-height: 1em; text-align: left; }
+      .submit {
+        width: 100%; margin-top: 4px; padding: 15px; border-radius: 999px;
+        background: linear-gradient(180deg, var(--gold), var(--gold-deep)); color: #14100a;
+        font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600;
+        transition: transform 0.14s ease, filter 0.14s ease;
+      }
+      .submit:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.06); }
+      .submit:disabled { opacity: 0.6; cursor: progress; }
+
+      .done { text-align: center; }
+      .done__check { width: 62px; height: 62px; margin: 2px auto 18px; border-radius: 50%; background: rgba(111, 191, 142, 0.12); border: 1px solid rgba(111, 191, 142, 0.5); display: grid; place-items: center; }
+      .done__check svg { width: 28px; height: 28px; stroke: var(--green); fill: none; }
+      .done h2 { font-family: var(--serif); font-weight: 800; font-size: 1.8rem; margin: 0 0 8px; }
+      .done p { color: var(--dim); margin: 0 0 22px; font-size: 0.92rem; line-height: 1.45; }
+      .done__join {
+        display: inline-block; background: var(--gold); color: #15100a; font-family: var(--mono);
+        font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600;
+        padding: 14px 28px; border-radius: 999px;
+      }
+      .done__join:hover { filter: brightness(1.06); }
+      .done__note { font-family: var(--mono); font-size: 0.68rem; color: var(--faint); margin: 16px 0 0; }
+
+      .foot { margin-top: clamp(36px, 6vh, 64px); font-family: var(--mono); font-size: 0.74rem; color: var(--faint); }
+      .foot a { color: var(--gold); }
+
+      .hand { transition: height 0.45s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+      /* phones: cards deal into a clean 3-column grid instead of a cramped fan */
+      @media (max-width: 560px) {
+        :root { --fcw: clamp(86px, 27vw, 108px); }
+        .head__title { font-size: clamp(1.95rem, 9vw, 2.7rem); }
+        .head__sub { font-size: 0.95rem; max-width: 34ch; }
+        .front__date { display: none; }           /* declutter tiny cards */
+        .front__mono { font-size: calc(var(--fcw) * 0.34); }
+        .front__dow { font-size: 0.72rem; margin-top: 6px; }
+        .front__open { margin-top: 8px; font-size: 0.5rem; }
+        .handcard:hover, .handcard:focus-visible {
+          transform: translateX(var(--tx)) translateY(calc(var(--ty) - 10px)) rotate(var(--rot)) scale(1.04);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .handcard, .view__bd, .hand { transition: none; }
+        .sheet { animation: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <p class="head__kicker">Henry · scheduling</p>
+      <h1 class="head__title">Deal yourself a time.</h1>
+      <p class="head__sub">Pick a day from the hand, flip it over, and take a slot. Thirty minutes with Henry.</p>
+      <div class="meta">
+        <span><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>30 minutes</span>
+        <span><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="m16 10 6-3v10l-6-3"/></svg>Google Meet</span>
+        <span><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Pacific Time</span>
+      </div>
+
+      <div class="hand" id="hand"><div class="loading"><div class="spin"></div>shuffling…</div></div>
+
+      <div class="cta">
+        <button class="dealbtn" id="dealBtn" hidden>♠ &nbsp;Deal the hand&nbsp; ♣</button>
+        <p class="prompt" id="prompt" hidden>tap a card to see <b>open times</b></p>
+      </div>
+
+      <p class="foot">More of Henry's work → <a href="https://henry93.vercel.app" target="_blank" rel="noreferrer">henry93.vercel.app</a></p>
+    </main>
+
+    <!-- full-screen day view -->
+    <div class="view" id="view" aria-hidden="true">
+      <div class="view__bd" data-close></div>
+      <div class="bigcard" id="bigcard" role="dialog" aria-modal="true">
+        <button class="bigcard__close" data-close aria-label="Close">✕</button>
+        <div class="bigcard__head">
+          <span class="bigIdx" id="bigIdx" aria-hidden="true"></span>
+          <div class="bigcard__pip" id="bigPip" aria-hidden="true"></div>
+          <div class="bigcard__kicker">pick a time · Pacific</div>
+          <h2 class="bigcard__title" id="bigTitle">—</h2>
+          <div class="bigcard__open" id="bigOpen"></div>
+        </div>
+        <div class="times" id="times"></div>
+      </div>
+    </div>
+
+    <!-- booking modal -->
+    <div class="modal" id="modal" aria-hidden="true">
+      <div class="modal__bd" data-close></div>
+      <div class="sheet" role="dialog" aria-modal="true">
+        <button class="sheet__close" data-close aria-label="Close">✕</button>
+        <div id="modalForm">
+          <p class="sheet__kicker">lock it in</p>
+          <div class="sheet__when">
+            <div class="sheet__date" id="mDate">—</div>
+            <div class="sheet__time" id="mTime">—</div>
+          </div>
+          <form id="form">
+            <p class="err" id="formErr"></p>
+            <div class="field"><label for="fName">Your name</label><input id="fName" name="name" autocomplete="name" required maxlength="120" /></div>
+            <div class="field"><label for="fEmail">Email</label><input id="fEmail" name="email" type="email" autocomplete="email" required maxlength="200" /></div>
+            <div class="field"><label for="fDetails">Anything I should know? (optional)</label><textarea id="fDetails" name="details" maxlength="1000" placeholder="What's this about?"></textarea></div>
+            <button class="submit" id="submitBtn" type="submit">Confirm booking</button>
+          </form>
+        </div>
+        <div id="modalDone" class="done" style="display:none">
+          <div class="done__check"><svg viewBox="0 0 24 24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg></div>
+          <h2>You're dealt in.</h2>
+          <p id="dWhen">—</p>
+          <a class="done__join" id="dJoin" href="#" target="_blank" rel="noreferrer">Join Google Meet →</a>
+          <p class="done__note" id="dNote">A confirmation is on its way to your inbox.</p>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      const BASE = "https://s4f5vebr.us-east.insforge.app";
+      const ANON = "anon_ea8687d7c6afdc80e2415cb5b52a7be6f069096b78ee5ea567d03ea0a678b5a7";
+
+      async function callFn(slug, { method = "POST", body } = {}) {
+        const res = await fetch(`${BASE}/functions/${slug}`, {
+          method,
+          headers: { Authorization: `Bearer ${ANON}`, "Content-Type": "application/json" },
+          body: body ? JSON.stringify(body) : undefined,
+        });
+        let json = {};
+        try { json = await res.json(); } catch (_) {}
+        return { ok: res.ok, status: res.status, data: json };
+      }
+
+      const $ = (id) => document.getElementById(id);
+      const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+      const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      let DAYS = [];
+      let firstDeal = true;
+
+      /* ---- build the fanned hand of day-cards ---- */
+      function renderHand() {
+        const hand = $("hand");
+        if (!DAYS.length) { hand.innerHTML = '<div class="empty-state">No open days right now.</div>'; $("prompt").style.display = "none"; return; }
+        hand.innerHTML = "";
+        DAYS.forEach((day, i) => {
+          const c = day.card;
+          const openCount = day.slots.filter((s) => s.status === "open").length;
+          const btn = document.createElement("button");
+          btn.className = "handcard";
+          btn.setAttribute("aria-label", `${day.dateLabel}, ${openCount} open times`);
+          btn.dataset.i = String(i);
+          btn.innerHTML = `
+            <div class="card3d">
+              <div class="face front" data-color="${c.color}">
+                <div class="front__center">
+                  <div class="front__mono">${esc(c.rank)}</div>
+                  <div class="front__dow">${esc(day.weekday)}</div>
+                  <div class="front__date">${esc(day.shortDate)}</div>
+                  <div class="front__open">${openCount} open</div>
+                </div>
+              </div>
+              <div class="face back" aria-hidden="true"></div>
+            </div>`;
+          btn.addEventListener("click", () => openDay(i, btn));
+          hand.appendChild(btn);
+        });
+        const deckState = firstDeal && !reduce;
+        hand.classList.toggle("predeal", deckState);
+        layoutHand();
+        if (firstDeal) {
+          if (reduce) { firstDeal = false; $("prompt").hidden = false; }
+          else { prepareDeck(); $("dealBtn").hidden = false; } // wait for the Deal click
+        } else {
+          $("prompt").hidden = false; $("dealBtn").hidden = true;
+        }
+      }
+
+      /* stack the cards into a face-down deck, centered, ready to deal */
+      function prepareDeck() {
+        const cards = [...document.querySelectorAll(".handcard")];
+        $("hand").classList.add("dealing");
+        cards.forEach((card, i) => {
+          const tilt = (((i * 37) % 7) - 3) * 0.5;
+          card.style.transform = `translateX(0px) translateY(8px) rotate(${tilt}deg) scale(0.97)`;
+          card.querySelector(".card3d").style.transform = "rotateY(180deg)";
+          card.style.zIndex = String(100 + i);
+          card.style.pointerEvents = "none";
+        });
+      }
+
+      const mobile = () => matchMedia("(max-width: 560px)").matches;
+
+      function layoutHand() {
+        const hand = $("hand");
+        const cards = [...document.querySelectorAll(".handcard")];
+        const n = cards.length;
+        if (!n) return;
+        const w = cards[0].offsetWidth || 140;
+        const cardH = w * 1.5;
+        const topOff = parseFloat(getComputedStyle(cards[0]).top) || 0;
+
+        if (mobile()) {
+          // 3-column grid; every card fully visible & tappable
+          const cols = 3, gapX = 11, gapY = 14;
+          const rows = Math.ceil(n / cols);
+          const gridW = cols * w + (cols - 1) * gapX;
+          const startX = -gridW / 2 + w / 2;
+          cards.forEach((c, i) => {
+            const col = i % cols, row = Math.floor(i / cols);
+            c.style.setProperty("--tx", `${(startX + col * (w + gapX)).toFixed(1)}px`);
+            c.style.setProperty("--ty", `${(row * (cardH + gapY)).toFixed(1)}px`);
+            c.style.setProperty("--rot", "0deg");
+            c.style.zIndex = "1";
+          });
+          const gridH = topOff + rows * cardH + (rows - 1) * gapY + 8;
+          hand.dataset.h = String(gridH);
+          hand.style.height = hand.classList.contains("predeal") ? `${topOff + cardH + 16}px` : `${gridH}px`;
+        } else {
+          // fanned hand
+          hand.style.height = "";
+          delete hand.dataset.h;
+          const mid = (n - 1) / 2;
+          const avail = hand.clientWidth;
+          let gap = Math.min(w * 0.66, (avail - w) / Math.max(n - 1, 1));
+          gap = Math.max(gap, w * 0.34);
+          const spread = n <= 4 ? 8 : n <= 6 ? 6.5 : 5.2;
+          cards.forEach((c, i) => {
+            const off = i - mid;
+            c.style.setProperty("--tx", `${(off * gap).toFixed(1)}px`);
+            c.style.setProperty("--rot", `${(off * spread).toFixed(2)}deg`);
+            c.style.setProperty("--ty", `${(Math.abs(off) * Math.abs(off) * 2.4).toFixed(1)}px`);
+            c.style.zIndex = String(100 + i);
+          });
+        }
+      }
+      window.addEventListener("resize", layoutHand);
+
+      /* ---- deal/spread the hand out of a stacked deck, flipping face-up ---- */
+      function dealCards() {
+        const hand = $("hand");
+        const cards = [...document.querySelectorAll(".handcard")];
+        const n = cards.length;
+        hand.classList.add("dealing");
+        hand.classList.remove("predeal");
+        if (hand.dataset.h) hand.style.height = `${hand.dataset.h}px`; // expand grid (mobile)
+
+        cards.forEach((card, i) => {
+          const tx = card.style.getPropertyValue("--tx");
+          const ty = card.style.getPropertyValue("--ty");
+          const rot = card.style.getPropertyValue("--rot");
+          const fanT = `translateX(${tx}) translateY(${ty}) rotate(${rot})`;
+          const tilt = (((i * 37) % 7) - 3) * 0.5;
+          const deckT = `translateX(0px) translateY(8px) rotate(${tilt}deg) scale(0.97)`;
+
+          const c3d = card.querySelector(".card3d");
+          card.style.transform = deckT;
+          c3d.style.transform = "rotateY(180deg)";
+
+          const delay = 60 + i * 100;
+          card.animate(
+            [{ transform: deckT }, { transform: fanT }],
+            { duration: 640, delay, easing: "cubic-bezier(.18,.86,.26,1)", fill: "both" },
+          );
+          const flip = c3d.animate(
+            [
+              { transform: "rotateY(180deg)", offset: 0 },
+              { transform: "rotateY(180deg)", offset: 0.34 },
+              { transform: "rotateY(0deg)", offset: 1 },
+            ],
+            { duration: 640, delay, easing: "cubic-bezier(.4,0,.2,1)", fill: "both" },
+          );
+          flip.onfinish = () => {
+            card.style.transform = "";        // hand back to CSS (identical) → hover works
+            c3d.style.transform = "";
+            card.style.pointerEvents = "";
+            if (i === n - 1) { hand.classList.remove("dealing"); $("prompt").hidden = false; }
+          };
+        });
+      }
+
+      /* ---- open a day full-screen (FLIP from the tapped card) ---- */
+      let curDay = null;
+      function openDay(i, originEl) {
+        const day = DAYS[i];
+        curDay = day;
+        const c = day.card;
+        const open = day.slots.filter((s) => s.status !== "past");
+        const openCount = open.filter((s) => s.status === "open").length;
+
+        const big = $("bigcard");
+        big.dataset.color = c.color;
+        $("bigIdx").innerHTML = `<b>${esc(c.rank)}</b><i>${c.suit}</i>`;
+        $("bigPip").textContent = c.suit;
+        $("bigTitle").textContent = day.dateLabel;
+        $("bigOpen").textContent = openCount ? `${openCount} open · 30-min slots` : "no times left";
+
+        const times = $("times");
+        times.innerHTML = "";
+        if (!open.length) {
+          times.innerHTML = '<div class="times__none">No times left this day.</div>';
+        } else {
+          open.forEach((s) => {
+            const b = document.createElement("button");
+            b.className = "time" + (s.status === "booked" ? " is-booked" : "");
+            b.textContent = s.time;
+            if (s.status === "booked") { b.disabled = true; b.title = "Taken"; }
+            else b.addEventListener("click", () => openBooking(day, s));
+            times.appendChild(b);
+          });
+        }
+
+        $("view").classList.add("is-open");
+        $("view").setAttribute("aria-hidden", "false");
+
+        if (!reduce && originEl) {
+          const from = originEl.getBoundingClientRect();
+          const to = big.getBoundingClientRect();
+          const dx = (from.left + from.width / 2) - (to.left + to.width / 2);
+          const dy = (from.top + from.height / 2) - (to.top + to.height / 2);
+          const sx = from.width / to.width;
+          big.animate(
+            [
+              { transform: `translate(${dx}px, ${dy}px) scale(${sx.toFixed(3)})`, opacity: 0.4 },
+              { transform: "translate(0,0) scale(1)", opacity: 1 },
+            ],
+            { duration: 460, easing: "cubic-bezier(.2,.85,.25,1)" },
+          );
+        }
+      }
+      function closeView() {
+        $("view").classList.remove("is-open");
+        $("view").setAttribute("aria-hidden", "true");
+      }
+
+      /* ---- booking modal ---- */
+      let selSlot = null;
+      function openBooking(day, slot) {
+        selSlot = slot;
+        $("mDate").textContent = day.dateLabel;
+        $("mTime").textContent = `${slot.time} – ${slot.endTime} PT`;
+        $("formErr").textContent = "";
+        $("modalForm").style.display = "";
+        $("modalDone").style.display = "none";
+        $("form").reset();
+        $("modal").classList.add("is-open");
+        $("modal").setAttribute("aria-hidden", "false");
+        setTimeout(() => $("fName").focus(), 60);
+      }
+      function closeModal() {
+        $("modal").classList.remove("is-open");
+        $("modal").setAttribute("aria-hidden", "true");
+      }
+
+      $("dealBtn").addEventListener("click", () => {
+        $("dealBtn").hidden = true;
+        firstDeal = false;
+        dealCards();
+      });
+
+      document.querySelectorAll("#view [data-close]").forEach((el) => (el.onclick = closeView));
+      document.querySelectorAll("#modal [data-close]").forEach((el) => (el.onclick = closeModal));
+      document.addEventListener("keydown", (e) => {
+        if (e.key !== "Escape") return;
+        if ($("modal").classList.contains("is-open")) closeModal();
+        else if ($("view").classList.contains("is-open")) closeView();
+      });
+
+      $("form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = $("submitBtn"), err = $("formErr");
+        err.textContent = "";
+        const name = $("fName").value.trim();
+        const email = $("fEmail").value.trim();
+        const details = $("fDetails").value.trim();
+        if (!name || !email) { err.textContent = "Name and email are required."; return; }
+
+        btn.disabled = true; btn.textContent = "Booking…";
+        try {
+          const { ok, data } = await callFn("book", { body: { name, email, details, slotStart: selSlot.start } });
+          if (!ok || !data.success) {
+            const msg = data.error || "Something went wrong — please try again.";
+            err.textContent = msg;
+            btn.disabled = false; btn.textContent = "Confirm booking";
+            if (msg.toLowerCase().includes("booked")) await loadAvailability(true);
+            return;
+          }
+          $("dWhen").textContent = `${data.slot.dateLabel} · ${data.slot.timeRange}`;
+          $("dJoin").href = data.meetLink;
+          $("dNote").textContent = data.emailed
+            ? "Confirmations are on their way to you and Henry — with the Meet link."
+            : "Booked! Save the Meet link above — the email confirmation didn't go through.";
+          $("modalForm").style.display = "none";
+          $("modalDone").style.display = "";
+          await loadAvailability(true);
+        } catch (ex) {
+          err.textContent = "Network hiccup — please try again.";
+          btn.disabled = false; btn.textContent = "Confirm booking";
+        }
+      });
+
+      async function loadAvailability(silent, attempt = 0) {
+        try {
+          const { ok, data } = await callFn("availability", { method: "GET" });
+          if (!ok || !data || !Array.isArray(data.days)) throw new Error("load failed");
+          DAYS = data.days;
+          renderHand();
+        } catch (ex) {
+          // serverless cold-starts can 500/timeout — retry a few times before giving up
+          if (attempt < 3) {
+            await new Promise((r) => setTimeout(r, 500 + attempt * 700));
+            return loadAvailability(silent, attempt + 1);
+          }
+          if (!silent) {
+            $("hand").innerHTML = '<button class="empty-state retry" id="retryBtn">Couldn\'t load times — tap to retry</button>';
+            $("prompt").hidden = true;
+            $("dealBtn").hidden = true;
+            const rb = $("retryBtn");
+            if (rb) rb.onclick = () => {
+              $("hand").innerHTML = '<div class="loading"><div class="spin"></div>shuffling…</div>';
+              firstDeal = true;
+              loadAvailability(false);
+            };
+          }
+        }
+      }
+
+      loadAvailability();
+    </script>
+  </body>
+</html>
