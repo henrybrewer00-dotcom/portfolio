@@ -1,5 +1,5 @@
 const { chromium } = require("playwright");
-const { spawn } = require("child_process");
+const { spawn, execFileSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
@@ -57,9 +57,19 @@ async function main() {
     await browser.close();
 
     const src = await video.path();
-    const dest = path.join(ARTIFACTS, "scroll-demo.webm");
-    fs.renameSync(src, dest);
-    console.log("Saved:", dest);
+    const webm = path.join(ARTIFACTS, "scroll-demo.webm");
+    const mp4 = path.join(ARTIFACTS, "scroll-demo.mp4");
+    fs.renameSync(src, webm);
+
+    // H.264 MP4 plays everywhere; WebM often fails in preview UIs
+    execFileSync("ffmpeg", [
+      "-y", "-i", webm,
+      "-c:v", "libx264", "-pix_fmt", "yuv420p",
+      "-movflags", "+faststart", "-crf", "23",
+      mp4,
+    ], { stdio: "inherit" });
+
+    console.log("Saved:", mp4);
   } finally {
     server.kill();
   }
