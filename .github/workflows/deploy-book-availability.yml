@@ -1,0 +1,41 @@
+name: Deploy book availability
+
+on:
+  push:
+    branches: [main, "cursor/**"]
+    paths:
+      - "book/**"
+      - ".github/workflows/deploy-book-availability.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ secrets.INSFORGE_EMAIL != '' && secrets.INSFORGE_PASSWORD != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Log in to InsForge
+        env:
+          INSFORGE_EMAIL: ${{ secrets.INSFORGE_EMAIL }}
+          INSFORGE_PASSWORD: ${{ secrets.INSFORGE_PASSWORD }}
+        run: npx @insforge/cli@latest login --email --json
+
+      - name: Link Henry book project
+        run: npx @insforge/cli@latest link --api-url https://s4f5vebr.us-east.insforge.app --yes
+
+      - name: Patch + deploy availability
+        run: |
+          npx @insforge/cli@latest functions code availability > /tmp/availability.ts
+          sed -i 's/2026-06-21/2026-07-10/g; s/2026-06-26/2026-07-31/g' /tmp/availability.ts
+          npx @insforge/cli@latest functions deploy availability --file /tmp/availability.ts --name "Availability" -y
+
+      - name: Patch + deploy book
+        run: |
+          npx @insforge/cli@latest functions code book > /tmp/book.ts
+          sed -i 's/2026-06-21/2026-07-10/g; s/2026-06-26/2026-07-31/g' /tmp/book.ts
+          npx @insforge/cli@latest functions deploy book --file /tmp/book.ts --name "Book" -y
