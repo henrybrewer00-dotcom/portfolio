@@ -37,7 +37,6 @@ const PROJECTS = [
     tagline: "Cinematic recordings, zero editing",
     desc: "Screen Studio costs money, so I made a free one. Glasscast records your screen and does the editing as you go: 3D zooms that move like a real camera, auto-zoom wherever you click, captions it writes for you, and a webcam bubble. You bring your own AI keys, so there's nothing to pay for.",
     tags: ["Electron", "TypeScript", "Whisper", "AGPLv3"],
-    live: "https://glasscast.insforge.site",
     repo: "https://github.com/henrybrewer00-dotcom/Glasscast",
   },
   {
