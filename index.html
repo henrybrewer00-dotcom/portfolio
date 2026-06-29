@@ -6,9 +6,12 @@
     <title>Henry — dealt one card at a time</title>
     <meta
       name="description"
-      content="I'm Henry, I'm 13, and I build a lot of stuff: an AI that calls my grandma, a voice drive-thru with a live kitchen screen, a free Screen Studio, a robot car, a submarine, and some open source. My portfolio deals itself like a deck of cards as you scroll."
+      content="I'm Henry, I'm 13, and I build a lot of stuff: SiteLight, an AI that calls my grandma, a voice drive-thru with a live kitchen screen, a free Screen Studio, a robot car, a submarine, and some open source. My portfolio deals itself like a deck of cards as you scroll."
     />
     <meta name="theme-color" content="#07090d" />
+    <link rel="canonical" href="https://henry93.vercel.app/" />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="manifest.json" />
 
     <meta property="og:title" content="Henry — dealt one card at a time" />
     <meta property="og:description" content="I'm Henry, I'm 13, and I make way too much stuff. My portfolio deals itself like a deck of cards as you scroll." />
@@ -20,19 +23,37 @@
     <meta name="twitter:description" content="I'm Henry, I'm 13, and I make way too much stuff. Scroll to deal the hand." />
     <meta name="twitter:image" content="https://henry93.vercel.app/assets/share.jpg" />
 
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Henry",
+      "url": "https://henry93.vercel.app/",
+      "email": "henrybrewer00@gmail.com",
+      "sameAs": ["https://github.com/henrybrewer00-dotcom"],
+      "description": "13-year-old builder of voice AI, robotics, open source software, and creative hardware projects.",
+      "knowsAbout": ["Voice AI", "Robotics", "Open Source", "Electron", "React", "Hardware"]
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;0,800;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;0,800;1,500&family=JetBrains+Mono:wght@400&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <!-- Always-visible booking CTA -->
+    <a class="skip-link" href="#fallback">Skip to card list</a>
     <a class="book-fab" href="https://book.insforge.site" target="_blank" rel="noreferrer">Book a call ↗</a>
 
-    <!-- Scroll-driven deck stage (enhanced experience) -->
+    <template id="intro-template">
+      <p class="intro__kicker"></p>
+      <h1 class="intro__title"></h1>
+      <p class="intro__sub"></p>
+    </template>
+
     <main id="stage" class="stage">
       <div class="stage__vignette" aria-hidden="true"></div>
 
@@ -40,32 +61,33 @@
         <p class="intro__kicker">Henry · 13</p>
         <h1 class="intro__title">I'm Henry, I'm 13,<br />and I make way too much stuff.</h1>
         <p class="intro__sub">Voice AI, a few robots, a submarine, and some open source. Scroll to deal the hand.</p>
-        <p class="intro__hint" aria-hidden="true">scroll to deal <span class="intro__arrow">↓</span></p>
+        <p class="intro__hint"><span class="sr-only">Scroll to deal the portfolio cards. </span>scroll to deal <span class="intro__arrow" aria-hidden="true">↓</span></p>
       </header>
 
-      <div id="deck" class="deck"></div>
+      <div id="deck" class="deck" role="list" aria-label="Project cards"></div>
 
-      <div class="hud" id="hud" aria-hidden="true">
+      <div class="hud" id="hud">
+        <p id="hudLive" class="sr-only" aria-live="polite" aria-atomic="true">Scroll to deal the portfolio cards</p>
         <span class="hud__count"><b id="hudNum">00</b> / <span id="hudTotal">10</span></span>
         <span class="hud__name" id="hudName">the deck</span>
-        <div class="hud__bar"><i id="hudBar"></i></div>
+        <div class="hud__bar" aria-hidden="true"><i id="hudBar"></i></div>
+        <nav class="pips" id="pips" aria-label="Card navigation"></nav>
       </div>
 
       <div class="deck-end" id="deckEnd" aria-hidden="true">
         <p class="deck-end__kicker">that's the whole hand</p>
         <h2 class="deck-end__title">Here's my full house.</h2>
-        <p class="deck-end__sub">Ten cards, all mine. The email button's on the Joker — deal yourself back up if you want another look.</p>
+        <p class="deck-end__sub"><span data-card-count>10</span> cards, all mine. The email button's on the Joker — deal yourself back up if you want another look.</p>
       </div>
     </main>
 
-    <!-- No-JS / reduced-motion / mobile fallback: the same cards, laid out as a readable hand -->
     <section id="fallback" class="fallback">
       <header class="fallback__hero">
         <p class="fallback__kicker">Henry · 13</p>
         <h1>I'm Henry, I'm 13, and I make way too much stuff.</h1>
         <p class="fallback__sub">Voice AI, a few robots, a submarine, and some open source. Here's the whole hand at once.</p>
       </header>
-      <div id="fallbackGrid" class="fallback__grid"></div>
+      <div id="fallbackGrid" class="fallback__grid" role="list" aria-label="All project cards"></div>
     </section>
 
     <footer class="site-foot">
@@ -73,9 +95,9 @@
       <p class="site-foot__dim">Built with a deck of cards and too much scroll. · <a class="site-foot__old" href="old/">the old terminal portfolio →</a></p>
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-    <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" integrity="sha384-Z3REaz79l2IaAZqJsSABtTbhjgOUYyV3p90XNnAPCSHg3EMTz1fouunq9WZRtj3d" crossorigin="anonymous" defer></script>
+    <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js" integrity="sha384-B2WBjDzEjJpYvhmi2UyEn7rektqkf5suS6sNoyyrf0EBAwBHdkiXxIlU0V5Ru2ed" crossorigin="anonymous" defer></script>
     <script src="script.js" defer></script>
   </body>
 </html>
