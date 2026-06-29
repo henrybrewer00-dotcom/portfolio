@@ -11,7 +11,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ secrets.INSFORGE_EMAIL != '' && secrets.INSFORGE_PASSWORD != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -23,19 +22,32 @@ jobs:
         env:
           INSFORGE_EMAIL: ${{ secrets.INSFORGE_EMAIL }}
           INSFORGE_PASSWORD: ${{ secrets.INSFORGE_PASSWORD }}
-        run: npx @insforge/cli@latest login --email --json
+        run: |
+          if [ -z "$INSFORGE_EMAIL" ] || [ -z "$INSFORGE_PASSWORD" ]; then
+            echo "Skipping deploy: add INSFORGE_EMAIL and INSFORGE_PASSWORD repo secrets."
+            exit 0
+          fi
+          npx @insforge/cli@latest login --email --json
 
       - name: Link Henry book project
-        run: npx @insforge/cli@latest link --api-url https://s4f5vebr.us-east.insforge.app --yes
-
-      - name: Patch + deploy availability
+        if: env.INSFORGE_EMAIL != ''
+        env:
+          INSFORGE_EMAIL: ${{ secrets.INSFORGE_EMAIL }}
+          INSFORGE_PASSWORD: ${{ secrets.INSFORGE_PASSWORD }}
         run: |
+          [ -z "$INSFORGE_EMAIL" ] && exit 0
+          npx @insforge/cli@latest link --api-url https://s4f5vebr.us-east.insforge.app --yes
+
+      - name: Patch + deploy availability and book
+        if: env.INSFORGE_EMAIL != ''
+        env:
+          INSFORGE_EMAIL: ${{ secrets.INSFORGE_EMAIL }}
+          INSFORGE_PASSWORD: ${{ secrets.INSFORGE_PASSWORD }}
+        run: |
+          [ -z "$INSFORGE_EMAIL" ] && exit 0
           npx @insforge/cli@latest functions code availability > /tmp/availability.ts
           sed -i 's/2026-06-21/2026-07-10/g; s/2026-06-26/2026-07-31/g' /tmp/availability.ts
-          npx @insforge/cli@latest functions deploy availability --file /tmp/availability.ts --name "Availability" -y
-
-      - name: Patch + deploy book
-        run: |
+          npx @insforge/cli@latest functions deploy availability --file /tmp/availability.ts -y
           npx @insforge/cli@latest functions code book > /tmp/book.ts
           sed -i 's/2026-06-21/2026-07-10/g; s/2026-06-26/2026-07-31/g' /tmp/book.ts
-          npx @insforge/cli@latest functions deploy book --file /tmp/book.ts --name "Book" -y
+          npx @insforge/cli@latest functions deploy book --file /tmp/book.ts -y
