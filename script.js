@@ -1,610 +1,643 @@
 /* =========================================================================
-   Henry's deck — a portfolio dealt one card at a time.
-   Scroll-driven (GSAP ScrollTrigger + Lenis), or tap a card to jump to it.
-   Static fallback hand for no-JS / reduced-motion / small screens.
+   HENRY+BREWER. — preloader, HUD, orb, hero, scroll choreography.
+   Vanilla JS on top of GSAP + ScrollTrigger, SplitType and Lenis.
    ========================================================================= */
 
-const DUEL_TARGET = "henry builds robots software and one weird submarine";
+/* ---------- content ---------- */
+const MAIL = "mailto:henrybrewer00@gmail.com?subject=" + encodeURIComponent("You're hired") +
+  "&body=" + encodeURIComponent("Hi Henry,\n\nHere's what I'd love to build with you:\n\n");
 
 const PROJECTS = [
-  {
-    rank: "A", suit: "♠", color: "black", suitName: "spades",
-    kicker: "founder · ai visibility",
-    title: "SiteLight",
-    tagline: "Are you visible to AI?",
-    desc: "The company I founded. SiteLight checks whether AI assistants actually recommend your local business when someone asks — \"best tacos near me,\" \"a POS for restaurants\" — and shows which competitors get named instead. Then it hands you a concrete, honest to-do list to become the answer: Google Business Profile, real reviews, an llms.txt file, FAQ + LocalBusiness schema, and a presence where AI reads, like Reddit and Quora. It's a **one-time $2 fee** — no subscription.",
-    tags: ["Founder", "AI Visibility", "GEO", "$2 one-time"],
-    live: "https://sitelight.xyz",
-    status: "founded & growing",
-  },
-  {
-    rank: "A", suit: "♥", color: "red", suitName: "hearts",
-    kicker: "voice ai",
-    title: "Lily",
-    tagline: "It calls my grandma every morning",
-    desc: "My grandma in Arkansas has Alzheimer's, so I built something that phones her every morning and actually has a conversation with her. Afterward it texts the family how she sounded, and we can text back to tell it what to bring up next time. The one rule I gave it: never promise something it can't actually do.",
-    tags: ["React", "InsForge", "ElevenLabs", "Twilio"],
-    live: "https://lily.insforge.site",
-    repo: "https://github.com/henrybrewer00-dotcom/lily",
-    video: "assets/lily-demo.mp4",
-    poster: "assets/lily-demo-poster.jpg",
-    award: "Built at the a16z × Cursor hackathon — won 1st place. This is my on-stage demo, in front of 150 people.",
-  },
-  {
-    rank: "K", suit: "♠", color: "black", suitName: "spades",
-    kicker: "open source",
-    title: "Glasscast",
-    tagline: "Cinematic recordings, zero editing",
-    desc: "Screen Studio costs money, so I made a free one. Glasscast records your screen and does the editing as you go: 3D zooms that move like a real camera, auto-zoom wherever you click, captions it writes for you, and a webcam bubble. You bring your own AI keys, so there's nothing to pay for.",
-    tags: ["Electron", "TypeScript", "Whisper", "AGPLv3"],
-    repo: "https://github.com/henrybrewer00-dotcom/Glasscast",
-  },
-  {
-    rank: "Q", suit: "♦", color: "red", suitName: "diamonds",
-    kicker: "voice ai",
-    title: "Lily's Drive-Thru",
-    tagline: "Order out loud, watch the kitchen react",
-    desc: "You order out loud like you're at a real drive-thru. The AI window attendant takes it, asks about sizes, tries to upsell you once, takes promo codes, and reads the total back with tax. When you're done it sends a live ticket to a kitchen screen so the cooks can keep up.",
-    tags: ["ElevenLabs", "Express", "SSE"],
-    repo: "https://github.com/henrybrewer00-dotcom/voice-drive-thru",
-  },
-  {
-    rank: "J", suit: "♣", color: "black", suitName: "clubs",
-    kicker: "ai + audio",
-    title: "Eleven Mile",
-    tagline: "Two AIs, one mic",
-    desc: "Pick two people and a topic and watch them rap-battle. Claude writes the bars and ElevenLabs actually raps them out loud. It's a little dumb and I love it.",
-    tags: ["Claude", "ElevenLabs"],
-    repo: "https://github.com/henrybrewer00-dotcom/eleven-mile",
-  },
-  {
-    rank: "10", suit: "♥", color: "red", suitName: "hearts",
-    kicker: "accessibility",
-    title: "PawBot",
-    tagline: "For people who didn't grow up with computers",
-    desc: "A hackathon project that helps older people use a computer without feeling dumb about it. It walks them through things one step at a time, kind of like how you'd help your grandparent figure out their email.",
-    tags: ["Accessibility", "Assistive"],
-    repo: "https://github.com/henrybrewer00-dotcom/PawBot",
-  },
-  {
-    rank: "9", suit: "♠", color: "black", suitName: "spades",
-    kicker: "robotics",
-    title: "S.I.E.G.E.",
-    tagline: "A self-driving car that chases my dogs",
-    desc: "I wanted something to chase my dogs around while I was busy with other stuff, so I built a little self-driving car. Sensors, steering logic, a lot of calibration, and wiring that looks way worse than it actually works.",
-    tags: ["Arduino", "Sensors", "C++"],
-  },
-  {
-    rank: "8", suit: "♦", color: "red", suitName: "diamonds",
-    kicker: "hardware",
-    title: "ROV Submarine",
-    tagline: "Trying to build something that survives real water",
-    desc: "A little remote-controlled submarine I'm building right now. Most of the work is the unglamorous part: keeping it watertight, getting the buoyancy right, and making sure the battery won't do anything scary underwater.",
-    tags: ["CAD", "Marine", "Physics"],
-    status: "currently building",
-  },
-  {
-    rank: "7", suit: "♣", color: "black", suitName: "clubs",
-    kicker: "open source",
-    title: "Open Source",
-    tagline: "Fixing the tools I use",
-    desc: "Real, merged pull requests to projects I use all the time: OpenClaw, Ollama, Astro, Appwrite, and Grafana. Mostly small fixes, but they're shipped and people actually run them.",
-    tags: ["OpenClaw", "Ollama", "Astro", "Appwrite", "Grafana"],
-    repo: "https://github.com/henrybrewer00-dotcom?tab=repositories",
-  },
-  {
-    rank: "JOKER", suit: "★", color: "gold", suitName: "joker",
-    kicker: "the wild card",
-    title: "Hire Henry",
-    tagline: "14. straight A's. 99.5 in math. 125 wpm.",
-    desc: "I'm Henry. I'm 14, I build software and robots, and I type fast. If you want to work together the email button is right there. You just have to out-type me first.",
-    tags: ["Available", "Curious", "Fast"],
-    repo: "https://github.com/henrybrewer00-dotcom",
-    contact: { email: "henrybrewer00@gmail.com", phone: "925 962 7535" },
-    book: "https://book.insforge.site",
-    duel: true,
-  },
+  { title: "SiteLight", tags: ["● Founder", "△ AI visibility", "⁂ $2 one-time"], img: "assets/work/sitelight.webp", href: "https://sitelight.xyz", status: "founded & growing" },
+  { title: "Lily", tags: ["● Voice AI", "△ ElevenLabs + Twilio", "⁂ InsForge"], img: "assets/work/lily.webp", href: "https://lily.insforge.site", light: true },
+  { title: "Lily, on stage", tags: ["● a16z × Cursor hackathon", "△ 1st place", "⁂ 150 people"], img: "assets/work/lily-stage.webp", video: "assets/lily-demo.mp4", poster: "assets/lily-demo-poster.jpg" },
+  { title: "Glasscast", tags: ["● Open source", "△ Electron + TypeScript", "⁂ Whisper"], img: "assets/work/glasscast.webp", vid: "assets/work/glasscast-demo.mp4", href: "https://github.com/henrybrewer00-dotcom/Glasscast" },
+  { title: "Lily's Drive-Thru", tags: ["● Voice AI", "△ Express + SSE", "⁂ Live kitchen screen"], img: "assets/work/drivethru.webp", href: "https://github.com/henrybrewer00-dotcom/voice-drive-thru", light: true },
+  { title: "Eleven Mile", tags: ["● AI + audio", "△ Claude + ElevenLabs"], img: "assets/work/elevenmile.webp", href: "https://github.com/henrybrewer00-dotcom/eleven-mile" },
+  { title: "PawBot", tags: ["● Accessibility", "△ Hackathon", "⁂ Assistive"], img: "assets/work/pawbot.webp", href: "https://github.com/henrybrewer00-dotcom/PawBot", light: true },
+  { title: "S.I.E.G.E.", tags: ["● Robotics", "△ Arduino + C++", "⁂ Sensors"], img: "assets/work/siege.webp", href: "https://github.com/henrybrewer00-dotcom" },
+  { title: "ROV Submarine", tags: ["● Hardware", "△ CAD + marine", "⁂ Physics"], img: "assets/work/submarine.webp", href: "https://github.com/henrybrewer00-dotcom", status: "currently building" },
+  { title: "Open Source", tags: ["● Merged PRs", "△ OpenClaw · Ollama · Astro", "⁂ Appwrite · Grafana"], img: "assets/work/opensource.webp", href: "https://github.com/henrybrewer00-dotcom?tab=repositories", light: true },
 ];
 
-const N = PROJECTS.length;
+const TOOLS = ["react", "typescript", "electron", "arduino", "twilio", "elevenlabs", "ollama", "astro", "appwrite", "grafana", "claude", "github"];
 
-/* ---------- build a single card element (back + face) ---------- */
-function esc(s) {
-  return String(s).replace(/[&<>"']/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c]));
-}
+const AWARDS = [
+  { title: "a16z × Cursor Hackathon", caps: true, items: [["1st place", "01"], ["On-stage demo", "150"]] },
+  { title: "School", caps: true, items: [["Straight A's", "A+"], ["Math", "99.5"]] },
+  { title: "Open Source", caps: false, items: [["OpenClaw", "PR"], ["Ollama", "PR"], ["Astro", "PR"], ["Appwrite", "PR"], ["Grafana", "PR"]] },
+  { title: "Typing", caps: true, items: [["Words per minute", "125"]] },
+];
 
-// escape first, then turn **bold** markers into <strong> (safe: content already escaped)
-function fmt(s) {
-  return esc(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-}
-
-function cardEl(p) {
-  const el = document.createElement("article");
-  el.className = "pc";
-  el.dataset.color = p.color;
-  el.dataset.suit = p.suitName;
-
-  const index = `<b>${esc(p.rank)}</b><i>${esc(p.suit)}</i>`;
-
-  const links = [];
-  if (p.live) links.push(`<a class="pc__btn pc__btn--solid" href="${esc(p.live)}" target="_blank" rel="noreferrer">Live ↗</a>`);
-  if (p.repo) links.push(`<a class="pc__btn" href="${esc(p.repo)}" target="_blank" rel="noreferrer">Code ↗</a>`);
-  if (p.contact) {
-    // the joker: a pre-filled "you're hired" email + github + call, instead of live/code
-    links.length = 0;
-    const mail =
-      `mailto:${p.contact.email}` +
-      `?subject=${encodeURIComponent("You're hired")}` +
-      `&body=${encodeURIComponent("Hi Henry,\n\nHere's what I'd love to build with you:\n\n")}`;
-    links.push(`<a class="pc__btn pc__btn--solid" href="${esc(mail)}">You're hired ↗</a>`);
-    if (p.book) links.push(`<a class="pc__btn" href="${esc(p.book)}" target="_blank" rel="noreferrer">Book a call ↗</a>`);
-    links.push(`<a class="pc__btn" href="${esc(p.repo)}" target="_blank" rel="noreferrer">GitHub ↗</a>`);
+/* the 3d grid: image tiles with a few text tiles sprinkled in (mirrors the reference density) */
+const TILE_IMGS = [
+  "assets/work/sitelight.webp", "assets/work/lily.webp", "assets/work/glasscast.webp", "assets/work/drivethru.webp",
+  "assets/work/elevenmile.webp", "assets/work/pawbot.webp", "assets/work/siege.webp", "assets/work/submarine.webp",
+  "assets/work/opensource.webp", "assets/work/hire.webp", "assets/work/pawbot-2.webp", "assets/work/pawbot-3.webp",
+  "assets/work/glasscast-mac.webp", "assets/work/lily-stage.webp",
+];
+const TILE_TEXT = ["Voice AI", "Robotics", "Open Source", "Hardware", "Web Apps", "Founder", "Hackathons", "Design"];
+const TILE_LAYOUT = (() => {
+  // 8 columns × 7 rows; text tiles at fixed slots, videos at two slots, images cycle through
+  const out = [];
+  const textAt = { 1: 0, 9: 1, 18: 2, 24: 3, 29: 4, 37: 5, 44: 6, 52: 7 };
+  const vidAt = { 12: "assets/work/glasscast-demo.mp4", 33: "assets/lily-demo.mp4", 47: "assets/work/glasscast-demo.mp4" };
+  let img = 0;
+  for (let i = 0; i < 56; i++) {
+    if (textAt[i] !== undefined) out.push({ text: TILE_TEXT[textAt[i]] });
+    else if (vidAt[i]) out.push({ img: TILE_IMGS[img++ % TILE_IMGS.length], vid: vidAt[i] });
+    else out.push({ img: TILE_IMGS[img++ % TILE_IMGS.length] });
   }
+  return out;
+})();
 
-  const status = p.status
-    ? `<p class="pc__status"><i aria-hidden="true"></i>${esc(p.status)}</p>`
-    : "";
+/* ---------- helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c]));
+const MARK_SVG = (cls) => `<svg class="hsc-cross ${cls}" viewBox="0 0 162 162" aria-hidden="true"><rect x="4" y="3" width="30" height="156" rx="9"/><rect x="92" y="3" width="30" height="156" rx="9"/><rect x="30" y="66" width="66" height="30" rx="9"/><circle cx="146" cy="146" r="12.5"/></svg>`;
+const ARROW_SVG = (cls) => `<svg class="hsc-cross ${cls}" viewBox="0 0 162 162" aria-hidden="true"><path d="M69.4 148.3 125 90.7H4.8c-1 0-1.8-.8-1.8-2V73.8c0-1.2.8-2 1.8-2h120.5L69.4 13.7c-1.3-1.5-.5-2.5 1-2.5H90c1 0 1.8.3 2.5 1L158 80.6v1l-65.4 67.9c-.8.7-1.5 1.3-2.5 1.3H70.4c-1.5 0-2.2-1.2-1-2.5z"/></svg>`;
+const PLUS_SVG = `<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M5 0v10M0 5h10" stroke="currentColor" stroke-width="1"/></svg>`;
 
-  // optional demo video: a poster thumbnail that opens the lightbox, + an award caption
-  const video = p.video
-    ? `<button type="button" class="pc__video" data-video="${esc(p.video)}" data-poster="${esc(p.poster || "")}" data-title="${esc(p.title + " — on-stage demo")}" aria-label="Play the ${esc(p.title)} demo video">
-         <img class="pc__video-thumb" src="${esc(p.poster || "")}" alt="" loading="lazy" />
-         <span class="pc__video-play" aria-hidden="true"></span>
-       </button>
-       ${p.award ? `<p class="pc__award">${esc(p.award)}</p>` : ""}`
-    : "";
+window.isTabletOrBelow = window.innerWidth <= 991;
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const duel = p.duel
-    ? `<div class="duel">
-         <p class="duel__target">${esc(DUEL_TARGET)}</p>
-         <input class="duel__input" type="text" spellcheck="false" autocomplete="off" placeholder="type it to challenge me" aria-label="typing challenge" />
-         <p class="duel__result" aria-live="polite"></p>
-       </div>`
-    : "";
-
-  el.innerHTML = `
-    <div class="pc__inner">
-      <div class="pc__face pc__back" aria-hidden="true"></div>
-      <div class="pc__face pc__front">
-        <span class="pc__index pc__index--tl" aria-hidden="true">${index}</span>
-        <span class="pc__index pc__index--br" aria-hidden="true">${index}</span>
-        <div class="pc__watermark" aria-hidden="true">${esc(p.suit)}</div>
-        <div class="pc__content">
-          <p class="pc__kicker">${esc(p.kicker)}</p>
-          <h2 class="pc__title">${esc(p.title)}</h2>
-          ${status}
-          <p class="pc__tagline">${esc(p.tagline)}</p>
-          ${video}
-          <p class="pc__desc">${fmt(p.desc)}</p>
-          <div class="pc__tags">${p.tags.map((t) => `<span>${esc(t)}</span>`).join("")}</div>
-          ${duel}
-          <div class="pc__links">${links.join("")}</div>
-        </div>
+/* ---------- render dynamic content ---------- */
+function renderClients() {
+  const grid = $("#clientGrid");
+  if (!grid || !window.LOGOS) return;
+  grid.innerHTML = TOOLS.map((slug) => {
+    const l = window.LOGOS[slug];
+    if (!l) return "";
+    return `<div class="home-client__grid-item" data-client-item="${esc(l.label)}">
+      <div class="home-client__grid-img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${l.d}"/></svg><span>${esc(l.label)}</span></div>
+      <div class="home-client__corner-w">
+        <div class="home-client__corner-img is-1">${PLUS_SVG}</div><div class="home-client__corner-img is-2">${PLUS_SVG}</div>
+        <div class="home-client__corner-img is-3">${PLUS_SVG}</div><div class="home-client__corner-img is-4">${PLUS_SVG}</div>
+        <div class="home-client__border"></div>
       </div>
     </div>`;
-  return el;
+  }).join("");
+  // the social github icon in the menu shares the same path
+  const gh = $('path[data-logo="github"]');
+  if (gh && window.LOGOS.github) gh.setAttribute("d", window.LOGOS.github.d);
 }
 
-/* ---------- joker typing duel ---------- */
-function wireDuel(scope) {
-  const inp = scope.querySelector(".duel__input");
-  const res = scope.querySelector(".duel__result");
-  if (!inp || !res) return;
-  const target = DUEL_TARGET;
-  let start = null;
-  inp.addEventListener("keydown", (e) => {
-    e.stopPropagation();                       // typing here must never scroll the deck
-    if (start === null && e.key.length === 1) start = performance.now();
-  });
-  inp.addEventListener("input", () => {
-    const v = inp.value.trim().toLowerCase();
-    if (start === null && v.length > 0) start = performance.now();
-    if (v === target) {
-      const mins = (performance.now() - start) / 60000;
-      const words = target.split(/\s+/).length;
-      const wpm = Math.max(1, Math.round(words / mins));
-      res.textContent = wpm >= 125 ? `${wpm} WPM — fine, you can hire me.` : `${wpm} WPM. Henry does 125. run it back?`;
-    } else if (v.length === 0) {
-      res.textContent = "";
-    } else if (target.startsWith(v)) {
-      res.textContent = `${target.length - v.length} to go…`;
-    } else {
-      res.textContent = "typo — match it exactly";
-    }
-  });
+function renderWork() {
+  const grid = $("#workGrid");
+  if (!grid) return;
+  grid.innerHTML = PROJECTS.map((p) => {
+    const media = p.vid
+      ? `<video class="hcs-vid" home-vid muted loop playsinline preload="none" poster="${esc(p.img)}"><source src="${esc(p.vid)}" type="video/mp4" /></video>`
+      : `<img class="hcs-img-inner" src="${esc(p.img)}" alt="" decoding="async" />`;
+    const status = p.status ? `<p class="text-mini hcs-status"><i aria-hidden="true"></i>${esc(p.status)}</p>` : "";
+    const play = p.video ? `<span class="hcs-play" aria-hidden="true"></span>` : "";
+    const attrs = p.video
+      ? `href="#" data-video="${esc(p.video)}" data-poster="${esc(p.poster || "")}" data-title="${esc(p.title)} — a16z × Cursor hackathon, 1st place"`
+      : `href="${esc(p.href)}" target="_blank" rel="noreferrer"`;
+    return `<a class="hcs-item-w" ${attrs} aria-label="${esc(p.title)}">
+      <div class="hcs-content-w${p.light ? " mbm-diff" : ""}">
+        <div class="hcs-titles-w">
+          <div class="hcs-titles">
+            <div class="hcs-info-w">
+              <h3 class="text-small caps">${esc(p.title)}</h3>
+              ${status}
+              <div class="hcs-title-w">${p.tags.map((t) => `<p class="text-mini">${esc(t)}</p>`).join("")}</div>
+            </div>
+          </div>
+          <div class="hcs-cross-w">${MARK_SVG("is-mark")}${ARROW_SVG("is-arrow")}</div>
+        </div>
+      </div>
+      <div class="hcs-img-w is-component">${media}</div>
+      ${play}
+    </a>`;
+  }).join("");
+  const count = $("#workCount");
+  if (count) count.textContent = String(PROJECTS.length);
 }
 
-/* ---------- preload generated art (graceful if missing) ---------- */
-function loadArt() {
-  const back = new Image();
-  back.onload = () => {
-    document.documentElement.style.setProperty("--back-img", 'url("assets/card-back.webp")');
-    document.querySelectorAll(".pc__back").forEach((b) => b.classList.add("has-art"));
+function renderAwards() {
+  const host = $("#awards-list");
+  if (!host) return;
+  host.innerHTML = AWARDS.map((a, i) => `
+    <div class="haw-grid-row mbm-diff">
+      <div class="haw-grid-item mbm-diff">
+        <p class="text-mini">${String(i + 1).padStart(2, "0")}</p>
+        <p class="h-c${a.caps ? " caps" : ""}">${esc(a.title)}</p>
+        <div class="haw-item-sub-wrap">
+          ${a.items.map(([t, n]) => `<div class="rel is-h-flex"><p class="text-small caps">${esc(t)}</p><div class="text-mini float-count is-haw">${esc(n)}</div></div>`).join("")}
+        </div>
+      </div>
+    </div>`).join("");
+  const count = $("#awardCount");
+  if (count) count.textContent = String(AWARDS.reduce((n, a) => n + a.items.length, 0));
+}
+
+function renderTiles() {
+  const grid = $("#hgGrid");
+  if (!grid || window.isTabletOrBelow) return; // the 3d grid is desktop-only
+  grid.innerHTML = TILE_LAYOUT.map((t) => {
+    if (t.text) return `<div class="hg-grid-item is-text"><div class="text-small caps">${esc(t.text)}</div></div>`;
+    const vid = t.vid ? `<div class="hg-vid-w"><video home-vid muted loop playsinline preload="none" poster="${esc(t.img)}"><source src="${esc(t.vid)}" type="video/mp4" /></video></div>` : "";
+    return `<div class="hg-grid-item"><div class="hg-grid-inner" style="background-image:url('${esc(t.img)}')"><div class="hg-img-w"></div>${vid}</div></div>`;
+  }).join("");
+}
+
+/* ---------- text splitting ---------- */
+let heroSplit = null;
+function splitAll() {
+  new SplitType("[split-text]", { types: "lines, words, chars", tagName: "span" });
+  heroSplit = new SplitType("[split-hero]", { types: "words, chars", tagName: "span" });
+}
+
+/* ---------- smooth scroll ---------- */
+let lenis = null;
+function initScroll() {
+  gsap.registerPlugin(ScrollTrigger);
+  if (window.Lenis && !reduceMotion) {
+    lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+    lenis.on("scroll", ScrollTrigger.update);
+    gsap.ticker.add((t) => lenis.raf(t * 1000));
+    gsap.ticker.lagSmoothing(0);
+  }
+  window.SScroll = {
+    stop() { lenis ? lenis.stop() : (document.documentElement.style.overflow = "hidden"); },
+    start() { lenis ? lenis.start() : (document.documentElement.style.overflow = ""); },
+    to(target) { lenis ? lenis.scrollTo(target, { duration: 1.2 }) : target.scrollIntoView({ behavior: "smooth" }); },
   };
-  back.src = "assets/card-back.webp";
-
-  const table = new Image();
-  table.onload = () => {
-    const s = document.getElementById("stage");
-    if (!s) return;
-    s.style.backgroundImage =
-      'linear-gradient(rgba(5,7,10,0.74), rgba(5,7,10,0.82)), url("assets/table.jpg")';
-    s.style.backgroundSize = "cover";
-    s.style.backgroundPosition = "center";
-  };
-  table.src = "assets/table.jpg";
-}
-
-/* ---------- shared video lightbox ---------- */
-function initLightbox() {
-  const box = document.createElement("div");
-  box.className = "lightbox";
-  box.setAttribute("aria-hidden", "true");
-  box.innerHTML = `
-    <div class="lightbox__backdrop" data-close></div>
-    <div class="lightbox__panel" role="dialog" aria-modal="true" aria-label="Demo video">
-      <button type="button" class="lightbox__close" data-close aria-label="Close video">✕</button>
-      <p class="lightbox__title"></p>
-      <video class="lightbox__video" controls playsinline preload="none"></video>
-    </div>`;
-  document.body.appendChild(box);
-
-  const vid = box.querySelector(".lightbox__video");
-  const title = box.querySelector(".lightbox__title");
-
-  function close() {
-    box.classList.remove("is-open");
-    box.setAttribute("aria-hidden", "true");
-    vid.pause();
-    vid.removeAttribute("src");
-    vid.load();
-  }
-  function open(src, poster, label) {
-    title.textContent = label || "";
-    if (poster) vid.poster = poster;
-    vid.src = src;
-    box.classList.add("is-open");
-    box.setAttribute("aria-hidden", "false");
-    const play = vid.play();
-    if (play && play.catch) play.catch(() => {});
-  }
-
-  box.addEventListener("click", (e) => { if (e.target.closest("[data-close]")) close(); });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && box.classList.contains("is-open")) close(); });
-
-  // any card's video button opens the lightbox (works in deck + static modes)
-  document.addEventListener("click", (e) => {
-    const btn = e.target.closest(".pc__video");
-    if (!btn) return;
-    e.stopPropagation();
-    open(btn.dataset.video, btn.dataset.poster, btn.dataset.title);
-  });
-}
-
-/* ---------- magnified card preview (full-house tap) ---------- */
-function initPreview() {
-  const overlay = document.createElement("div");
-  overlay.className = "preview";
-  overlay.setAttribute("aria-hidden", "true");
-  overlay.innerHTML = `
-    <div class="preview__backdrop" data-close></div>
-    <button type="button" class="preview__close" data-close aria-label="Close preview">✕</button>
-    <div class="preview__stage">
-      <div class="preview__card" id="previewCard"></div>
-    </div>`;
-  document.body.appendChild(overlay);
-
-  const host = overlay.querySelector("#previewCard");
-  let open = false;
-
-  function close() {
-    if (!open) return;
-    open = false;
-    overlay.classList.remove("is-open");
-    overlay.setAttribute("aria-hidden", "true");
-    host.innerHTML = "";
-  }
-
-  function show(project, originRect) {
-    const card = cardEl(project);
-    card.classList.add("pc--preview");
-    host.innerHTML = "";
-    host.appendChild(card);
-    const inner = card.querySelector(".pc__inner");
-    if (inner) inner.style.transform = "rotateY(180deg)";       // show the face
-    card.querySelectorAll("a").forEach((a) => a.addEventListener("click", (e) => e.stopPropagation()));
-    if (card.querySelector(".duel")) wireDuel(card);
-
-    overlay.classList.add("is-open");
-    overlay.setAttribute("aria-hidden", "false");
-    open = true;
-
-    // FLIP: start the big card at the tapped card's place + size, then settle to centre
-    const fr = host.getBoundingClientRect();
-    if (originRect && fr.width) {
-      const dx = (originRect.left + originRect.width / 2) - (fr.left + fr.width / 2);
-      const dy = (originRect.top + originRect.height / 2) - (fr.top + fr.height / 2);
-      const sx = originRect.width / fr.width;
-      host.animate(
-        [
-          { transform: `translate(${dx}px, ${dy}px) scale(${sx.toFixed(3)})`, opacity: 0.55 },
-          { transform: "translate(0px, 0px) scale(1)", opacity: 1 },
-        ],
-        { duration: 560, easing: "cubic-bezier(.2,.85,.25,1)" }
-      );
-    }
-  }
-
-  overlay.addEventListener("click", (e) => { if (e.target.closest("[data-close]")) close(); });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && open) close(); });
-
-  return { show, close, get isOpen() { return open; } };
-}
-
-/* ---------- math helpers ---------- */
-const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
-const lerp = (a, b, t) => a + (b - a) * t;
-const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
-const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
-
-/* ========================================================================= */
-/*  DECK MODE — the scroll-dealt experience                                  */
-/* ========================================================================= */
-const INTRO = 0.55;          // units of "hold" before the first card deals
-const DEAL = 0.4;            // fraction of a unit spent flying out + flipping
-const LEAVE = 0.42;          // fraction spent gliding to the tableau
-const ACTIVE_S = 1.1;        // active card scale
-const FAN_S = 0.46;          // parked card scale
-const END_HOLD = 0.5;        // extra scroll past the last card so the full house can breathe
-// the last card fully fans out (1 + LEAVE), then we hold on the finished hand
-const MAX_POS = N - 1 + 1 + LEAVE + END_HOLD;
-const TOTAL_UNITS = MAX_POS + INTRO;
-
-// progress at which card i sits dead-centre (also the snap target)
-const progForCard = (i) => clamp((clamp(i, 0, N - 1) + 0.85 + INTRO) / TOTAL_UNITS, 0, 1);
-
-function initDeck() {
-  document.body.classList.add("deck-mode");
-
-  const stage = document.getElementById("stage");
-  const deck = document.getElementById("deck");
-  const intro = document.getElementById("intro");
-  const hud = document.getElementById("hud");
-  const hudNum = document.getElementById("hudNum");
-  const hudName = document.getElementById("hudName");
-  const hudBar = document.getElementById("hudBar");
-  const deckEnd = document.getElementById("deckEnd");
-  document.getElementById("hudTotal").textContent = String(N).padStart(2, "0");
-
-  let st = null;
-  let lenis = null;
-  let activeIndex = 0;
-  let atEnd = false;
-  const preview = initPreview();
-
-  // tap a card to bring it to centre (tap the active one to advance)
-  function goToCard(i) {
-    if (!st) return;
-    i = clamp(i, 0, N - 1);
-    const y = st.start + progForCard(i) * (st.end - st.start);
-    if (lenis && lenis.scrollTo) lenis.scrollTo(y, { duration: 0.8 });
-    else window.scrollTo({ top: y, behavior: "smooth" });
-  }
-
-  const cards = PROJECTS.map((p) => {
-    const el = cardEl(p);
-    deck.appendChild(el);
-    return el;
-  });
-  const inners = cards.map((c) => c.querySelector(".pc__inner"));
-  const focusables = cards.map((c) => Array.from(c.querySelectorAll("a, input")));
-
-  cards.forEach((el, i) => {
-    if (el.querySelector(".duel")) wireDuel(el);
-    // links open normally; don't let their click bubble to the card-nav handler
-    el.querySelectorAll("a").forEach((a) => a.addEventListener("click", (e) => e.stopPropagation()));
-    // tap the card body → jump to it (or advance if it's already centred).
-    // once the whole hand is dealt (full house), a tap magnifies that one card instead.
-    el.addEventListener("click", (e) => {
-      if (e.target.closest("a, button, input")) return;
-      if (atEnd) { preview.show(PROJECTS[i], el.getBoundingClientRect()); return; }
-      goToCard(i === activeIndex ? i + 1 : i);
+  // in-page anchors go through lenis
+  $$('a[href^="#"]').forEach((a) => {
+    a.addEventListener("click", (e) => {
+      const id = a.getAttribute("href");
+      if (id.length < 2) return;
+      const el = $(id);
+      if (!el) return;
+      e.preventDefault();
+      window.SScroll.to(el);
     });
   });
-
-  // jaunty resting angle per card (deterministic)
-  const jitter = PROJECTS.map((_, i) => ((i * 37) % 7) - 3);
-
-  // geometry, recomputed on refresh/resize
-  const G = {};
-  function measure() {
-    const W = stage.clientWidth;
-    const H = stage.clientHeight;
-    G.deckX = W * 0.24;
-    G.deckY = -H * 0.04;
-    G.deckRot = -4;
-    G.activeX = 0;
-    G.activeY = H * 0.05;
-    G.tableauY = H * 0.34;
-    G.arc = H * 0.06;
-    G.gapX = Math.min(W * 0.085, 64);
-    G.mid = (N - 1) / 2;
-  }
-  const fanX = (i) => (i - G.mid) * G.gapX;
-  const fanRot = (i) => (i - G.mid) * 4.2;
-  const fanY = (i) => G.tableauY + Math.abs(i - G.mid) * 4;
-
-  function render(prog) {
-    const pos = -INTRO + prog * TOTAL_UNITS;
-
-    for (let i = 0; i < N; i++) {
-      const d = pos - i;
-      let x, y, rot, s, flip, z;
-      const faceUp = d > DEAL; // dealt + flipped face-up → readable + keyboard-focusable
-
-      if (d <= 0) {                              // resting in the deck
-        const depth = -d;
-        x = G.deckX - depth * 0.6;
-        y = G.deckY - depth * 0.8;
-        rot = G.deckRot + jitter[i];
-        s = 1;
-        flip = 0;
-        z = Math.round(240 - depth);
-      } else if (d <= DEAL) {                    // dealing out + flipping
-        const t = d / DEAL;
-        const e = easeOutCubic(t);
-        x = lerp(G.deckX, G.activeX, e);
-        y = lerp(G.deckY, G.activeY, e) - G.arc * Math.sin(Math.PI * e);
-        rot = lerp(G.deckRot + jitter[i], 0, e);
-        s = lerp(1, ACTIVE_S, e);
-        flip = 180 * easeInOut(clamp(t * 1.05));
-        z = 340;
-      } else if (d <= 1) {                       // sitting centre, readable
-        x = G.activeX; y = G.activeY; rot = 0; s = ACTIVE_S; flip = 180; z = 340;
-      } else if (d <= 1 + LEAVE) {               // gliding to the tableau
-        const t = (d - 1) / LEAVE;
-        const e = easeInOut(t);
-        x = lerp(G.activeX, fanX(i), e);
-        y = lerp(G.activeY, fanY(i), e);
-        rot = lerp(0, fanRot(i), e);
-        s = lerp(ACTIVE_S, FAN_S, e);
-        flip = 180;
-        z = 300 - i;
-      } else {                                   // parked in the fanned hand
-        x = fanX(i); y = fanY(i); rot = fanRot(i); s = FAN_S; flip = 180;
-        z = 150 + i;
-      }
-
-      const el = cards[i];
-      el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${rot.toFixed(2)}deg) scale(${s.toFixed(3)})`;
-      el.style.zIndex = String(z);
-      el.style.pointerEvents = "auto"; // every card is tappable (scroll still drives the deal)
-      inners[i].style.transform = `rotateY(${flip.toFixed(1)}deg)`; // 0 = back, 180 = face
-      // keep face-down / dealing cards' links out of the keyboard tab order
-      focusables[i].forEach((f) => { f.tabIndex = faceUp ? 0 : -1; });
-    }
-
-    // intro fades out exactly as the first card begins to deal (pos -> 0)
-    const introT = clamp((pos + INTRO) / INTRO);
-    intro.style.opacity = String(1 - introT);
-    intro.style.transform = `translateY(${(-introT * 26).toFixed(1)}px)`;
-
-    // HUD names the card currently centred
-    const dealt = pos > 0;
-    const centered = clamp(Math.floor(pos - DEAL), 0, N - 1);
-    // a card only counts as "active" (tap = advance) once it's actually centred —
-    // otherwise the first tap on the resting deck would skip card 1 and deal card 2
-    activeIndex = pos > DEAL ? centered : -1;
-    hud.classList.toggle("is-on", dealt);
-    hudNum.textContent = dealt ? String(centered + 1).padStart(2, "0") : "00";
-    hudName.textContent = dealt ? PROJECTS[centered].title : "the deck";
-    hudBar.style.width = `${(clamp(prog) * 100).toFixed(1)}%`;
-
-    // "full house" — grows in as the last card fans out, big on the finished hand
-    if (deckEnd) {
-      const endT = easeInOut(clamp((pos - N) / (MAX_POS - N)));
-      deckEnd.style.opacity = String(endT);
-      deckEnd.style.transform = `translate(-50%, ${lerp(26, 0, endT).toFixed(1)}px) scale(${lerp(0.9, 1, endT).toFixed(3)})`;
-      deckEnd.style.pointerEvents = endT > 0.5 ? "auto" : "none";
-      // once the hand is laid out, tapping a card opens it as a magnified preview
-      atEnd = endT > 0.5;
-      deckEnd.classList.toggle("is-on", atEnd);
-    }
-  }
-
-  // smooth scroll
-  lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
-  lenis.on("scroll", ScrollTrigger.update);
-  gsap.ticker.add((t) => lenis.raf(t * 1000));
-  gsap.ticker.lagSmoothing(0);
-
-  measure();
-  render(0);
-
-  st = ScrollTrigger.create({
-    trigger: stage,
-    start: "top top",
-    end: () => "+=" + window.innerHeight * TOTAL_UNITS * 0.9,
-    pin: stage,
-    scrub: 0.6,
-    invalidateOnRefresh: true,
-    // settle each card dead-centre so casual / fast scrollers always land one readable
-    snap: {
-      snapTo: (value) => {
-        const pos = -INTRO + value * TOTAL_UNITS;
-        const rawI = Math.round(pos - 0.85);
-        if (rawI < 0) return 0;                 // rest on the intro / undealt deck near the top
-        if (rawI >= N) return 1;                // rest on the full-house finish
-        return progForCard(rawI);
-      },
-      duration: { min: 0.15, max: 0.4 },
-      delay: 0.06,
-      ease: "power1.inOut",
-    },
-    onRefresh: (self) => { measure(); render(self.progress); },
-    onUpdate: (self) => render(self.progress),
-  });
-
-  // expose for debugging
-  window.__deck = { render, measure, goToCard, get lenis() { return lenis; }, get st() { return st; } };
 }
 
-/* ========================================================================= */
-/*  STATIC MODE — the whole hand, laid out and readable                      */
-/* ========================================================================= */
-function initStatic() {
-  document.body.classList.add("static-mode");
-
-  const grid = document.getElementById("fallbackGrid");
-  const els = PROJECTS.map((p) => {
-    const el = cardEl(p);
-    grid.appendChild(el);
-    return el;
+/* ---------- scroll reveals ---------- */
+function initReveals() {
+  $$("[stagger-scroll]").forEach((el) => {
+    const words = el.querySelectorAll(".word");
+    if (!words.length) return;
+    const d = parseFloat(el.getAttribute("stagger-scroll")) || 2;
+    gsap.from(words, {
+      autoAlpha: 0, yPercent: -101, duration: d, ease: "power4.inOut",
+      stagger: { each: 0.05, from: "random" },
+      scrollTrigger: { trigger: el, start: "20% bottom", once: true, onRefresh: (s) => { if (!s.isActive) s.animation.pause(); } },
+    });
   });
-  els.forEach((el) => { if (el.querySelector(".duel")) wireDuel(el); });
-
-  if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((en) => {
-        if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); }
-      });
-    }, { threshold: 0.15 });
-    els.forEach((el) => io.observe(el));
-  } else {
-    els.forEach((el) => el.classList.add("in"));
-  }
+  $$("[btn-reveal]").forEach((el) => {
+    const t = el.querySelector("[reveal-target]");
+    if (!t) return;
+    gsap.from(t, { yPercent: 101, autoAlpha: 0, duration: 1, ease: "power1.out",
+      scrollTrigger: { trigger: el, start: "20% bottom", once: true, onRefresh: (s) => { if (!s.isActive) s.animation.pause(); } } });
+  });
+  $$("[link-reveal]").forEach((el) => {
+    const t = el.querySelector("[reveal-target]");
+    const track = el.querySelector(".link-track");
+    if (t) gsap.from(t, { yPercent: 101, duration: 2, ease: "power1.out",
+      scrollTrigger: { trigger: el, start: "20% bottom", once: true, onRefresh: (s) => { if (!s.isActive) s.animation.pause(); } } });
+    if (track) gsap.from(track, { scaleX: 0, duration: 1, ease: "power1.out",
+      scrollTrigger: { trigger: el, start: "20% bottom", once: true, onRefresh: (s) => { if (!s.isActive) s.animation.pause(); } } });
+  });
 }
 
-/* ========================================================================= */
-function boot() {
-  loadArt();
-  initLightbox();
-  const libs = window.gsap && window.ScrollTrigger && window.Lenis;
-  if (libs) gsap.registerPlugin(ScrollTrigger);
+/* ---------- hover: letters hop to reveal their text-shadow twin ---------- */
+function initStaggerHover() {
+  $$("[stagger-el]").forEach((el) => {
+    el.addEventListener("mouseenter", () => {
+      const chars = el.querySelectorAll("[stagger-text] .char");
+      gsap.to(chars, { yPercent: -100, duration: 0.5, ease: "power4.inOut", stagger: { each: 0.03, from: "random" }, overwrite: true });
+      const icon = el.querySelector(".btn-icon-w .btn-txt");
+      if (icon) gsap.to(icon, { x: "1em", duration: 1.2, ease: "power4.out", overwrite: true });
+      const fill = el.querySelector(".link-track-fill");
+      if (fill) fill.style.transform = "scaleX(1)";
+    });
+    el.addEventListener("mouseleave", () => {
+      const chars = el.querySelectorAll("[stagger-text] .char");
+      gsap.to(chars, { yPercent: 0, duration: 0.4, ease: "power4.inOut", stagger: { each: 0.03, from: "random" } });
+      const icon = el.querySelector(".btn-icon-w .btn-txt");
+      if (icon) gsap.to(icon, { x: 0, duration: 1.2, ease: "power4.out", overwrite: true });
+      const fill = el.querySelector(".link-track-fill");
+      if (fill) fill.style.transform = "scaleX(0)";
+    });
+  });
+}
 
-  const mqSmall = matchMedia("(max-width: 820px)");
-  const mqMotion = matchMedia("(prefers-reduced-motion: reduce)");
-  const wantStatic = mqSmall.matches || mqMotion.matches || !libs;
+/* ---------- cursor ---------- */
+function initCursor() {
+  const dot = $("[data-cursor]");
+  if (!dot || window.isTabletOrBelow || matchMedia("(hover: none)").matches) return;
+  gsap.set(dot, { xPercent: -50, yPercent: -50 });
+  const hover = (on) => dot.classList.toggle("hover", on);
+  document.addEventListener("mouseover", (e) => { if (e.target.closest("a, button, [role=button], [hover-anim]")) hover(true); });
+  document.addEventListener("mouseout", (e) => { if (e.target.closest("a, button, [role=button], [hover-anim]")) hover(false); });
+  document.addEventListener("mousemove", (e) => {
+    gsap.to(dot, { x: e.clientX, y: e.clientY, scale: dot.classList.contains("hover") ? 0.55 : 1, duration: 0.3, ease: "power2.out" });
+  });
+}
 
-  if (!wantStatic) {
-    try { initDeck(); }
-    catch (err) { console.error("deck init failed, falling back", err); document.body.classList.remove("deck-mode"); initStatic(); }
-  } else {
-    initStatic();
+/* ---------- HUD ---------- */
+function hudIn() {
+  gsap.to(".hud-brand-w .hud-brand-link", { y: "0%", opacity: 1, duration: 1, ease: "power1.out" });
+  gsap.to(".hud-nav-w .hud-nav-flex", { y: "0%", opacity: 1, duration: 1, ease: "power1.out" });
+  gsap.to(".hud-scroll-w", { opacity: 1, duration: 1, ease: "power1.out" });
+  gsap.to(".hud-menu-o .hud-menu-w, .hud-menu-o .hud-menu-bg", { y: "0%", opacity: 1, duration: 1, ease: "power1.out" });
+}
+
+function initMenu() {
+  gsap.set(".hud-brand-w .hud-brand-link", { y: "-101%", opacity: 0 });
+  gsap.set(".hud-nav-w .hud-nav-flex", { y: "-101%", opacity: 0 });
+  gsap.set(".hud-scroll-w", { opacity: 0 });
+  gsap.set(".hud-menu-o .hud-menu-w, .hud-menu-o .hud-menu-bg", { y: "101%", opacity: 0 });
+
+  const btn = $(".hud-menu-w"), o = $(".hud-menu-o"), content = $(".hud-menu-content"), bg = $(".hud-menu-bg");
+  const socials = $$(".hud-social-link"), rows = $$(".o-hidden.menu-l2"), toggle = $(".hud-mode-toggle-w");
+  let timer = null;
+  const EASE = "power3.inOut";
+
+  function toggleMenu() {
+    const open = btn.getAttribute("aria-expanded") === "true";
+    btn.setAttribute("aria-expanded", String(!open));
+    btn.classList.toggle("is-open");
+    o.classList.toggle("is-open");
+    clearTimeout(timer);
+    gsap.killTweensOf([rows, socials, bg, content, toggle]);
+    if (!open) {
+      gsap.set([rows, socials], { y: "0%" });
+      gsap.set(toggle, { x: "0%" });
+      gsap.to(bg, { width: "100%", height: "100%", duration: 0.4 });
+      gsap.to(content, { opacity: 1, duration: 0.8, ease: EASE });
+      gsap.from(rows, { delay: 0.2, y: "-101%", duration: 0.3, stagger: 0.05, ease: EASE, onComplete() { content.setAttribute("pointer-auto", ""); o.setAttribute("pointer-auto", ""); } });
+      gsap.from(socials, { delay: 0.4, y: "-151%", duration: 0.3, stagger: 0.05, ease: EASE });
+      gsap.from(toggle, { delay: 0.4, x: "-130%", duration: 0.3, ease: EASE });
+    } else {
+      content.removeAttribute("pointer-auto"); o.removeAttribute("pointer-auto");
+      const sz = window.innerWidth <= 991 ? "3rem" : "3em";
+      gsap.to(bg, { delay: 0.1, width: sz, height: sz, duration: 0.3, ease: EASE });
+      gsap.to(content, { opacity: 0, duration: 0.2, ease: EASE, delay: 0.2 });
+      gsap.to(rows, { y: "101%", duration: 0.2, ease: EASE });
+      gsap.to(socials, { y: "151%", duration: 0.2, ease: EASE });
+      gsap.to(toggle, { x: "130%", duration: 0.2, ease: "power4.inOut" });
+    }
   }
+  btn.addEventListener("click", toggleMenu);
+  btn.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleMenu(); } });
+  o.addEventListener("mouseleave", () => { timer = setTimeout(() => { if (btn.getAttribute("aria-expanded") === "true") toggleMenu(); }, 2000); });
+  o.addEventListener("mouseenter", () => clearTimeout(timer));
+  document.addEventListener("click", (e) => { if (!o.contains(e.target) && btn.getAttribute("aria-expanded") === "true") toggleMenu(); });
+  [...rows, ...socials].forEach((r) => r.addEventListener("click", () => { if (btn.getAttribute("aria-expanded") === "true") toggleMenu(); }));
 
-  // if the user crosses the breakpoint or toggles reduced-motion after load, re-pick the mode
-  const reeval = () => {
-    const nowStatic = mqSmall.matches || mqMotion.matches || !libs;
-    if (nowStatic !== wantStatic) location.reload();
+  // colour mode
+  function setMode(m) {
+    document.documentElement.classList.remove("dark", "light");
+    document.documentElement.classList.add(m);
+    toggle.setAttribute("mode-toggle", m);
+    toggle.setAttribute("aria-pressed", String(m === "dark"));
+    const meta = $('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", m === "dark" ? "#1d1d1d" : "#e5e4e0");
+  }
+  const flip = () => { const cur = document.documentElement.classList.contains("dark") ? "dark" : "light"; const next = cur === "light" ? "dark" : "light"; try { localStorage.setItem("mode", next); } catch (e) {} setMode(next); };
+  toggle.addEventListener("click", flip);
+  toggle.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } });
+  setMode(document.documentElement.classList.contains("dark") ? "dark" : "light");
+}
+
+/* ---------- the orb ---------- */
+let orbApi = null;
+function initOrb() {
+  const host = $("[data-orb]");
+  if (!host) return;
+  const start = () => {
+    try {
+      const gl = document.createElement("canvas").getContext("webgl2") || document.createElement("canvas").getContext("webgl");
+      if (!gl || !window.createOrb) throw new Error("no webgl");
+      orbApi = window.createOrb(host, { maxDpr: window.isTabletOrBelow ? 1.25 : 1.5, segments: window.isTabletOrBelow ? 140 : 220 });
+    } catch (e) {
+      host.classList.add("no-webgl");
+    }
   };
-  mqSmall.addEventListener("change", reeval);
-  mqMotion.addEventListener("change", reeval);
+  if (window.createOrb) start();
+  else {
+    let done = false;
+    window.addEventListener("orb-ready", () => { if (!done) { done = true; start(); } }, { once: true });
+    setTimeout(() => { if (!done) { done = true; start(); } }, 4000);
+  }
+  // pause the render loop when the tab is hidden
+  document.addEventListener("visibilitychange", () => orbApi && orbApi.setPaused(document.hidden));
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", boot);
-} else {
-  boot();
+let outlineSpin1, outlineSpin2, spinRaf, lastY = 0;
+function initOutlines() {
+  const a = $('[orb-outline="1"]'), b = $('[orb-outline="2"]');
+  outlineSpin1 = gsap.to(a, { rotation: 360, duration: 100, repeat: -1, ease: "none", force3D: true });
+  outlineSpin2 = gsap.to(b, { rotation: -360, duration: 100, repeat: -1, ease: "none", force3D: true });
+  const tick = () => {
+    const dy = window.scrollY - lastY; lastY = window.scrollY;
+    const ts = Math.max(1, Math.abs(dy) * 1);
+    outlineSpin1.timeScale(ts); outlineSpin2.timeScale(ts);
+    spinRaf = requestAnimationFrame(tick);
+  };
+  spinRaf = requestAnimationFrame(tick);
 }
+
+/* the orb's journey down the page — keyframes scrubbed against total scroll */
+function initOrbScroll() {
+  const n = $("[data-orb]"), e = $('[orb-out-w="1"]'), t = $('[orb-out-w="2"]');
+  const st = { trigger: ".page-w", start: "top top", end: "bottom bottom", scrub: true, immediateRender: false };
+  gsap.timeline({ scrollTrigger: st })
+    .to(n, { x: "50vw", scale: 2, duration: 0.15, ease: "power2.out" })
+    .to(n, { x: "-50vw", y: "-20vh", scale: 1.5, duration: 0.15, ease: "power2.inOut" })
+    .to(n, { x: "0vw", y: "50vh", scale: 0, duration: 0.05 })
+    .to(n, { x: "0vw", scale: 0, duration: 0.025 })
+    .to(n, { x: "0vw", y: "0vh", scale: 1, duration: 0.125 })
+    .to(n, { x: "-25vw", y: "20vh", scale: 1.5, duration: 0.1 })
+    .to(n, { x: "-60vw", y: "-75vh", scale: 0, ease: "power1.out", duration: 0.05 })
+    .to(n, { x: "0vw", y: "0vh", scale: 0, duration: 0.3 });
+  gsap.timeline({ scrollTrigger: st })
+    .to(e, { x: "10vw", y: "0vh", scale: 1.2, duration: 0.15, overwrite: "auto" })
+    .to(e, { x: "-30vw", y: "0vh", scale: 1.3, duration: 0.15 })
+    .to(e, { x: "0vw", y: "50vh", scale: 1, duration: 0.05 })
+    .to(e, { x: "0vw", y: "50vh", scale: 0.8, duration: 0.025 })
+    .to(e, { x: "0vw", y: "0vh", scale: 1, duration: 0.125 })
+    .to(e, { x: "30vw", y: "-20vh", scale: 0.7, duration: 0.15 })
+    .to(e, { x: "0vw", y: "0vh", scale: 1, duration: 0.05 })
+    .to(e, { x: "0vw", y: "0vh", scale: 0, duration: 0.25 })
+    .to(e, { x: "49vw", y: "0vh", scale: 1, duration: 0.05 });
+  gsap.timeline({ scrollTrigger: st })
+    .to(t, { x: "25vw", y: "0vh", scale: 1.3, duration: 0.15, overwrite: "auto" })
+    .to(t, { x: "-9vw", y: "32vh", scale: 0.6, duration: 0.15 })
+    .to(t, { x: "0vw", y: "50vh", scale: 1, duration: 0.05 })
+    .to(t, { x: "0vw", y: "50vh", scale: 0.8, duration: 0.025 })
+    .to(t, { x: "0vw", y: "0vh", scale: 1, duration: 0.125 })
+    .to(t, { x: "0vw", y: "14vh", scale: 1.2, duration: 0.15 })
+    .to(t, { x: "0vw", y: "0vh", scale: 0.6, duration: 0.05 })
+    .to(t, { x: "0vw", y: "0vh", scale: 0, duration: 0.25 })
+    .to(t, { x: "29vw", y: "0vh", scale: 1.5, duration: 0.05 });
+}
+
+/* ---------- hero ---------- */
+function heroIntro(fromPreloader) {
+  const orb = $("[data-orb]"), o1 = $('[orb-outline="1"]'), o2 = $('[orb-outline="2"]');
+  const chars = $$(".c.is-home-hero [split-hero] .char");
+  document.body.style.cursor = "progress";
+  setTimeout(() => window.SScroll.stop(), 50);
+
+  if (window.isTabletOrBelow) {
+    gsap.set(chars, { y: "-101%", autoAlpha: 0 });
+    gsap.to(chars, { y: "0%", autoAlpha: 1, duration: 1, ease: "power4.inOut", stagger: { each: 0.03, from: "random" } });
+  } else {
+    gsap.set(chars, { y: "-101%" });
+    gsap.to(chars, { y: "0%", duration: 1, ease: "power4.inOut", stagger: { each: 0.03, from: "random" } });
+  }
+
+  if (!fromPreloader) {
+    gsap.set(orb, { autoAlpha: 0, scale: 0 });
+    gsap.set([o1, o2], { autoAlpha: 0, scale: 0 });
+  }
+  gsap.to(orb, { autoAlpha: 1, scale: 1, x: 0, y: 0, duration: 1.2, ease: "power2.inOut", delay: fromPreloader ? 0.2 : 0.4 });
+  gsap.to(o1, { autoAlpha: 1, scale: 1, duration: 2, ease: "power2.inOut" });
+  gsap.to(o2, { delay: 1, autoAlpha: 1, scale: 1, duration: 2, ease: "power2.inOut" });
+  if (window.isTabletOrBelow) {
+    gsap.to(o1, { scale: 0.9, duration: 2, ease: "power2.inOut", delay: 2 });
+    gsap.to(o2, { scale: 0.6, duration: 2.5, ease: "power2.inOut", delay: 3 });
+  } else {
+    gsap.to(o1, { scale: 1.3, duration: 2, ease: "power2.inOut", delay: 2, onComplete() { gsap.to(o1, { scale: 1.2, duration: 2, ease: "power2.inOut" }); } });
+    gsap.to(o2, { scale: 0.9, duration: 2.5, ease: "power2.inOut", delay: 3 });
+  }
+
+  gsap.from('[hh-tb="1"]', { delay: 1, x: "10em", duration: 1, ease: "power2.inOut" });
+  gsap.from('[hh-tb="2"]', { delay: 1.1, x: "-10em", duration: 1, ease: "power2.inOut" });
+  gsap.from('[hh-tb="3"]', { delay: 1.2, x: "10em", duration: 1, ease: "power2.inOut", onComplete() {
+    document.body.style.cursor = "auto";
+    window.SScroll.start();
+    if (!window.isTabletOrBelow) { heroScroll(); initOrbScroll(); }
+    ScrollTrigger.refresh();
+  } });
+}
+
+function heroScroll() {
+  const hero = $("[home-hero]");
+  const st = { trigger: hero, start: "top top", end: "bottom top", scrub: true };
+  gsap.to('[hh-tb="1"]', { x: "-20em", ease: "power2.out", scrollTrigger: st });
+  gsap.to('[hh-tb="2"]', { x: "-10em", ease: "power2.out", scrollTrigger: st });
+  gsap.to('[hh-tb="3"]', { x: "-5em", ease: "power2.out", scrollTrigger: st });
+  gsap.to($$("[split-hero] .char"), { y: "101%", autoAlpha: 0, stagger: { each: 0.03, from: "random" }, scrollTrigger: st });
+}
+
+/* ---------- work cards ---------- */
+function initWork() {
+  const items = $$(".hcs-item-w");
+  items.forEach((el, i) => {
+    el.addEventListener("mouseenter", () => {
+      const tags = el.querySelectorAll(".hcs-title-w .text-mini");
+      gsap.killTweensOf(tags);
+      gsap.to(tags, { y: 0, stagger: 0.1, duration: 0.3 });
+    });
+    el.addEventListener("mouseleave", () => {
+      const tags = el.querySelectorAll(".hcs-title-w .text-mini");
+      gsap.killTweensOf(tags);
+      gsap.to(tags, { y: "0.75em", stagger: 0.05, duration: 0.6 });
+    });
+    if (window.isTabletOrBelow) return;
+    const from = (i + 1) % 2 !== 0 ? "10em" : "-10em";
+    ScrollTrigger.create({ trigger: "[home-work]", start: "top bottom", end: "bottom top", scrub: true,
+      onUpdate: (s) => gsap.to(el, { y: gsap.utils.interpolate(from, "0em", s.progress), overwrite: "auto" }) });
+  });
+  // the on-stage card opens the demo in the lightbox
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest("[data-video]");
+    if (!a) return;
+    e.preventDefault();
+    openLightbox(a.dataset.video, a.dataset.poster, a.dataset.title);
+  });
+}
+
+function initClients() {
+  const section = $("[data-client-section]"), tag = section && section.querySelector("[data-client-tag]");
+  const items = section ? $$("[data-client-item]", section) : [];
+  if (!section || !tag || !items.length) return;
+  const base = tag.textContent;
+  items.forEach((it) => it.addEventListener("mouseenter", () => {
+    items.forEach((x) => (x.style.opacity = "0.4"));
+    it.style.opacity = "1";
+    tag.textContent = it.getAttribute("data-client-item") || base;
+  }));
+  section.addEventListener("mouseleave", () => { items.forEach((x) => (x.style.opacity = "1")); tag.textContent = base; });
+}
+
+/* ---------- 3d grid ---------- */
+function initGrid() {
+  const n = $("[grid-anim]");
+  if (!n || window.isTabletOrBelow) return;
+  const items = $$(".hg-grid-item", n);
+  const inners = items.map((a) => a.querySelector(".hg-grid-inner")).filter(Boolean);
+  const labels = $$(".text-small", n);
+  gsap.set(labels, { fontSize: "3em" });
+  gsap.timeline({ defaults: { ease: "none" }, scrollTrigger: { trigger: n, start: "top bottom+=5%", end: "bottom top-=5%", scrub: true, id: "gridTimelineTrigger" } })
+    .set(items, { transformOrigin: "50% 0%", z: () => gsap.utils.random(-6000, -100), rotationX: () => gsap.utils.random(-65, -25), autoAlpha: 0.5 })
+    .to(n, { scale: 0.8 }, 0)
+    .to(items, { xPercent: () => gsap.utils.random(-150, 150), yPercent: () => gsap.utils.random(-300, 300), rotationX: 0, autoAlpha: 2 }, 0)
+    .to(n, { z: 6500 }, 0)
+    .fromTo(inners, { scale: 2 }, { scale: 1 }, 0)
+    .fromTo(labels, { fontSize: "1.2em" }, { fontSize: "0.7em" }, 0);
+
+  const words = $$(".hg-grid-overlay [split-text] .word");
+  if (words.length) {
+    const from = { autoAlpha: 0, yPercent: 101, duration: 2, ease: "power4.inOut" };
+    const to = { autoAlpha: 1, yPercent: 0, stagger: { each: 0.05, from: "random" }, duration: 2, ease: "power4.inOut" };
+    gsap.timeline({ scrollTrigger: { trigger: n, start: "top bottom-=40%", end: "center top", scrub: true, id: "wordsTimelineTrigger" } })
+      .fromTo(words, from, to)
+      .to(words, { ...from, stagger: { each: 0.05, from: "start" } });
+  }
+}
+
+/* ---------- closing section ---------- */
+function initHsc() {
+  const track = "[hsc-track]";
+  gsap.to("[hsc-scale]", { scale: 29, scrollTrigger: { trigger: track, scrub: true, start: "top top", end: "bottom top" } });
+  gsap.to("[hsc-img]", { width: "20.5em", height: "20.5em", scrollTrigger: { trigger: track, scrub: true, start: "top top", end: "bottom top" } });
+  gsap.to("[hsc-rotate]", { rotation: 180, scrollTrigger: { trigger: track, scrub: true, start: "top top", end: "bottom top" } });
+  gsap.fromTo("[hsc-text]", { x: "50vw" }, { x: "0vw", scrollTrigger: { trigger: track, scrub: true, start: "top top", end: "bottom-=100 bottom" } });
+  ScrollTrigger.create({ trigger: track, scrub: true, start: "bottom center", end: "bottom top",
+    onUpdate: (s) => gsap.to(".s.is-hsc", { scale: 1 - 0.1 * s.progress, boxShadow: `0 0 0 ${1.5 * s.progress}px var(--line)` }) });
+  gsap.fromTo("[hsc-img]", { scale: 0, rotation: 0 }, { scale: 1, rotation: 45, scrollTrigger: { trigger: track, scrub: true, start: "top center", end: "top top" } });
+  $$("[hsc-track] .word").forEach((w, i) => {
+    gsap.fromTo(w, { yPercent: 0 }, { yPercent: i % 2 === 0 ? -101 : 101, scrollTrigger: { trigger: track, scrub: true, start: "bottom bottom-=100", end: "bottom center-=100" } });
+  });
+  gsap.fromTo("[hsc-text]", { y: "0vh" }, { y: "20vh", scrollTrigger: { trigger: track, scrub: true, start: "bottom bottom", end: "bottom+=100 center" } });
+}
+
+/* ---------- videos ---------- */
+function initVideos() {
+  const vids = $$("video[home-vid]");
+  if (!vids.length) return;
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver((entries) => entries.forEach((en) => {
+      const v = en.target;
+      if (en.isIntersecting) { if (!v.dataset.loaded) { v.dataset.loaded = "1"; v.load(); } const p = v.play(); if (p && p.catch) p.catch(() => {}); }
+      else v.pause();
+    }), { rootMargin: "25% 0px" });
+    vids.forEach((v) => io.observe(v));
+  } else {
+    setTimeout(() => vids.forEach((v) => { const p = v.play(); if (p && p.catch) p.catch(() => {}); }), 1500);
+  }
+}
+
+/* ---------- lightbox ---------- */
+function openLightbox(src, poster, title) {
+  const box = $("#lightbox"), vid = box.querySelector("video"), t = box.querySelector(".lightbox__title");
+  t.textContent = title || "";
+  if (poster) vid.poster = poster;
+  vid.src = src;
+  box.classList.add("is-open");
+  box.setAttribute("aria-hidden", "false");
+  window.SScroll.stop();
+  const p = vid.play(); if (p && p.catch) p.catch(() => {});
+}
+function initLightbox() {
+  const box = $("#lightbox"), vid = box.querySelector("video");
+  const close = () => { box.classList.remove("is-open"); box.setAttribute("aria-hidden", "true"); vid.pause(); vid.removeAttribute("src"); vid.load(); window.SScroll.start(); };
+  box.addEventListener("click", (e) => { if (e.target.closest("[data-close]")) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && box.classList.contains("is-open")) close(); });
+}
+
+/* ---------- preloader ---------- */
+function runPreloader(done) {
+  let first = true;
+  try { first = localStorage.getItem("visited") === null; localStorage.setItem("visited", "true"); } catch (e) {}
+  let ran = false;
+  try { ran = !!sessionStorage.getItem("preloaderHasRun"); } catch (e) {}
+  const pre = $("[preloader]");
+  if (ran || reduceMotion || !pre) { if (pre) pre.remove(); done(false); return; }
+
+  const strokes = $$(".st-x rect, .st-c");
+  const fill = $(".ob-fill-fill"), pct = $("[pre-percent]"), textChars = $$("[pre-text] .char");
+  const orb = $("[data-orb]"), o1 = $('[orb-outline="1"]'), o2 = $('[orb-outline="2"]');
+  const dur = first ? 3 : 1;
+
+  gsap.set(pre, { autoAlpha: 1 });
+  gsap.set(orb, { autoAlpha: 0, scale: 0, x: "8em", y: "8em" });
+  gsap.set([o1, o2], { autoAlpha: 0, scale: 0 });
+  gsap.set(textChars, { yPercent: 101 });
+  gsap.set(pct, { yPercent: 101 });
+  strokes.forEach((p) => {
+    const L = p.getTotalLength();
+    gsap.set(p, { strokeDasharray: L, strokeDashoffset: L });
+    gsap.fromTo(p, { strokeDashoffset: L }, { strokeDashoffset: 0, duration: 1, ease: "power1.inOut" });
+  });
+  gsap.to(textChars, { delay: 0.5, yPercent: 0, duration: 1, ease: "power4.inOut", stagger: { each: 0.03, from: "random" } });
+  gsap.to(pct, { delay: 0.5, yPercent: 0, duration: 1, ease: "power4.inOut" });
+
+  const counter = { v: 0 };
+  gsap.to(counter, { v: 100, duration: dur, delay: 1.5, ease: "power2.inOut", onUpdate() { pct.textContent = String(Math.round(counter.v)); } });
+  gsap.fromTo(fill, { scaleY: 0 }, { scaleY: 1, duration: dur, ease: "power2.inOut", delay: 1.5, onComplete() {
+    gsap.to(textChars, { delay: 0.5, yPercent: -101, duration: 1, ease: "power4.inOut", stagger: { each: 0.03, from: "random" } });
+    gsap.to(pct, { delay: 0.5, yPercent: -101, duration: 1, ease: "power4.inOut" });
+    gsap.to(".ob-fill-mask", { delay: 0.5, duration: 0.8, ease: "power2.inOut", clipPath: "inset(0% 0% 100% 0%)" });
+    strokes.forEach((p) => { const L = p.getTotalLength(); gsap.fromTo(p, { strokeDashoffset: 0 }, { strokeDashoffset: L, delay: 0.5, duration: 1, ease: "power1.inOut" }); });
+    // the dot of the mark becomes the orb
+    gsap.to(orb, { autoAlpha: 1, scale: 0.09, duration: 0.6, delay: 0.5, ease: "power2.inOut" });
+    gsap.delayedCall(1.3, () => {
+      try { sessionStorage.setItem("preloaderHasRun", "1"); } catch (e) {}
+      gsap.to(pre, { autoAlpha: 0, duration: 0.3, onComplete: () => pre.remove() });
+      done(true);
+    });
+  } });
+}
+
+/* ---------- boot ---------- */
+function boot() {
+  if (!window.gsap || !window.ScrollTrigger || !window.SplitType) {
+    document.body.removeAttribute("data-start");
+    return;
+  }
+  gsap.registerPlugin(ScrollTrigger);
+  $("#year") && ($("#year").textContent = String(new Date().getFullYear()));
+
+  renderClients();
+  renderWork();
+  renderAwards();
+  renderTiles();
+  splitAll();
+  initScroll();
+  initMenu();
+  initOrb();
+  initOutlines();
+  initCursor();
+  initLightbox();
+  gsap.set("[data-orb-wrap]", { autoAlpha: 1 });
+  // hide what the intro animates in, then reveal the body (the preloader sits behind the empty page)
+  gsap.set(".c.is-home-hero [split-hero] .char", { y: "-101%" });
+  gsap.set("[data-orb]", { autoAlpha: 0, scale: 0 });
+  gsap.set('[orb-outline="1"], [orb-outline="2"]', { autoAlpha: 0, scale: 0 });
+  document.body.removeAttribute("data-start");
+
+  runPreloader((fromPreloader) => {
+    hudIn();
+    heroIntro(fromPreloader);
+    initReveals();
+    initStaggerHover();
+    initWork();
+    initClients();
+    initGrid();
+    initHsc();
+    initVideos();
+    if (window.isTabletOrBelow) { window.SScroll.start(); }
+    ScrollTrigger.refresh();
+  });
+
+  // crossing the tablet breakpoint changes the whole layout — reload to rebuild
+  let rt;
+  window.addEventListener("resize", () => {
+    clearTimeout(rt);
+    rt = setTimeout(() => { if ((window.innerWidth <= 991) !== window.isTabletOrBelow) location.reload(); else ScrollTrigger.refresh(); }, 250);
+  });
+}
+
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+else boot();

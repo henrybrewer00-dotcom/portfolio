@@ -1,81 +1,411 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="light">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Henry — dealt one card at a time</title>
-    <meta
-      name="description"
-      content="I'm Henry, I'm 14, and I build a lot of stuff: an AI that calls my grandma, a voice drive-thru with a live kitchen screen, a free Screen Studio, a robot car, a submarine, and some open source. My portfolio deals itself like a deck of cards as you scroll."
-    />
-    <meta name="theme-color" content="#07090d" />
-
-    <meta property="og:title" content="Henry — dealt one card at a time" />
-    <meta property="og:description" content="I'm Henry, I'm 14, and I make way too much stuff. My portfolio deals itself like a deck of cards as you scroll." />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HENRY+BREWER. | 14-year-old builder — voice AI, robots, open source</title>
+    <meta name="description" content="I'm Henry, I'm 14, and I make way too much stuff: an AI that calls my grandma, a voice drive-thru, a free Screen Studio, a robot car, a submarine, and some open source." />
+    <meta name="theme-color" content="#e5e4e0" />
+    <meta property="og:title" content="HENRY+BREWER. | A different kind of builder" />
+    <meta property="og:description" content="I'm Henry, I'm 14, and I make way too much stuff. Voice AI, a few robots, a submarine, and some open source." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://henry93.vercel.app/" />
     <meta property="og:image" content="https://henry93.vercel.app/assets/share.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Henry — dealt one card at a time" />
-    <meta name="twitter:description" content="I'm Henry, I'm 14, and I make way too much stuff. Scroll to deal the hand." />
+    <meta name="twitter:title" content="HENRY+BREWER. | A different kind of builder" />
+    <meta name="twitter:description" content="I'm Henry, I'm 14, and I make way too much stuff." />
     <meta name="twitter:image" content="https://henry93.vercel.app/assets/share.jpg" />
+    <link rel="icon" href="assets/mark.svg" type="image/svg+xml" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;0,800;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css?v=20260905a" />
+
+    <script>
+      // pick the colour mode before first paint so it doesn't flash
+      (function () {
+        try {
+          var m = localStorage.getItem("mode") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+          document.documentElement.classList.remove("light", "dark");
+          document.documentElement.classList.add(m);
+        } catch (e) {}
+        var ua = navigator.userAgent;
+        if (/Safari/.test(ua) && !/Chrome|Chromium|Edg/.test(ua)) document.documentElement.classList.add("is--safari");
+      })();
+    </script>
+    <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }</script>
   </head>
-  <body>
-    <!-- Always-visible booking CTA -->
-    <a class="book-fab" href="https://book.insforge.site" target="_blank" rel="noreferrer">Book a call ↗</a>
+  <body data-start="hidden">
+    <!-- ============ custom cursor ============ -->
+    <div class="cursor-w" data-cursor-wrap aria-hidden="true"><div class="cursor-dot" data-cursor></div></div>
 
-    <!-- Scroll-driven deck stage (enhanced experience) -->
-    <main id="stage" class="stage">
-      <div class="stage__vignette" aria-hidden="true"></div>
+    <!-- ============ HUD (fixed chrome) ============ -->
+    <div class="hud-w">
+      <div class="c is-hud">
+        <div class="hud-content">
+          <div class="hud-brand-w">
+            <a class="hud-brand-link" href="#top" aria-label="Henry Brewer — home">
+              <div class="text-brand" split-text stagger-text>HENRY+BREWER.</div>
+            </a>
+          </div>
 
-      <header class="intro" id="intro">
-        <p class="intro__kicker">Henry · 14</p>
-        <h1 class="intro__title">I'm Henry, I'm 14,<br />and I make way too much stuff.</h1>
-        <p class="intro__sub">Voice AI, a few robots, a submarine, and some open source. Scroll to deal the hand.</p>
-        <p class="intro__hint" aria-hidden="true">scroll to deal <span class="intro__arrow">↓</span></p>
-      </header>
+          <div class="hud-nav-w">
+            <div class="hud-nav-flex">
+              <div>
+                <a class="page-link-w" data-nav-tl stagger-el href="https://github.com/henrybrewer00-dotcom" target="_blank" rel="noreferrer">
+                  <div class="o-hidden page-link-inner">
+                    <div class="text-small btn-txt" split-text stagger-text>GitHub</div>
+                    <div class="btn-icon-r"><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div>
+                  </div>
+                  <div class="link-track"><div class="link-track-fill"></div></div>
+                </a>
+              </div>
+              <div>
+                <a class="page-link-w" data-nav-tl stagger-el href="https://book.insforge.site" target="_blank" rel="noreferrer">
+                  <div class="o-hidden page-link-inner">
+                    <div class="text-small btn-txt" split-text stagger-text>Book a call</div>
+                    <div class="btn-icon-r"><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div>
+                  </div>
+                  <div class="link-track"><div class="link-track-fill"></div></div>
+                </a>
+              </div>
+              <a class="btn-w" stagger-el href="mailto:henrybrewer00@gmail.com?subject=You%27re%20hired&amp;body=Hi%20Henry%2C%0A%0AHere%27s%20what%20I%27d%20love%20to%20build%20with%20you%3A%0A%0A">
+                <div class="btn-inner">
+                  <div class="o-hidden"><div class="btn-txt" split-text stagger-text>Contact</div></div>
+                  <div class="btn-icon-w"><div class="btn-txt">-&gt;</div></div>
+                </div>
+                <div class="btn-bg-w"><div class="btn-bg-fill"></div></div>
+              </a>
+            </div>
+          </div>
 
-      <div id="deck" class="deck"></div>
+          <div class="hud-scroll-w" aria-hidden="true">
+            <div class="hud-scroll-inner">
+              <div class="hud-scroll-line-top"></div>
+              <div class="hud-scroll-dot"></div>
+              <div class="hud-scroll-line-btm"></div>
+            </div>
+          </div>
 
-      <div class="hud" id="hud" aria-hidden="true">
-        <span class="hud__count"><b id="hudNum">00</b> / <span id="hudTotal">10</span></span>
-        <span class="hud__name" id="hudName">the deck</span>
-        <div class="hud__bar"><i id="hudBar"></i></div>
+          <div class="hud-menu-o">
+            <div class="hud-menu-content">
+              <div class="hud-menu-link-w">
+                <div class="o-hidden"><div class="o-hidden menu-l2"><a class="hud-menu-link" stagger-el href="#top"><div class="o-hidden page-link-inner"><div class="text-small btn-txt" split-text stagger-text>Home</div><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+                <div class="o-hidden"><div class="o-hidden menu-l2"><a class="hud-menu-link" stagger-el href="#work"><div class="o-hidden page-link-inner"><div class="text-small btn-txt" split-text stagger-text>Work</div><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+                <div class="o-hidden"><div class="o-hidden menu-l2"><a class="hud-menu-link" stagger-el href="#skills"><div class="o-hidden page-link-inner"><div class="text-small btn-txt" split-text stagger-text>Skills</div><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+                <div class="o-hidden"><div class="o-hidden menu-l2"><a class="hud-menu-link" stagger-el href="#awards"><div class="o-hidden page-link-inner"><div class="text-small btn-txt" split-text stagger-text>Awards</div><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+                <div class="o-hidden"><div class="o-hidden menu-l2"><a class="hud-menu-link" stagger-el href="#contact"><div class="o-hidden page-link-inner"><div class="text-small btn-txt" split-text stagger-text>Contact</div><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+                <div class="o-hidden"><div class="o-hidden menu-l2"><a class="hud-menu-link" stagger-el href="https://github.com/henrybrewer00-dotcom" target="_blank" rel="noreferrer"><div class="o-hidden page-link-inner"><div class="text-small btn-txt" split-text stagger-text>GitHub</div><div class="btn-icon-w is-rotate"><div class="text-small btn-txt">-&gt;</div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+                <div class="o-hidden"><div class="o-hidden menu-l2"><a class="hud-menu-link" stagger-el href="https://sitelight.xyz" target="_blank" rel="noreferrer"><div class="o-hidden page-link-inner"><div class="text-small btn-txt" split-text stagger-text>SiteLight</div><div class="btn-icon-w is-rotate"><div class="text-small btn-txt">-&gt;</div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+              </div>
+              <div class="hud-menu-sublink-w">
+                <div class="o-hidden"><div class="o-hidden menu-l2"><a class="hud-menu-link" href="deck/"><div class="o-hidden page-link-inner mini"><div class="text-mini">Card deck</div><div class="btn-icon-w"><div class="text-mini btn-txt">-&gt;</div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+                <div class="o-hidden"><div class="o-hidden menu-l2"><a class="hud-menu-link" href="old/"><div class="o-hidden page-link-inner mini"><div class="text-mini">Terminal</div><div class="btn-icon-w"><div class="text-mini btn-txt">-&gt;</div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+              </div>
+              <div class="hud-menu-socials">
+                <div class="hud-social-w"><div class="o-hidden"><a class="hud-social-link" href="https://github.com/henrybrewer00-dotcom" target="_blank" rel="noreferrer" aria-label="GitHub"><div class="hud-social-img"><svg viewBox="0 0 24 24" width="100%" height="100%"><path data-logo="github" /></svg></div></a></div></div>
+                <div class="hud-social-w"><div class="o-hidden"><a class="hud-social-link" href="mailto:henrybrewer00@gmail.com" aria-label="Email"><div class="hud-social-img"><svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="m3.5 7 8.5 6.2L20.5 7"/></svg></div></a></div></div>
+                <div class="hud-social-w"><div class="o-hidden"><a class="hud-social-link" href="https://book.insforge.site" target="_blank" rel="noreferrer" aria-label="Book a call"><div class="hud-social-img"><svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg></div></a></div></div>
+                <div class="hud-social-w"><div class="o-hidden"><a class="hud-social-link" href="https://sitelight.xyz" target="_blank" rel="noreferrer" aria-label="SiteLight"><div class="hud-social-img"><svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></div></a></div></div>
+              </div>
+              <div class="hud-mode-o-hidden">
+                <div class="hud-mode-toggle-w" mode-toggle="light" role="button" tabindex="0" aria-label="Toggle dark mode" aria-pressed="false">
+                  <div class="mode-toggle-track"><div class="mode-toggle-inner"><div class="mode-toggle-btn"></div></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="hud-menu-w" role="button" aria-label="Menu" aria-expanded="false" tabindex="0">
+              <div class="hud-menu-c">
+                <div class="hud-menu-line is-1"></div>
+                <div class="hud-menu-line is-2"></div>
+                <div class="hud-menu-line is-3"></div>
+              </div>
+            </div>
+            <div class="hud-menu-bg"></div>
+          </div>
+        </div>
       </div>
+    </div>
 
-      <div class="deck-end" id="deckEnd" aria-hidden="true">
-        <p class="deck-end__kicker">that's the whole hand</p>
-        <h2 class="deck-end__title">Here's my full house.</h2>
-        <p class="deck-end__sub">Ten cards, all mine. The email button's on the Joker — deal yourself back up if you want another look.</p>
+    <!-- ============ page ============ -->
+    <div class="page-w" id="top">
+      <main class="main-w">
+        <!-- HERO -->
+        <section class="s" home-hero>
+          <div class="c is-home-hero">
+            <div class="home-hero-tablet-text mbm-diff is-2026" pointer-none>
+              <div class="h-display is--hero-tablet is-2026" split-hero>I make way<br />too much<br />stuff.</div>
+            </div>
+            <div class="grid-main is-home-hero">
+              <div class="hh-text-block is-1"><div class="hh-transform" hh-tb="1"><div class="hh-text-ovf"><h1 class="h-a" split-hero>I make way</h1></div></div></div>
+              <div class="hh-text-block is-2"><div class="hh-transform" hh-tb="2"><div class="hh-text-ovf"><h1 class="h-a" split-hero>too much</h1></div></div></div>
+              <div class="hh-text-block is-3"><div class="hh-transform" hh-tb="3"><div class="hh-text-ovf"><h1 class="h-a" split-hero>stuff.</h1></div></div></div>
+              <div class="hh-text-block is--scroll" pointer-none><div class="hh-transform" hh-tb="4"><div class="hh-text-ovf"><div class="text-regular caps" split-hero>scroll ↓</div></div></div></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- STATEMENT -->
+        <section class="s">
+          <div class="c">
+            <div class="spacer-10"></div>
+            <div class="grid-main">
+              <div class="mbm-diff is-statement">
+                <h2 class="h-b" stagger-scroll split-text><span class="span-hidden">****</span> I'm Henry, I'm 14, and I build VOICE AI, ROBOTS, A SUBMARINE, and some OPEN SOURCE.</h2>
+              </div>
+            </div>
+            <div class="spacer-10 mob-2"></div>
+            <div class="grid-main m-flex">
+              <div class="mbm-diff is-intro-l">
+                <p class="text-small caps" split-text stagger-scroll="1">I'm a 14-year-old builder in the Bay Area, founder of SiteLight, and I ship the whole thing every time.</p>
+                <div class="o-hidden link-wrap hide-m" link-reveal>
+                  <div class="o-hidden">
+                    <a class="page-link-w" reveal-target stagger-el href="#work">
+                      <div class="o-hidden page-link-inner"><div class="text-small btn-txt" split-text stagger-text>See the work</div><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div>
+                      <div class="link-track"><div class="link-track-fill"></div></div>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <div class="mbm-diff is-intro-r">
+                <p class="text-small" split-text stagger-scroll="1">Every project here started as something I wanted to exist: an AI that phones my grandma every morning, a drive-thru you order from out loud, a free Screen Studio, a robot car that chases my dogs. I design it, build it, ship it, and start the next one.</p>
+              </div>
+              <div class="hide-d">
+                <div class="o-hidden link-wrap" link-reveal>
+                  <div class="o-hidden">
+                    <a class="page-link-w" reveal-target stagger-el href="#work">
+                      <div class="o-hidden page-link-inner"><div class="text-small btn-txt" split-text stagger-text>See the work</div><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div>
+                      <div class="link-track"><div class="link-track-fill"></div></div>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="spacer-10"></div>
+          </div>
+        </section>
+
+        <!-- BUILT WITH -->
+        <section class="s" id="skills">
+          <div class="c">
+            <div class="spacer-10" data-hide="m"></div>
+            <div class="grid-main is-home-client" data-client-section>
+              <div class="eb-wrap is--clients">
+                <div class="o-hidden t-flex"><h2 class="h-eyebrow" split-text stagger-scroll="1">Built with</h2></div>
+                <div class="o-hidden t-flex"><h2 class="h-eyebrow is--outline is--clients" data-client-tag>Tools</h2></div>
+              </div>
+              <div class="home-client__grid-w mbm-diff" id="clientGrid"></div>
+            </div>
+            <div class="spacer-10"></div>
+          </div>
+        </section>
+
+        <!-- FEATURED WORK -->
+        <section class="s" id="work" home-work>
+          <div class="c">
+            <div class="spacer-10"></div>
+            <div class="grid-main is-hw">
+              <div class="eb-wrap is-sticky">
+                <div class="o-hidden"><h2 class="h-eyebrow" split-text stagger-scroll="1">Featured work</h2></div>
+                <div class="page-btn-w" btn-reveal>
+                  <div class="o-hidden is-flex">
+                    <a class="btn-w" reveal-target stagger-el href="https://github.com/henrybrewer00-dotcom?tab=repositories" target="_blank" rel="noreferrer">
+                      <div class="btn-inner">
+                        <div class="o-hidden"><div class="btn-txt" split-text stagger-text>All repos</div></div>
+                        <div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div>
+                      </div>
+                      <div class="btn-bg-w"><div class="btn-bg-fill"></div></div>
+                    </a>
+                  </div>
+                  <div class="text-mini float-count is-fw" id="workCount">10</div>
+                </div>
+              </div>
+              <div class="grid-main hcs-grid-w" id="workGrid"></div>
+            </div>
+            <div class="spacer-10"></div>
+          </div>
+        </section>
+
+        <!-- 3D GRID -->
+        <section class="s is-hg">
+          <div class="c">
+            <div class="spacer-10"></div>
+            <div class="hg-grid-overlay mbm-diff">
+              <div class="hg-grid-overlay-sticky">
+                <div class="c is-hg-o">
+                  <div class="grid-main">
+                    <div class="hg-overlay-text"><h2 class="h-b" split-text><span class="span-hidden">****</span> Building Things in Unexpected Ways.</h2></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="hg-grid-track">
+              <div class="spacer-10"></div>
+              <div class="hg-grid-w">
+                <div class="grid-main hg-grid" id="hgGrid" grid-anim></div>
+              </div>
+              <div class="spacer-10"></div>
+            </div>
+            <div class="spacer-10"></div><div class="spacer-10"></div><div class="spacer-10"></div>
+          </div>
+        </section>
+
+        <!-- AWARDS -->
+        <section class="s" id="awards">
+          <div class="c">
+            <div class="spacer-10"></div>
+            <div class="grid-main t-flex">
+              <div class="eb-wrap is-sticky">
+                <div class="o-hidden t-flex">
+                  <h2 class="h-eyebrow" split-text stagger-scroll="1">Recognitions<br />+ Awards</h2>
+                  <div class="text-mini float-count is-eybrow" id="awardCount">10</div>
+                </div>
+              </div>
+              <div class="haw-sub-group" id="awards-list"></div>
+            </div>
+            <div class="spacer-10"></div>
+          </div>
+        </section>
+
+        <!-- CLOSING (hsc) -->
+        <section class="s is-hsc">
+          <div class="hsc-track" hsc-track>
+            <div class="hsc-overlay-w">
+              <div class="hsc-text-w">
+                <div class="hsc-text-oh" hsc-text><div class="h-c is-anim" split-text>Where Different Is the Standard. Hire Henry.</div></div>
+              </div>
+              <div class="c is-hsc" hsc-scale>
+                <div class="hsc-rotate" hsc-rotate>
+                  <div class="hsc-img-w" hsc-img>
+                    <svg class="hsc-img" viewBox="0 0 162 162" xmlns="http://www.w3.org/2000/svg"><g class="hsc-img-path"><rect x="4" y="3" width="30" height="156" rx="9"/><rect x="92" y="3" width="30" height="156" rx="9"/><rect x="30" y="66" width="66" height="30" rx="9"/><circle cx="146" cy="146" r="12.5"/></g></svg>
+                  </div>
+                </div>
+              </div>
+              <div class="hs-track-ul" gradient-evolve></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- FOOTER -->
+        <section class="s is-footer" id="contact">
+          <div class="c is-footer">
+            <div class="ft-content-w">
+              <div class="spacer-5"></div>
+              <div class="grid-main is-footer">
+                <div class="grid-main ft-cta-grid">
+                  <div class="mbm-diff"><div class="h-a is-sub" stagger-scroll split-text>How about</div></div>
+                  <div class="mbm-diff"><div class="h-a is-sub" stagger-scroll split-text>we build</div></div>
+                  <div class="ft-cta-row">
+                    <div class="mbm-diff is-nb"><div class="h-a is-sub" stagger-scroll split-text>a thing,</div></div>
+                    <div class="page-btn-w hide-m" btn-reveal>
+                      <div class="o-hidden is-flex">
+                        <a class="btn-w is-large" reveal-target stagger-el href="mailto:henrybrewer00@gmail.com?subject=You%27re%20hired&amp;body=Hi%20Henry%2C%0A%0AHere%27s%20what%20I%27d%20love%20to%20build%20with%20you%3A%0A%0A">
+                          <div class="btn-inner"><div class="o-hidden"><div class="btn-txt" split-text stagger-text>Get in touch</div></div><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div>
+                          <div class="btn-bg-w"><div class="btn-bg-fill"></div></div>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mbm-diff"><div class="h-a is-sub" stagger-scroll split-text>To+Gether</div></div>
+                </div>
+                <div class="page-btn-w hide-d" btn-reveal>
+                  <div class="o-hidden is-flex">
+                    <a class="btn-w is-large" reveal-target stagger-el href="mailto:henrybrewer00@gmail.com?subject=You%27re%20hired">
+                      <div class="btn-inner"><div class="o-hidden"><div class="btn-txt" split-text stagger-text>Get in touch</div></div><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div>
+                      <div class="btn-bg-w"><div class="btn-bg-fill"></div></div>
+                    </a>
+                  </div>
+                </div>
+
+                <div class="grid-main ft-nav-w mbm-diff">
+                  <div class="ft-nav-col">
+                    <p class="text-small caps op-60">Sitemap</p>
+                    <div class="ft-nav-link-w">
+                      <div class="o-hidden"><div class="o-hidden"><a class="page-link-w" stagger-el href="#top"><div class="o-hidden page-link-inner"><div class="text-small btn-txt" split-text stagger-text>Home</div><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+                      <div class="o-hidden"><div class="o-hidden"><a class="page-link-w" stagger-el href="#work"><div class="o-hidden page-link-inner"><div class="text-small btn-txt" split-text stagger-text>Work</div><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+                      <div class="o-hidden"><div class="o-hidden"><a class="page-link-w" stagger-el href="#skills"><div class="o-hidden page-link-inner"><div class="text-small btn-txt" split-text stagger-text>Skills</div><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+                      <div class="o-hidden"><div class="o-hidden"><a class="page-link-w" stagger-el href="#awards"><div class="o-hidden page-link-inner"><div class="text-small btn-txt" split-text stagger-text>Awards</div><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+                      <div class="o-hidden"><div class="o-hidden"><a class="page-link-w" stagger-el href="mailto:henrybrewer00@gmail.com"><div class="o-hidden page-link-inner"><div class="text-small btn-txt" split-text stagger-text>Contact</div><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+                    </div>
+                  </div>
+                  <div class="ft-nav-col">
+                    <p class="text-small caps op-60">Connect</p>
+                    <div class="ft-nav-link-w">
+                      <div class="o-hidden"><div class="o-hidden"><a class="page-link-w" stagger-el href="https://github.com/henrybrewer00-dotcom" target="_blank" rel="noreferrer"><div class="o-hidden page-link-inner"><div class="text-small btn-txt" split-text stagger-text>GitHub</div><div class="btn-icon-r"><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+                      <div class="o-hidden"><div class="o-hidden"><a class="page-link-w" stagger-el href="mailto:henrybrewer00@gmail.com"><div class="o-hidden page-link-inner"><div class="text-small btn-txt" split-text stagger-text>Email</div><div class="btn-icon-r"><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+                      <div class="o-hidden"><div class="o-hidden"><a class="page-link-w" stagger-el href="https://book.insforge.site" target="_blank" rel="noreferrer"><div class="o-hidden page-link-inner"><div class="text-small btn-txt" split-text stagger-text>Book a call</div><div class="btn-icon-r"><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+                      <div class="o-hidden"><div class="o-hidden"><a class="page-link-w" stagger-el href="https://sitelight.xyz" target="_blank" rel="noreferrer"><div class="o-hidden page-link-inner"><div class="text-small btn-txt" split-text stagger-text>SiteLight</div><div class="btn-icon-r"><div class="btn-icon-w"><div class="text-small btn-txt">-&gt;</div></div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+                    </div>
+                  </div>
+                  <div class="ft-nav-col">
+                    <p class="text-small caps op-60">Based in</p>
+                    <div class="ft-nav-link-w is-plain">
+                      <p class="text-small caps">Bay Area, CA</p>
+                      <p class="text-small caps">Age 14</p>
+                    </div>
+                    <p class="text-small caps op-60 is-legal">Archive</p>
+                    <div class="ft-nav-link-w is-mini">
+                      <div class="o-hidden"><div class="o-hidden"><a class="page-link-w" stagger-el href="deck/"><div class="o-hidden page-link-inner mini"><div class="text-mini btn-txt" split-text stagger-text>Card deck</div><div class="btn-icon-w"><div class="text-mini btn-txt">-&gt;</div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+                      <div class="o-hidden"><div class="o-hidden"><a class="page-link-w" stagger-el href="old/"><div class="o-hidden page-link-inner mini"><div class="text-mini btn-txt" split-text stagger-text>Terminal</div><div class="btn-icon-w"><div class="text-mini btn-txt">-&gt;</div></div></div><div class="link-track"><div class="link-track-fill"></div></div></a></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid-main ft-btm mbm-diff">
+                <div class="ft-btm-l">
+                  <p class="text-mini op-60">© <span id="year">2026</span> Henry Brewer · henrybrewer00@gmail.com · 925 962 7535</p>
+                </div>
+                <div class="o-hidden op-0-m ft-brand-w">
+                  <div class="text-brand-footer" stagger-scroll="1" split-text>HENRY+BREWER.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- ============ the orb (fixed, behind everything) ============ -->
+    <div class="orb-w" data-orb-wrap pointer-none aria-hidden="true">
+      <div class="orb" data-orb><div class="orb-fallback"></div></div>
+      <div class="orb-outline-w" orb-out-w="1"><div class="orb-outline-r" orb-out-r="1"><div class="orb-outline" orb-outline="1"></div></div></div>
+      <div class="orb-outline-w is-2" orb-out-w="2"><div class="orb-outline-r" orb-out-r="2"><div class="orb-outline is-2" orb-outline="2"></div></div></div>
+    </div>
+
+    <!-- ============ preloader ============ -->
+    <div class="pre-w" preloader aria-hidden="true">
+      <div class="ob-mask-wrap">
+        <div class="ob-mask-outline">
+          <svg viewBox="0 0 162 162" xmlns="http://www.w3.org/2000/svg"><g class="st-x" fill="none"><rect x="4" y="3" width="30" height="156" rx="9"/><rect x="92" y="3" width="30" height="156" rx="9"/><rect x="30" y="66" width="66" height="30" rx="9"/></g><circle class="st-c" cx="146" cy="146" r="12.5" fill="none"/></svg>
+        </div>
+        <div class="ob-fill-mask"><div class="ob-fill-fill"></div></div>
+        <div class="pre-info-w is-1">
+          <div class="pre-info-inner is-2">
+            <div class="o-hidden"><div class="text-mini" pre-text split-text>build</div></div>
+            <div class="o-hidden is-ppercent"><div class="text-mini" pre-percent>&nbsp;</div></div>
+          </div>
+        </div>
       </div>
-    </main>
+    </div>
 
-    <!-- No-JS / reduced-motion / mobile fallback: the same cards, laid out as a readable hand -->
-    <section id="fallback" class="fallback">
-      <header class="fallback__hero">
-        <p class="fallback__kicker">Henry · 14</p>
-        <h1>I'm Henry, I'm 14, and I make way too much stuff.</h1>
-        <p class="fallback__sub">Voice AI, a few robots, a submarine, and some open source. Here's the whole hand at once.</p>
-      </header>
-      <div id="fallbackGrid" class="fallback__grid"></div>
-    </section>
+    <!-- ============ video lightbox ============ -->
+    <div class="lightbox" id="lightbox" aria-hidden="true">
+      <div class="lightbox__backdrop" data-close></div>
+      <div class="lightbox__panel" role="dialog" aria-modal="true" aria-label="Demo video">
+        <button type="button" class="lightbox__close" data-close aria-label="Close video">✕</button>
+        <p class="lightbox__title text-mini"></p>
+        <video class="lightbox__video" controls playsinline preload="none"></video>
+      </div>
+    </div>
 
-    <footer class="site-foot">
-      <p>Henry · henrybrewer00@gmail.com · <a href="https://github.com/henrybrewer00-dotcom" target="_blank" rel="noreferrer">github.com/henrybrewer00-dotcom</a></p>
-      <p class="site-foot__dim">Built with a deck of cards and too much scroll. · <a class="site-foot__old" href="old/">the old terminal portfolio →</a></p>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-    <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js" defer></script>
-    <script src="script.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/split-type@0.3.4/umd/index.min.js"></script>
+    <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+    <script type="module" src="orb.js?v=20260905a"></script>
+    <script src="logos.js?v=20260905a" defer></script>
+    <script src="script.js?v=20260905a" defer></script>
   </body>
 </html>

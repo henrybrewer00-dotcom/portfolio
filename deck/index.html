@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Henry — dealt one card at a time</title>
+    <meta
+      name="description"
+      content="I'm Henry, I'm 14, and I build a lot of stuff: an AI that calls my grandma, a voice drive-thru with a live kitchen screen, a free Screen Studio, a robot car, a submarine, and some open source. My portfolio deals itself like a deck of cards as you scroll."
+    />
+    <meta name="theme-color" content="#07090d" />
+
+    <meta property="og:title" content="Henry — dealt one card at a time" />
+    <meta property="og:description" content="I'm Henry, I'm 14, and I make way too much stuff. My portfolio deals itself like a deck of cards as you scroll." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://henry93.vercel.app/" />
+    <meta property="og:image" content="https://henry93.vercel.app/assets/share.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Henry — dealt one card at a time" />
+    <meta name="twitter:description" content="I'm Henry, I'm 14, and I make way too much stuff. Scroll to deal the hand." />
+    <meta name="twitter:image" content="https://henry93.vercel.app/assets/share.jpg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;0,800;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Always-visible booking CTA -->
+    <a class="book-fab" href="https://book.insforge.site" target="_blank" rel="noreferrer">Book a call ↗</a>
+
+    <!-- Scroll-driven deck stage (enhanced experience) -->
+    <main id="stage" class="stage">
+      <div class="stage__vignette" aria-hidden="true"></div>
+
+      <header class="intro" id="intro">
+        <p class="intro__kicker">Henry · 14</p>
+        <h1 class="intro__title">I'm Henry, I'm 14,<br />and I make way too much stuff.</h1>
+        <p class="intro__sub">Voice AI, a few robots, a submarine, and some open source. Scroll to deal the hand.</p>
+        <p class="intro__hint" aria-hidden="true">scroll to deal <span class="intro__arrow">↓</span></p>
+      </header>
+
+      <div id="deck" class="deck"></div>
+
+      <div class="hud" id="hud" aria-hidden="true">
+        <span class="hud__count"><b id="hudNum">00</b> / <span id="hudTotal">10</span></span>
+        <span class="hud__name" id="hudName">the deck</span>
+        <div class="hud__bar"><i id="hudBar"></i></div>
+      </div>
+
+      <div class="deck-end" id="deckEnd" aria-hidden="true">
+        <p class="deck-end__kicker">that's the whole hand</p>
+        <h2 class="deck-end__title">Here's my full house.</h2>
+        <p class="deck-end__sub">Ten cards, all mine. The email button's on the Joker — deal yourself back up if you want another look.</p>
+      </div>
+    </main>
+
+    <!-- No-JS / reduced-motion / mobile fallback: the same cards, laid out as a readable hand -->
+    <section id="fallback" class="fallback">
+      <header class="fallback__hero">
+        <p class="fallback__kicker">Henry · 14</p>
+        <h1>I'm Henry, I'm 14, and I make way too much stuff.</h1>
+        <p class="fallback__sub">Voice AI, a few robots, a submarine, and some open source. Here's the whole hand at once.</p>
+      </header>
+      <div id="fallbackGrid" class="fallback__grid"></div>
+    </section>
+
+    <footer class="site-foot">
+      <p>Henry · henrybrewer00@gmail.com · <a href="https://github.com/henrybrewer00-dotcom" target="_blank" rel="noreferrer">github.com/henrybrewer00-dotcom</a></p>
+      <p class="site-foot__dim">Built with a deck of cards and too much scroll. · <a class="site-foot__old" href="../old/">the old terminal portfolio →</a></p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+    <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js" defer></script>
+    <script src="script.js" defer></script>
+  </body>
+</html>
