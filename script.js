@@ -85,7 +85,8 @@ function layoutFor(s) {
   const hasCap = !!(s && s.title);
   if (isSmall()) {
     if (!hasCap) return { x: 0, y: 0, fill: 0.5, fillX: 0.9 };
-    return { x: 0, y: hh * (s.transcript || s.image || s.tools ? 0.5 : 0.36), fill: s.transcript || s.image || s.tools ? 0.3 : 0.42, fillX: 0.9 };
+    if (s.image) return { x: 0, y: hh * 0.62, fill: 0.26, fillX: 0.6 };   // tall caption: the shape sits small, up top
+    return { x: 0, y: hh * (s.transcript || s.tools ? 0.5 : 0.36), fill: s.transcript || s.tools ? 0.3 : 0.42, fillX: 0.9 };
   }
   if (!hasCap) return { x: 0, y: 0, fill: 0.8, fillX: 0.86 };
   return { x: hw * 0.34, y: hh * 0.06, fill: 0.72, fillX: 0.52 };
@@ -195,7 +196,7 @@ function initSwarm() {
     const host = $("[data-swarm]");
     const start = () => {
       try {
-        swarm = window.createSwarm(host, { count: isSmall() ? 4500 : 9000, maxDpr: isSmall() ? 1.25 : 1.5, rtScale: isSmall() ? 0.4 : 0.5, blob: isSmall() ? 0.06 : 0.05 });
+        swarm = window.createSwarm(host, { maxDpr: isSmall() ? 2 : 1.5 });
         document.addEventListener("mousemove", (e) => swarm.setPointer(e.clientX, e.clientY), { passive: true });
         document.addEventListener("mouseleave", () => swarm.clearPointer());
         document.addEventListener("touchmove", (e) => { const t = e.touches[0]; if (t) swarm.setPointer(t.clientX, t.clientY); }, { passive: true });

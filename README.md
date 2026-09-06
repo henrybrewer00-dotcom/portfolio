@@ -1,12 +1,17 @@
 # henry. — portfolio
 
 The whole screen is a sheet of liquid metal, T-1000 style. It's a height
-field shaded as chrome: slow waves roll across it, shapes are stamped into it
-from crisp masks (text, drawings, logos, rendered 3D silhouettes) with a
-bevelled edge, and a dent follows the cursor. Between scenes the stamp melts
-back into the sheet while beads of mercury (a particle spring sim) roll to
-where the next stamp rises. Scrolling doesn't move the page, it tells the
-metal what to become next:
+field shaded as chrome: slow waves roll across it, and a dent follows the
+cursor. Every shape is a signed distance field (text, drawings and logos from
+a canvas; the rover, submarine and keycaps from rendered 3D silhouettes; the
+ball, the load-in drops and the voice bars are analytic). The field is built
+from anti-aliased coverage, softened by a texel or two and stored as
+half-float, then sampled bicubically, so the chrome shows no creases.
+Moving between two shapes is a smooth blend of their two fields, so the
+metal flows from one form to the next as a single continuous surface: the
+edge profile widens, a faint ring runs out, and unions loosen while it
+moves. Scrolling doesn't move the page, it tells the metal what to become
+next:
 
 a bubble → "henry." → "14" → "austin, tx" → "proud vibecoder" → "I make way
 too much stuff." → a bubble (bio) → an eye (SiteLight, with the Stripe
@@ -17,9 +22,9 @@ rover → the ROV submarine → a merge graph (open source) → keycaps that cyc
 through the stack's logos → "99.5" (receipts) → "hire me".
 
 The blend between two shapes is tied directly to scroll position (snapping at
-each scene), with a swirl running through the liquid while it changes. Each
-scene has a caption bottom-left with the real link; clicking the liquid opens
-it. The cursor nudges the liquid aside. The rail on the right jumps scenes.
+each scene; add `?nosnap=1` to turn snapping off). Each scene has a caption
+bottom-left with the real link; clicking the liquid opens it. The rail on
+the right jumps scenes.
 
 ## Run it
 
@@ -37,7 +42,7 @@ addons via an import map. Fonts: Geist, Geist Mono, Instrument Serif.
 | `index.html` | The chrome (name, links, theme toggle, caption + rail hosts, scroll track) |
 | `styles.css` | Paper / ink / orange, captions, rail, light + dark, mobile |
 | `script.js` | The scene list (copy + links), scroll → scene, captions, actions, preloader |
-| `swarm.js` | The sheet: height-field chrome shader, crisp shape masks (canvas + 3D silhouette RT), bead particle sim, droplet legs, scroll blend |
+| `swarm.js` | The sheet: height-field chrome shader, signed distance fields (EDT from canvas + 3D silhouette RT, analytic ball/drops/bars), scroll blend |
 | `shapes.js` | The drawings (eye, wave, rec, burger, mic, paw, git, trophy…) + logo path sampling |
 | `logos.js` | simple-icons paths for the stack |
 | `assets/` | Lily demo video + poster, favicon, share image |
