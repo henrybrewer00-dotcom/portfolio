@@ -145,15 +145,53 @@ function textPoints(count, text, font) {
 
 const VERT = /* glsl */ `
   attribute float aSize; attribute float aMix;
-  uniform float uSize; uniform float uPixelRatio;
+  uniform float uSize;
   varying float vMix;
-  void main(){ vMix = aMix; vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_PointSize = uSize * aSize * uPixelRatio * (3.4 / -mv.z); gl_Position = projectionMatrix * mv; }
+  void main(){ vMix = aMix; vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_PointSize = uSize * aSize * (5.2 / -mv.z); gl_Position = projectionMatrix * mv; }
 `;
+/* each dot splats a soft mound of density; the surface is carved out of the sum */
 const FRAG = /* glsl */ `
   precision highp float;
-  uniform vec3 uInk; uniform vec3 uAccent; uniform float uAlpha;
   varying float vMix;
-  void main(){ vec2 d = gl_PointCoord - 0.5; float r = length(d); if (r > 0.5) discard; float a = smoothstep(0.5, 0.3, r) * uAlpha; gl_FragColor = vec4(mix(uInk, uAccent, step(0.88, vMix)), a); }
+  void main(){ vec2 d = gl_PointCoord - 0.5; float r = length(d) * 2.0; if (r > 1.0) discard; float w = 1.0 - r * r; w = w * w; gl_FragColor = vec4(w, w * vMix, 0.0, 1.0); }
+`;
+const POST_VERT = /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
+const POST_FRAG = /* glsl */ `
+  precision highp float;
+  uniform sampler2D tD; uniform vec2 uRes; uniform float uTh; uniform vec3 uAccent; uniform float uDark; uniform float uTime;
+  varying vec2 vUv;
+  float dens(vec2 uv){ return texture2D(tD, uv).r; }
+  void main(){
+    vec2 px = 1.0 / uRes;
+    float d = dens(vUv);
+    // a slightly blurred gradient keeps the surface rolling instead of pebbly
+    float dx = (dens(vUv + vec2(px.x, 0.0)) - dens(vUv - vec2(px.x, 0.0))) * 0.5 + (dens(vUv + vec2(2.5 * px.x, 0.0)) - dens(vUv - vec2(2.5 * px.x, 0.0))) * 0.25;
+    float dy = (dens(vUv + vec2(0.0, px.y)) - dens(vUv - vec2(0.0, px.y))) * 0.5 + (dens(vUv + vec2(0.0, 2.5 * px.y)) - dens(vUv - vec2(0.0, 2.5 * px.y))) * 0.25;
+    float w = max(fwidth(d) * 1.4, 0.012);
+    float a = smoothstep(uTh - w, uTh + w, d);
+    if (a < 0.004) discard;
+    // treat density as height: rims are steep, the middle is a gently rolling surface
+    vec3 n = normalize(vec3(-dx * 6.0, -dy * 6.0, 0.7 + 0.4 * smoothstep(uTh, uTh + 0.8, d)));
+    vec3 v = vec3(0.0, 0.0, 1.0);
+    vec3 r = reflect(-v, n);
+    float t = clamp(r.y * 0.5 + 0.5, 0.0, 1.0);
+    // a studio around it: dark floor, bright sky, a sharp horizon
+    vec3 floorC = mix(vec3(0.46, 0.45, 0.44), vec3(0.20), uDark);
+    vec3 skyC = vec3(0.99, 0.98, 0.96);
+    vec3 env = mix(floorC, skyC, smoothstep(0.28, 0.76, t));
+    float horizon = smoothstep(0.45, 0.50, t) * (1.0 - smoothstep(0.50, 0.55, t));
+    env = mix(env, vec3(0.16), horizon * 0.8);
+    // a second, softer band so the reflections read as a room and not a gradient
+    float band = smoothstep(0.62, 0.66, t) * (1.0 - smoothstep(0.70, 0.80, t));
+    env = mix(env, vec3(0.62), band * 0.35);
+    float fres = pow(1.0 - max(n.z, 0.0), 1.8);
+    vec3 col = mix(env, vec3(0.04), fres * 0.6);
+    vec3 L1 = normalize(vec3(-0.45, 0.8, 0.5)), L2 = normalize(vec3(0.7, -0.2, 0.6));
+    col += pow(max(dot(normalize(L1 + v), n), 0.0), 90.0) * 1.1;
+    col += pow(max(dot(normalize(L2 + v), n), 0.0), 50.0) * 0.3;
+    col = mix(col, col * (uAccent * 1.5 + 0.2), 0.05);
+    gl_FragColor = vec4(col, a);
+  }
 `;
 
 export function createSwarm(container, options = {}) {
@@ -180,17 +218,27 @@ export function createSwarm(container, options = {}) {
   geo.setAttribute("position", posAttr);
   geo.setAttribute("aSize", new THREE.BufferAttribute(size, 1));
   geo.setAttribute("aMix", new THREE.BufferAttribute(mixv, 1));
-  const uniforms = {
-    uSize: { value: options.pointSize || 3.0 }, uPixelRatio: { value: dpr },
-    uInk: { value: new THREE.Color(options.ink || "#141414") }, uAccent: { value: new THREE.Color(options.accent || "#ff4d1c") },
-    uAlpha: { value: options.alpha ?? 0.92 },
-  };
-  const mat = new THREE.ShaderMaterial({ uniforms, vertexShader: VERT, fragmentShader: FRAG, transparent: true, depthWrite: false, depthTest: false });
+  const uniforms = { uSize: { value: 40 } };
+  const mat = new THREE.ShaderMaterial({ uniforms, vertexShader: VERT, fragmentShader: FRAG, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending });
   const points = new THREE.Points(geo, mat);
   points.frustumCulled = false;
   scene.add(points);
 
-  let w = 0, h = 0, aspect = 1;
+  // the liquid: splat density at half resolution, then carve + shade it full screen
+  const RT_SCALE = options.rtScale || 0.5;
+  const rt = new THREE.WebGLRenderTarget(2, 2, { type: THREE.HalfFloatType, format: THREE.RGBAFormat, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, depthBuffer: false, stencilBuffer: false });
+  const postUniforms = {
+    tD: { value: rt.texture }, uRes: { value: new THREE.Vector2(2, 2) }, uTh: { value: options.threshold ?? 0.9 },
+    uAccent: { value: new THREE.Color(options.accent || "#ff4d1c") }, uDark: { value: 0 }, uTime: { value: 0 },
+  };
+  const postScene = new THREE.Scene();
+  const postCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  const postMat = new THREE.ShaderMaterial({ uniforms: postUniforms, vertexShader: POST_VERT, fragmentShader: POST_FRAG, transparent: true, depthWrite: false, depthTest: false });
+  postMat.extensions = { derivatives: true };
+  postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), postMat));
+  renderer.autoClear = false;
+
+  let w = 0, h = 0, aspect = 1, baseSize = 40;
   function resize() {
     const r = container.getBoundingClientRect();
     const nw = Math.max(2, Math.round(r.width)), nh = Math.max(2, Math.round(r.height));
@@ -198,6 +246,10 @@ export function createSwarm(container, options = {}) {
     w = nw; h = nh; aspect = w / h;
     renderer.setSize(w, h, false);
     camera.aspect = aspect; camera.updateProjectionMatrix();
+    const rw = Math.max(2, Math.round(w * dpr * RT_SCALE)), rh = Math.max(2, Math.round(h * dpr * RT_SCALE));
+    rt.setSize(rw, rh);
+    postUniforms.uRes.value.set(rw, rh);
+    baseSize = rh * (options.blob || 0.05);
   }
 
   /* ---------- shapes ---------- */
@@ -284,7 +336,7 @@ export function createSwarm(container, options = {}) {
 
   const R = options.blowRadius || 0.17, F = options.blowForce || 0.6, WIND = options.wind || 0.03;
   let paused = false, raf = 0, last = performance.now();
-  const K = 52, DAMP = 0.84;
+  const K = 40, DAMP = 0.88;
 
   function step(dt) {
     time += dt;
@@ -293,6 +345,7 @@ export function createSwarm(container, options = {}) {
     if (toMeta && DYNAMIC[toName]) DYNAMIC[toName](to, toMeta, time);
     fitNow();
     curScale += (targetScale - curScale) * Math.min(1, dt * 4);
+    uniforms.uSize.value = baseSize * Math.min(1.35, Math.max(0.42, curScale / 1.25));
     const spin = IS_3D.has(morphT < 0.5 ? fromName : toName) ? 0.22 : 0;
     spinAngle += dt * spin;
     if (spin === 0) { const k = Math.round(spinAngle / (Math.PI * 2)) * Math.PI * 2; spinAngle += (k - spinAngle) * Math.min(1, dt * 2.5); }
@@ -301,8 +354,16 @@ export function createSwarm(container, options = {}) {
     const px = pointer.x - ox, py = pointer.y - oy, active = pointer.active;
     const wvx = pointer.vx * WIND, wvy = pointer.vy * WIND;
     const breathe = curScale * (1 + 0.008 * Math.sin(time * 1.1));
+    // while shapes are changing, a slow swirl runs through the liquid
+    const act = morphT < 1 ? Math.sin(Math.PI * Math.min(1, Math.max(0, morphT))) : 0;
+    const swirl = act * (options.swirl ?? 0.7);
     for (let i = 0; i < count; i++) {
       const i3 = i * 3, e = effT(i);
+      if (swirl > 0) {
+        const X = pos[i3] * 1.6, Y = pos[i3 + 1] * 1.6;
+        vel[i3] += (Math.sin(Y * 2.1 + time * 0.9) + Math.cos(Y * 1.3 - time * 0.6)) * swirl * dt;
+        vel[i3 + 1] -= (Math.sin(X * 1.7 - time * 0.8) + Math.cos(X * 1.1 + time * 0.5)) * swirl * dt;
+      }
       let tx = from[i3] + (to[i3] - from[i3]) * e, ty = from[i3 + 1] + (to[i3 + 1] - from[i3 + 1]) * e, tz = from[i3 + 2] + (to[i3 + 2] - from[i3 + 2]) * e;
       const rx = (cs * tx + sn * tz) * breathe, rz = (-sn * tx + cs * tz) * breathe;
       tx = rx; tz = rz; ty = ty * breathe + 0.01 * Math.sin(time * 2 + phase[i]);
@@ -324,7 +385,10 @@ export function createSwarm(container, options = {}) {
     raf = requestAnimationFrame(loop);
     if (paused) { last = now; return; }
     const dt = Math.min(0.033, (now - last) / 1000); last = now;
-    resize(); step(dt); renderer.render(scene, camera);
+    resize(); step(dt);
+    postUniforms.uTime.value = time;
+    renderer.setRenderTarget(rt); renderer.clear(); renderer.render(scene, camera);
+    renderer.setRenderTarget(null); renderer.clear(); renderer.render(postScene, postCam);
   }
   resize();
   raf = requestAnimationFrame(loop);
@@ -337,10 +401,11 @@ export function createSwarm(container, options = {}) {
     setFit(f) { fit = { fill: f.fill ?? fit.fill, fillX: f.fillX ?? fit.fillX }; },
     setOffset(x, y = 0) { points.position.x = x; points.position.y = y; },
     get offset() { return { x: points.position.x, y: points.position.y }; },
-    setColors(ink, accent) { uniforms.uInk.value.set(ink); uniforms.uAccent.value.set(accent); },
+    setColors(ink, accent, dark = false) { postUniforms.uAccent.value.set(accent); postUniforms.uDark.value = dark ? 1 : 0; },
+    setThreshold(v) { postUniforms.uTh.value = v; },
     setPaused(v) { paused = !!v; last = performance.now(); },
     burst(strength = 1) { for (let i = 0; i < count * 3; i++) vel[i] += (Math.random() - 0.5) * 1.2 * strength; },
-    destroy() { cancelAnimationFrame(raf); ro.disconnect(); geo.dispose(); mat.dispose(); renderer.dispose(); renderer.domElement.remove(); },
+    destroy() { cancelAnimationFrame(raf); ro.disconnect(); geo.dispose(); mat.dispose(); postMat.dispose(); rt.dispose(); renderer.dispose(); renderer.domElement.remove(); },
   };
 }
 

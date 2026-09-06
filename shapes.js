@@ -50,6 +50,14 @@
       ctx.beginPath(); ctx.moveTo(0.7 * s, 0.3 * s); ctx.bezierCurveTo(0.7 * s, 0.52 * s, 0.32 * s, 0.44 * s, 0.3 * s, 0.7 * s); stroke(ctx, 0.05 * s);
       for (const [x, y] of [[0.3, 0.2], [0.3, 0.8], [0.7, 0.28]]) { ctx.beginPath(); ctx.arc(x * s, y * s, 0.075 * s, 0, Math.PI * 2); ctx.fill(); }
     },
+    trophy(ctx, s) { // hackathon wins
+      ctx.beginPath(); ctx.moveTo(0.3 * s, 0.14 * s); ctx.lineTo(0.7 * s, 0.14 * s); ctx.lineTo(0.66 * s, 0.46 * s);
+      ctx.quadraticCurveTo(0.5 * s, 0.64 * s, 0.34 * s, 0.46 * s); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.arc(0.27 * s, 0.29 * s, 0.1 * s, Math.PI * 0.5, Math.PI * 1.5, false); stroke(ctx, 0.045 * s);
+      ctx.beginPath(); ctx.arc(0.73 * s, 0.29 * s, 0.1 * s, -Math.PI * 0.5, Math.PI * 0.5, false); stroke(ctx, 0.045 * s);
+      rr(ctx, 0.46 * s, 0.58 * s, 0.08 * s, 0.16 * s, 0.02 * s);
+      rr(ctx, 0.32 * s, 0.74 * s, 0.36 * s, 0.09 * s, 0.03 * s);
+    },
     play(ctx, s) { // the on-stage video — an outlined play button
       ctx.beginPath(); ctx.arc(0.5 * s, 0.5 * s, 0.4 * s, 0, Math.PI * 2); stroke(ctx, 0.045 * s);
       ctx.beginPath(); ctx.moveTo(0.42 * s, 0.32 * s); ctx.lineTo(0.66 * s, 0.5 * s); ctx.lineTo(0.42 * s, 0.68 * s); ctx.closePath(); stroke(ctx, 0.045 * s);

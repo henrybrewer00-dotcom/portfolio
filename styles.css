@@ -52,6 +52,9 @@ body.is-ready .brand, body.is-ready .nav, body.is-ready .meta { opacity: 1; }
 .cap.is-on { opacity: 1; transform: none; pointer-events: auto; transition-delay: 0.25s; }
 .cap.is-word { left: 50%; right: auto; bottom: 4.2rem; max-width: none; transform: translate(-50%, 8px); font-family: "Geist Mono", ui-monospace, monospace; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); }
 .cap.is-word.is-on { transform: translate(-50%, 0); }
+.cap .list { list-style: none; margin-top: 1rem; display: grid; gap: 0.5rem; }
+.cap .list li { font-size: 1.35rem; font-weight: 500; letter-spacing: -0.02em; display: flex; align-items: baseline; gap: 0.7rem; }
+.cap .list li::before { content: "—"; color: var(--accent); font-family: "Geist Mono", ui-monospace, monospace; font-size: 0.8rem; }
 /* the SiteLight receipt */
 .cap .fig { margin: 1rem 0 0; max-width: 21rem; border: 1px solid var(--line); border-radius: 0.5rem; overflow: hidden; background: #fff; box-shadow: 0 10px 30px rgba(20, 20, 20, 0.08); transform: rotate(-1.2deg); }
 .cap .fig img { display: block; width: 100%; }
