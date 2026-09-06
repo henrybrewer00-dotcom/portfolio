@@ -1,30 +1,18 @@
 # henry. — portfolio
 
-The whole screen is a sheet of liquid metal, T-1000 style. It's a height
-field shaded as chrome: slow waves roll across it, and a dent follows the
-cursor. Every shape is a signed distance field (text, drawings and logos from
-a canvas; the rover, submarine and keycaps from rendered 3D silhouettes; the
-ball, the load-in drops and the voice bars are analytic). The field is built
-from anti-aliased coverage, softened by a texel or two and stored as
-half-float, then sampled bicubically, so the chrome shows no creases.
-Moving between two shapes is a smooth blend of their two fields, so the
-metal flows from one form to the next as a single continuous surface: the
-edge profile widens, a faint ring runs out, and unions loosen while it
-moves. Scrolling doesn't move the page, it tells the metal what to become
-next:
+One screen. Sixteen thousand ink dots. Scrolling doesn't move the page, it
+tells the dots what to become next:
 
-a bubble → "henry." → "14" → "austin, tx" → "proud vibecoder" → "I make way
-too much stuff." → a bubble (bio) → an eye (SiteLight, with the Stripe
-first-$2 receipt) → a live waveform (Lily, with a sample call typing itself
-out) → a trophy (hackathon wins) → a record button (Glasscast) → a burger
-(Lily's Drive-Thru) → a mic (Eleven Mile) → a paw (PawBot) → the S.I.E.G.E.
-rover → the ROV submarine → a merge graph (open source) → keycaps that cycle
-through the stack's logos → "99.5" (receipts) → "hire me".
+"I make way too much stuff." → proud vibecoder → an eye (SiteLight) → a
+waveform (Lily, with a sample call typing itself out) → a trophy (some
+hackathon wins) → a record button (Glasscast) → a burger (Lily's Drive-Thru) → a mic
+(Eleven Mile) → a paw (PawBot) → the S.I.E.G.E. rover → the ROV submarine →
+a merge graph (open source) → a row of keycaps (the stack cycles through
+tool logos; hover holds one) → "99.5" (receipts) → "hire me".
 
-The blend between two shapes is tied directly to scroll position (snapping at
-each scene; add `?nosnap=1` to turn snapping off). Each scene has a caption
-bottom-left with the real link; clicking the liquid opens it. The rail on
-the right jumps scenes.
+Each scene has a small caption bottom-left with the real link. Clicking the
+dots does the scene's thing (opens the repo, plays the video). The cursor
+nudges the dots aside. The rail on the right jumps between scenes.
 
 ## Run it
 
@@ -42,9 +30,8 @@ addons via an import map. Fonts: Geist, Geist Mono, Instrument Serif.
 | `index.html` | The chrome (name, links, theme toggle, caption + rail hosts, scroll track) |
 | `styles.css` | Paper / ink / orange, captions, rail, light + dark, mobile |
 | `script.js` | The scene list (copy + links), scroll → scene, captions, actions, preloader |
-| `swarm.js` | The sheet: height-field chrome shader, signed distance fields (EDT from canvas + 3D silhouette RT, analytic ball/drops/bars), scroll blend |
-| `shapes.js` | The drawings (eye, wave, rec, burger, mic, paw, git, trophy…) + logo path sampling |
-| `logos.js` | simple-icons paths for the stack |
+| `swarm.js` | The dots: Three.js Points + spring sim, 3D shape builders, text shapes, fit + offset, cursor nudge |
+| `shapes.js` | The ink drawings (eye, wave, rec, burger, mic, paw, git, play, pressme) |
 | `assets/` | Lily demo video + poster, favicon, share image |
 | `deck/`, `old/` | The two previous portfolios |
 

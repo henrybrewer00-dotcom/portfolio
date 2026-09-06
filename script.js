@@ -61,8 +61,8 @@ function renderCaptions() {
       ? `<button type="button" class="act" data-act="video">${esc(a.label)}</button>`
       : `<a class="act${a.soft ? " is-soft" : ""}" href="${esc(a.href)}"${a.href.startsWith("http") ? ' target="_blank" rel="noreferrer"' : ""}>${esc(a.label)}</a>`).join("")}</div>` : "";
     const tr = s.transcript ? `<div class="tr" data-transcript>${TRANSCRIPT.map(([who, line]) => `<div class="tr-line${who === "Lily" ? " is-lily" : ""}"><span class="tr-who">${esc(who)}</span><span class="tr-text" data-text="${esc(line)}"></span></div>`).join("")}<p class="tr-note">sample call · not a recording</p></div>` : "";
-    const list = s.list ? `<ul class="list">${s.list.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : "";
     const img = s.image ? `<figure class="fig"><img src="${esc(s.image.src)}" alt="${esc(s.image.alt)}" loading="lazy" /><figcaption>${esc(s.image.cap)}</figcaption></figure>` : "";
+    const list = s.list ? `<ul class="list">${s.list.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : "";
     const tools = s.tools ? `<div class="tools" data-tools>${s.tools.map((t) => `<button type="button" data-tool="${esc(t)}">${esc((window.LOGOS && window.LOGOS[t] && window.LOGOS[t].label) || t)}</button>`).join("")}</div>` : "";
     return `<div class="cap" data-cap="${i}">
       <p class="kicker">${esc(s.kicker || "")}</p>
@@ -85,8 +85,7 @@ function layoutFor(s) {
   const hasCap = !!(s && s.title);
   if (isSmall()) {
     if (!hasCap) return { x: 0, y: 0, fill: 0.5, fillX: 0.9 };
-    if (s.image) return { x: 0, y: hh * 0.62, fill: 0.26, fillX: 0.6 };   // tall caption: the shape sits small, up top
-    return { x: 0, y: hh * (s.transcript || s.tools ? 0.5 : 0.36), fill: s.transcript || s.tools ? 0.3 : 0.42, fillX: 0.9 };
+    return { x: 0, y: hh * (s.transcript || s.image || s.tools ? 0.5 : 0.36), fill: s.transcript || s.image || s.tools ? 0.3 : 0.42, fillX: 0.9 };
   }
   if (!hasCap) return { x: 0, y: 0, fill: 0.8, fillX: 0.86 };
   return { x: hw * 0.34, y: hh * 0.06, fill: 0.72, fillX: 0.52 };
@@ -122,7 +121,7 @@ function initScroll() {
   }
   ScrollTrigger.create({
     trigger: track, start: "top top", end: "bottom bottom", scrub: true,
-    snap: reduceMotion || /nosnap/.test(location.search) ? false : { snapTo: STARTS.map((s) => s / LAST), duration: { min: 0.2, max: 0.5 }, delay: 0.08, ease: "power1.inOut" },
+    snap: reduceMotion ? false : { snapTo: STARTS.map((s) => s / LAST), duration: { min: 0.2, max: 0.5 }, delay: 0.08, ease: "power1.inOut" },
     onUpdate: (self) => update(self.scroll()),
   });
   $("[data-top]").addEventListener("click", (e) => { e.preventDefault(); goTo(0); });
@@ -131,7 +130,7 @@ function initScroll() {
 }
 
 /* ---------- scene state ---------- */
-let pressTimer = null, transcriptRan = false;
+let transcriptRan = false;
 function activate(i) {
   if (i === active) return;
   active = i;
@@ -142,17 +141,15 @@ function activate(i) {
   const hit = $("[data-hit]");
   hit.classList.toggle("is-action", !!s.action);
   hit.setAttribute("title", s.action ? s.action.label : "");
-  clearTimeout(pressTimer); pressTimer = null;
   stopCycle();
-  if (swarm && swarm.override) swarm.clearOverride(0.9);
+  if (swarm && swarm.override) swarm.clearOverride(0.8);
   if (s.tools && swarm) setTimeout(() => { if (active === i) startCycle(); }, 900);
-  if (s.pressme) pressTimer = setTimeout(() => { if (active === i && swarm && !swarm.override) swarm.setOverride("draw:pressme", 1.1); }, 5000);
   if (s.transcript && !transcriptRan) { transcriptRan = true; typeTranscript(); }
 }
 function runAction() {
   const s = SCENES[active];
   if (!s || !s.action) return;
-  if (s.action.type === "video") { clearTimeout(pressTimer); if (swarm) { swarm.burst(0.5); if (swarm.override) swarm.clearOverride(0.8); } openLightbox(s.action.src, s.action.poster, s.title + " — a16z × Cursor, 1st place"); }
+  if (s.action.type === "video") { if (swarm) { swarm.burst(0.5); if (swarm.override) swarm.clearOverride(0.8); } openLightbox(s.action.src, s.action.poster, s.title + " — a16z × Cursor, 1st place"); }
   else window.open(s.action.href, "_blank", "noopener");
 }
 async function typeTranscript() {
@@ -167,7 +164,7 @@ async function typeTranscript() {
     await new Promise((r) => setTimeout(r, 380));
   }
 }
-/* the stack: the dots cycle through the tools on their own; hovering one holds it */
+/* the stack: it cycles through the tools; hovering one holds it */
 let cycleTimer = null, hotTool = null;
 function showTool(slug) {
   if (!swarm) return;
@@ -196,7 +193,7 @@ function initSwarm() {
     const host = $("[data-swarm]");
     const start = () => {
       try {
-        swarm = window.createSwarm(host, { maxDpr: isSmall() ? 2 : 1.5 });
+        swarm = window.createSwarm(host, { count: isSmall() ? 6500 : 16000, maxDpr: isSmall() ? 1.5 : 2, ink: cssVar("--fg"), accent: cssVar("--accent"), pointSize: isSmall() ? 3.6 : 3.0 });
         document.addEventListener("mousemove", (e) => swarm.setPointer(e.clientX, e.clientY), { passive: true });
         document.addEventListener("mouseleave", () => swarm.clearPointer());
         document.addEventListener("touchmove", (e) => { const t = e.touches[0]; if (t) swarm.setPointer(t.clientX, t.clientY); }, { passive: true });
@@ -232,7 +229,7 @@ function initTheme() {
   const apply = (m) => {
     document.documentElement.classList.remove("dark", "light"); document.documentElement.classList.add(m);
     $('meta[name="theme-color"]').setAttribute("content", m === "dark" ? "#0f0f0e" : "#f3efe6");
-    if (swarm) swarm.setColors(cssVar("--fg"), cssVar("--accent"), m === "dark");
+    if (swarm) swarm.setColors(cssVar("--fg"), cssVar("--accent"));
   };
   btn.addEventListener("click", () => { const next = document.documentElement.classList.contains("dark") ? "light" : "dark"; try { localStorage.setItem("mode", next); } catch (e) {} apply(next); });
   apply(document.documentElement.classList.contains("dark") ? "dark" : "light");
@@ -246,7 +243,7 @@ async function boot() {
   $("[data-hit]").addEventListener("click", runAction);
   document.addEventListener("click", (e) => { if (e.target.closest('[data-act="video"]')) runAction(); });
   await initSwarm();
-  if (swarm) swarm.setColors(cssVar("--fg"), cssVar("--accent"), document.documentElement.classList.contains("dark"));
+  if (swarm) swarm.setColors(cssVar("--fg"), cssVar("--accent"));
   initScroll();
   // load-in: the field gathers into whatever scene you're on, then scrolling takes over
   try { await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1500))]); } catch (e) {}
