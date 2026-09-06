@@ -1,12 +1,12 @@
 # henry. — portfolio
 
-One screen of liquid silver, T-1000 style. Eleven thousand particles are
-splatted into a density field, blurred smooth, and a screen-space shader
-carves the mirror surface out of it and reflects a bright studio off it
-(sky, horizon line, softboxes, dark rims). Every transition goes shape →
-droplets → next shape: each region of the target pulls its particles into a
-ball, the balls drift in, then flatten into place. Scrolling doesn't move the
-page, it tells the liquid what to become next:
+The whole screen is a sheet of liquid metal, T-1000 style. It's a height
+field shaded as chrome: slow waves roll across it, shapes are stamped into it
+from crisp masks (text, drawings, logos, rendered 3D silhouettes) with a
+bevelled edge, and a dent follows the cursor. Between scenes the stamp melts
+back into the sheet while beads of mercury (a particle spring sim) roll to
+where the next stamp rises. Scrolling doesn't move the page, it tells the
+metal what to become next:
 
 a bubble → "henry." → "14" → "austin, tx" → "proud vibecoder" → "I make way
 too much stuff." → a bubble (bio) → an eye (SiteLight, with the Stripe
@@ -37,7 +37,7 @@ addons via an import map. Fonts: Geist, Geist Mono, Instrument Serif.
 | `index.html` | The chrome (name, links, theme toggle, caption + rail hosts, scroll track) |
 | `styles.css` | Paper / ink / orange, captions, rail, light + dark, mobile |
 | `script.js` | The scene list (copy + links), scroll → scene, captions, actions, preloader |
-| `swarm.js` | The liquid: particle spring sim, density splat + mercury post pass, shape builders (3D, text, drawings, logos), scroll blend |
+| `swarm.js` | The sheet: height-field chrome shader, crisp shape masks (canvas + 3D silhouette RT), bead particle sim, droplet legs, scroll blend |
 | `shapes.js` | The drawings (eye, wave, rec, burger, mic, paw, git, trophy…) + logo path sampling |
 | `logos.js` | simple-icons paths for the stack |
 | `assets/` | Lily demo video + poster, favicon, share image |

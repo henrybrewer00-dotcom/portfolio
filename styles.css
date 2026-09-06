@@ -6,7 +6,8 @@
   --bg: var(--paper); --fg: var(--ink);
   --line: rgba(20, 20, 20, 0.16); --dim: rgba(20, 20, 20, 0.55);
 }
-html.dark { --bg: #0f0f0e; --fg: #ece7db; --line: rgba(236, 231, 219, 0.16); --dim: rgba(236, 231, 219, 0.55); }
+html.dark { --bg: #0f0f0e; --fg: #f1f1f1; --line: rgba(241, 241, 241, 0.2); --dim: rgba(241, 241, 241, 0.6); }
+html.light { --bg: #1a1a1a; --fg: #101010; --line: rgba(16, 16, 16, 0.2); --dim: rgba(16, 16, 16, 0.6); }
 
 html { box-sizing: border-box; -webkit-text-size-adjust: 100%; }
 *, *:before, *:after { box-sizing: inherit; margin: 0; padding: 0; }
@@ -17,7 +18,7 @@ body {
   overflow-x: hidden;
 }
 /* print grain */
-body::after { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 30; opacity: 0.045; mix-blend-mode: multiply; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.8 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+body::after { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 30; opacity: 0.05; mix-blend-mode: screen; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.8 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
 html.dark body::after { mix-blend-mode: screen; }
 ::selection { background: var(--accent); color: #fff; }
 a { color: inherit; text-decoration: none; }
@@ -33,6 +34,8 @@ em { font-family: "Instrument Serif", Georgia, serif; font-style: italic; font-w
 
 /* ---------- chrome ---------- */
 .brand { position: fixed; top: 1.4rem; left: 1.6rem; z-index: 10; font-size: 1rem; letter-spacing: 0.02em; font-weight: 500; }
+.brand, .nav, .meta, .hint, .rail button span, .theme { text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7), 0 0 14px rgba(0, 0, 0, 0.45); }
+.rail button i { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6); }
 .nav { position: fixed; top: 1.4rem; right: 1.6rem; z-index: 10; display: flex; gap: 1.4rem; align-items: center; font-size: 0.8rem; text-transform: lowercase; }
 .nav a { position: relative; padding-bottom: 0.15em; }
 .nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: 0 50%; transition: transform 0.4s; }
@@ -64,7 +67,8 @@ body.is-ready .brand, body.is-ready .nav, body.is-ready .meta { opacity: 1; }
 .cap .tools button { font-family: "Geist Mono", ui-monospace, monospace; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; background: none; border: 1px solid var(--line); border-radius: 999px; padding: 0.45em 0.85em; color: inherit; cursor: pointer; transition: border-color 0.25s, color 0.25s, background-color 0.25s; }
 .cap .tools button:hover, .cap .tools button.is-hot { border-color: var(--accent); color: var(--accent); }
 .cap .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.9rem; }
-.cap h2 { font-size: 2.6rem; font-weight: 500; letter-spacing: -0.03em; line-height: 1; margin-bottom: 0.7rem; }
+.cap h2 { font-size: 2.6rem; font-weight: 500; letter-spacing: -0.03em; line-height: 1; margin-bottom: 0.7rem; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), 0 2px 18px rgba(0, 0, 0, 0.45); }
+.cap p, .cap .tags, .cap .kicker, .cap .list li, .cap .act, .cap .tr-line, .cap .tr-note, .cap .tools button, .cap.is-word { text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65), 0 0 12px rgba(0, 0, 0, 0.4); }
 .cap p { font-size: 1.02rem; line-height: 1.45; max-width: 26rem; }
 .cap .tags { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin-top: 0.9rem; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
 .cap .acts { display: flex; flex-wrap: wrap; gap: 0.6rem 1.4rem; margin-top: 1.2rem; }

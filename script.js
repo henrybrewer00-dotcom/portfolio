@@ -178,7 +178,7 @@ function startCycle() {
   stopCycle();
   let k = 0;
   showTool(TOOLS[0]);
-  cycleTimer = setInterval(() => { if (hotTool) return; k = (k + 1) % TOOLS.length; showTool(TOOLS[k]); }, 1900);
+  cycleTimer = setInterval(() => { if (hotTool) return; k = (k + 1) % TOOLS.length; showTool(TOOLS[k]); }, 3000);
 }
 function stopCycle() { clearInterval(cycleTimer); cycleTimer = null; hotTool = null; }
 function initTools() {
@@ -195,7 +195,7 @@ function initSwarm() {
     const host = $("[data-swarm]");
     const start = () => {
       try {
-        swarm = window.createSwarm(host, { count: isSmall() ? 5000 : 11000, maxDpr: isSmall() ? 1.5 : 2, rtScale: isSmall() ? 0.4 : 0.5, blob: isSmall() ? 0.056 : 0.045, threshold: 0.66, blurPasses: 1, accent: cssVar("--accent") });
+        swarm = window.createSwarm(host, { count: isSmall() ? 4500 : 9000, maxDpr: isSmall() ? 1.25 : 1.5, rtScale: isSmall() ? 0.4 : 0.5, blob: isSmall() ? 0.06 : 0.05 });
         document.addEventListener("mousemove", (e) => swarm.setPointer(e.clientX, e.clientY), { passive: true });
         document.addEventListener("mouseleave", () => swarm.clearPointer());
         document.addEventListener("touchmove", (e) => { const t = e.touches[0]; if (t) swarm.setPointer(t.clientX, t.clientY); }, { passive: true });

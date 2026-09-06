@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="light">
+<html lang="en" class="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,11 +19,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20260905e" />
+    <link rel="stylesheet" href="styles.css?v=20260905f" />
     <script>
       (function () {
         try {
-          var m = localStorage.getItem("mode") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+          var m = localStorage.getItem("mode") || "dark";
           document.documentElement.classList.remove("light", "dark"); document.documentElement.classList.add(m);
         } catch (e) {}
       })();
@@ -71,9 +71,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
-    <script src="logos.js?v=20260905e"></script>
-    <script src="shapes.js?v=20260905e"></script>
-    <script type="module" src="swarm.js?v=20260905e"></script>
-    <script src="script.js?v=20260905e" defer></script>
+    <script src="logos.js?v=20260905f"></script>
+    <script src="shapes.js?v=20260905f"></script>
+    <script type="module" src="swarm.js?v=20260905f"></script>
+    <script src="script.js?v=20260905f" defer></script>
   </body>
 </html>
