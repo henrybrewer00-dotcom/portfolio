@@ -58,10 +58,11 @@ function waveUpdate(arr, meta, time) {
 const DYNAMIC = { wave: waveUpdate };
 
 const SHAPES3D = {
-  field(count, aspect) {
-    const out = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) { out[i * 3] = (Math.random() * 2 - 1) * 1.6 * aspect; out[i * 3 + 1] = (Math.random() * 2 - 1) * 1.6; out[i * 3 + 2] = (Math.random() - 0.5) * 0.4; }
-    out.bounds = { x: 1.6 * aspect, y: 1.6 }; out.fixed = true;
+  field(count, aspect) { // scattered drops across the whole screen
+    const out = new Float32Array(count * 3), D = 26, c = [];
+    for (let k = 0; k < D; k++) c.push([(Math.random() * 2 - 1) * 1.7 * aspect, (Math.random() * 2 - 1) * 1.6, (Math.random() - 0.5) * 0.6]);
+    for (let i = 0; i < count; i++) { const k = i % D; out[i * 3] = c[k][0] + (Math.random() - 0.5) * 0.05; out[i * 3 + 1] = c[k][1] + (Math.random() - 0.5) * 0.05; out[i * 3 + 2] = c[k][2] + (Math.random() - 0.5) * 0.05; }
+    out.bounds = { x: 1.7 * aspect, y: 1.6 }; out.fixed = true;
     return out;
   },
   sphere(count) {
@@ -78,7 +79,7 @@ const SHAPES3D = {
     const sp = 0.115;
     for (let i = 0; i < count; i++) {
       bar[i] = Math.floor(Math.random() * WAVE_BARS); u[i] = Math.random() * 2 - 1;
-      out[i * 3] = (bar[i] - (WAVE_BARS - 1) / 2) * sp + (Math.random() - 0.5) * 0.085;
+      out[i * 3] = (bar[i] - (WAVE_BARS - 1) / 2) * sp + (Math.random() - 0.5) * 0.11;
       out[i * 3 + 2] = (Math.random() - 0.5) * 0.06;
     }
     out.meta = { bar, u };
@@ -128,7 +129,7 @@ function textPoints(count, text, font) {
   const size = 150, lh = size * 1.02;
   c.width = 1400; c.height = Math.round(lh * lines.length + 60);
   const ctx = c.getContext("2d");
-  ctx.fillStyle = "#000"; ctx.font = font || `500 ${size}px Geist, sans-serif`;
+  ctx.fillStyle = "#000"; ctx.font = font || `600 ${size}px Geist, sans-serif`;
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
   lines.forEach((l, i) => ctx.fillText(l, c.width / 2, 30 + lh * (i + 0.5)));
   const img = ctx.getImageData(0, 0, c.width, c.height).data;
@@ -156,40 +157,59 @@ const FRAG = /* glsl */ `
   void main(){ vec2 d = gl_PointCoord - 0.5; float r = length(d) * 2.0; if (r > 1.0) discard; float w = 1.0 - r * r; w = w * w; gl_FragColor = vec4(w, w * vMix, 0.0, 1.0); }
 `;
 const POST_VERT = /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
+/* separable gaussian blur — run twice each way so the surface is glass-smooth */
+const BLUR_FRAG = /* glsl */ `
+  precision highp float;
+  uniform sampler2D tD; uniform vec2 uDir; uniform vec2 uRes;
+  varying vec2 vUv;
+  void main(){
+    vec2 st = uDir / uRes;
+    vec4 c = texture2D(tD, vUv) * 0.2270;
+    c += (texture2D(tD, vUv + st * 1.0) + texture2D(tD, vUv - st * 1.0)) * 0.1946;
+    c += (texture2D(tD, vUv + st * 2.0) + texture2D(tD, vUv - st * 2.0)) * 0.1216;
+    c += (texture2D(tD, vUv + st * 3.0) + texture2D(tD, vUv - st * 3.0)) * 0.0540;
+    c += (texture2D(tD, vUv + st * 4.0) + texture2D(tD, vUv - st * 4.0)) * 0.0162;
+    gl_FragColor = c;
+  }
+`;
+/* liquid silver: the blurred density is a height field; its slope reflects a bright studio */
 const POST_FRAG = /* glsl */ `
   precision highp float;
   uniform sampler2D tD; uniform vec2 uRes; uniform float uTh; uniform vec3 uAccent; uniform float uDark; uniform float uTime;
   varying vec2 vUv;
   float dens(vec2 uv){ return texture2D(tD, uv).r; }
+  float band(float x, float c, float w){ return smoothstep(c - w, c, x) * (1.0 - smoothstep(c, c + w, x)); }
   void main(){
     vec2 px = 1.0 / uRes;
     float d = dens(vUv);
-    // a slightly blurred gradient keeps the surface rolling instead of pebbly
-    float dx = (dens(vUv + vec2(px.x, 0.0)) - dens(vUv - vec2(px.x, 0.0))) * 0.5 + (dens(vUv + vec2(2.5 * px.x, 0.0)) - dens(vUv - vec2(2.5 * px.x, 0.0))) * 0.25;
-    float dy = (dens(vUv + vec2(0.0, px.y)) - dens(vUv - vec2(0.0, px.y))) * 0.5 + (dens(vUv + vec2(0.0, 2.5 * px.y)) - dens(vUv - vec2(0.0, 2.5 * px.y))) * 0.25;
-    float w = max(fwidth(d) * 1.4, 0.012);
+    float dx = dens(vUv + vec2(px.x, 0.0)) - dens(vUv - vec2(px.x, 0.0));
+    float dy = dens(vUv + vec2(0.0, px.y)) - dens(vUv - vec2(0.0, px.y));
+    float w = max(fwidth(d) * 1.3, 0.006);
     float a = smoothstep(uTh - w, uTh + w, d);
-    if (a < 0.004) discard;
-    // treat density as height: rims are steep, the middle is a gently rolling surface
-    vec3 n = normalize(vec3(-dx * 6.0, -dy * 6.0, 0.7 + 0.4 * smoothstep(uTh, uTh + 0.8, d)));
+    if (a < 0.003) discard;
+    // height field → normal; the interior is a soft dome, the rims curl away
+    // a mostly flat mirror with a soft dome; only the rims tilt hard
+    vec3 n = normalize(vec3(-dx * 4.5, -dy * 4.5, 1.0));
+    float edge = 1.0 - smoothstep(uTh, uTh + 0.1, d);
     vec3 v = vec3(0.0, 0.0, 1.0);
     vec3 r = reflect(-v, n);
-    float t = clamp(r.y * 0.5 + 0.5, 0.0, 1.0);
-    // a studio around it: dark floor, bright sky, a sharp horizon
-    vec3 floorC = mix(vec3(0.46, 0.45, 0.44), vec3(0.20), uDark);
-    vec3 skyC = vec3(0.99, 0.98, 0.96);
-    vec3 env = mix(floorC, skyC, smoothstep(0.28, 0.76, t));
-    float horizon = smoothstep(0.45, 0.50, t) * (1.0 - smoothstep(0.50, 0.55, t));
-    env = mix(env, vec3(0.16), horizon * 0.8);
-    // a second, softer band so the reflections read as a room and not a gradient
-    float band = smoothstep(0.62, 0.66, t) * (1.0 - smoothstep(0.70, 0.80, t));
-    env = mix(env, vec3(0.62), band * 0.35);
-    float fres = pow(1.0 - max(n.z, 0.0), 1.8);
-    vec3 col = mix(env, vec3(0.04), fres * 0.6);
-    vec3 L1 = normalize(vec3(-0.45, 0.8, 0.5)), L2 = normalize(vec3(0.7, -0.2, 0.6));
-    col += pow(max(dot(normalize(L1 + v), n), 0.0), 90.0) * 1.1;
-    col += pow(max(dot(normalize(L2 + v), n), 0.0), 50.0) * 0.3;
-    col = mix(col, col * (uAccent * 1.5 + 0.2), 0.05);
+    // the camera looks slightly down at the liquid: flat metal mirrors the sky, tilted rims catch the horizon
+    float t = clamp((r.y + 0.42) * 0.5 + 0.5, 0.0, 1.0);
+    float u = r.x * 0.5 + 0.5;
+    float floorL = mix(0.36, 0.12, uDark), skyL = mix(0.97, 0.82, uDark);
+    float env = mix(floorL, skyL, smoothstep(0.24, 0.46, t));
+    env += band(t, 0.78, 0.08) * 0.35;          // softbox overhead
+    env += band(t, 0.10, 0.05) * 0.20;          // floor bounce
+    env -= band(t, 0.34, 0.015) * 0.35;         // the horizon line
+    env += band(u, 0.16, 0.08) * 0.06 + band(u, 0.86, 0.06) * 0.10;
+    vec3 col = vec3(env) * vec3(0.92, 0.94, 0.97);
+    float fres = pow(1.0 - max(n.z, 0.0), 3.0);
+    col = mix(col, vec3(0.05, 0.05, 0.06), min(1.0, fres * 0.7 + edge * 0.55));
+    col += 0.04;
+    vec3 L1 = normalize(vec3(-0.35, 0.85, 0.55)), L2 = normalize(vec3(0.6, -0.3, 0.7));
+    col += pow(max(dot(normalize(L1 + v), n), 0.0), 140.0) * 1.3;
+    col += pow(max(dot(normalize(L2 + v), n), 0.0), 60.0) * 0.35;
+    col = mix(col, col * (uAccent * 0.6 + 0.6), 0.035);
     gl_FragColor = vec4(col, a);
   }
 `;
@@ -209,7 +229,7 @@ export function createSwarm(container, options = {}) {
   const halfH = camera.position.z * Math.tan((camera.fov / 2) * Math.PI / 180);
 
   const pos = new Float32Array(count * 3), vel = new Float32Array(count * 3);
-  const from = new Float32Array(count * 3), to = new Float32Array(count * 3);
+  const from = new Float32Array(count * 3), to = new Float32Array(count * 3), drop = new Float32Array(count * 3);
   const size = new Float32Array(count), mixv = new Float32Array(count), delay = new Float32Array(count), phase = new Float32Array(count);
   for (let i = 0; i < count; i++) { size[i] = 0.5 + Math.random() * 0.9 + (Math.random() < 0.05 ? 1.1 : 0); mixv[i] = Math.random(); delay[i] = Math.random(); phase[i] = Math.random() * Math.PI * 2; }
 
@@ -226,7 +246,11 @@ export function createSwarm(container, options = {}) {
 
   // the liquid: splat density at half resolution, then carve + shade it full screen
   const RT_SCALE = options.rtScale || 0.5;
-  const rt = new THREE.WebGLRenderTarget(2, 2, { type: THREE.HalfFloatType, format: THREE.RGBAFormat, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, depthBuffer: false, stencilBuffer: false });
+  const rtOpts = { type: THREE.HalfFloatType, format: THREE.RGBAFormat, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, depthBuffer: false, stencilBuffer: false };
+  const rt = new THREE.WebGLRenderTarget(2, 2, rtOpts), rtB = new THREE.WebGLRenderTarget(2, 2, rtOpts);
+  const blurUniforms = { tD: { value: rt.texture }, uDir: { value: new THREE.Vector2(1, 0) }, uRes: { value: new THREE.Vector2(2, 2) } };
+  const blurMat = new THREE.ShaderMaterial({ uniforms: blurUniforms, vertexShader: POST_VERT, fragmentShader: BLUR_FRAG, depthWrite: false, depthTest: false });
+  const blurScene = new THREE.Scene();
   const postUniforms = {
     tD: { value: rt.texture }, uRes: { value: new THREE.Vector2(2, 2) }, uTh: { value: options.threshold ?? 0.9 },
     uAccent: { value: new THREE.Color(options.accent || "#ff4d1c") }, uDark: { value: 0 }, uTime: { value: 0 },
@@ -236,7 +260,17 @@ export function createSwarm(container, options = {}) {
   const postMat = new THREE.ShaderMaterial({ uniforms: postUniforms, vertexShader: POST_VERT, fragmentShader: POST_FRAG, transparent: true, depthWrite: false, depthTest: false });
   postMat.extensions = { derivatives: true };
   postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), postMat));
+  blurScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), blurMat));
   renderer.autoClear = false;
+  const BLUR_PASSES = options.blurPasses ?? 2;
+  function blur() {
+    for (let k = 0; k < BLUR_PASSES; k++) {
+      blurUniforms.tD.value = rt.texture; blurUniforms.uDir.value.set(1, 0);
+      renderer.setRenderTarget(rtB); renderer.clear(); renderer.render(blurScene, postCam);
+      blurUniforms.tD.value = rtB.texture; blurUniforms.uDir.value.set(0, 1);
+      renderer.setRenderTarget(rt); renderer.clear(); renderer.render(blurScene, postCam);
+    }
+  }
 
   let w = 0, h = 0, aspect = 1, baseSize = 40;
   function resize() {
@@ -247,8 +281,8 @@ export function createSwarm(container, options = {}) {
     renderer.setSize(w, h, false);
     camera.aspect = aspect; camera.updateProjectionMatrix();
     const rw = Math.max(2, Math.round(w * dpr * RT_SCALE)), rh = Math.max(2, Math.round(h * dpr * RT_SCALE));
-    rt.setSize(rw, rh);
-    postUniforms.uRes.value.set(rw, rh);
+    rt.setSize(rw, rh); rtB.setSize(rw, rh);
+    postUniforms.uRes.value.set(rw, rh); blurUniforms.uRes.value.set(rw, rh);
     baseSize = rh * (options.blob || 0.05);
   }
 
@@ -278,14 +312,39 @@ export function createSwarm(container, options = {}) {
   function loadTo(name) {
     const arr = shape(name);
     to.set(arr); toName = name; toMeta = arr.meta || null; toB = arr.bounds; fixed = !!arr.fixed;
+    buildDroplets();
+  }
+  /* group the target by region; each region's particles first gather into a ball, then spread into place */
+  const DROPS_X = options.dropsX || 5, DROPS_Y = options.dropsY || 3;
+  function buildDroplets() {
+    const bx = toB.x || 1, by = toB.y || 1;
+    const cx = new Float32Array(DROPS_X * DROPS_Y), cy = new Float32Array(DROPS_X * DROPS_Y), cz = new Float32Array(DROPS_X * DROPS_Y);
+    for (let k = 0; k < cx.length; k++) {
+      const gx = k % DROPS_X, gy = Math.floor(k / DROPS_X);
+      cx[k] = ((gx + 0.5) / DROPS_X * 2 - 1) * bx * 1.5 + (Math.random() - 0.5) * 0.5;
+      cy[k] = ((gy + 0.5) / DROPS_Y * 2 - 1) * by * 1.5 + (Math.random() - 0.5) * 0.5;
+      cz[k] = (Math.random() - 0.5) * 0.6;
+    }
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3;
+      const gx = Math.min(DROPS_X - 1, Math.max(0, Math.floor((to[i3] / bx * 0.5 + 0.5) * DROPS_X)));
+      const gy = Math.min(DROPS_Y - 1, Math.max(0, Math.floor((to[i3 + 1] / by * 0.5 + 0.5) * DROPS_Y)));
+      const k = gy * DROPS_X + gx;
+      drop[i3] = cx[k] + (Math.random() - 0.5) * 0.04; drop[i3 + 1] = cy[k] + (Math.random() - 0.5) * 0.04; drop[i3 + 2] = cz[k] + (Math.random() - 0.5) * 0.04;
+    }
   }
   const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-  const effT = (i) => { if (morphT >= 1) return 1; const d = delay[i] * 0.3; return ease(Math.min(1, Math.max(0, (morphT - d) / (1 - d)))); };
+  const effT = (i) => { if (morphT >= 1) return 1; const d = delay[i] * (driven ? 0.12 : 0.3); return ease(Math.min(1, Math.max(0, (morphT - d) / (1 - d)))); };
 
   /* freeze whatever the dots are currently heading for as the new "from" */
   function freezeFrom() {
     if (morphT >= 1) { from.set(to); }
-    else for (let i = 0; i < count; i++) { const e = effT(i), i3 = i * 3; from[i3] += (to[i3] - from[i3]) * e; from[i3 + 1] += (to[i3 + 1] - from[i3 + 1]) * e; from[i3 + 2] += (to[i3 + 2] - from[i3 + 2]) * e; }
+    else for (let i = 0; i < count; i++) {
+      const e = effT(i), i3 = i * 3;
+      const ga = e < 0.5 ? (e / 0.5) * (e / 0.5) * (3.0 - 2.0 * (e / 0.5)) : 1.0, gb = e > 0.5 ? ((e - 0.5) / 0.5) * ((e - 0.5) / 0.5) * (3.0 - 2.0 * ((e - 0.5) / 0.5)) : 0.0;
+      let tx = from[i3] + (drop[i3] - from[i3]) * ga, ty = from[i3 + 1] + (drop[i3 + 1] - from[i3 + 1]) * ga, tz = from[i3 + 2] + (drop[i3 + 2] - from[i3 + 2]) * ga;
+      from[i3] = tx + (to[i3] - tx) * gb; from[i3 + 1] = ty + (to[i3 + 1] - ty) * gb; from[i3 + 2] = tz + (to[i3 + 2] - tz) * gb;
+    }
     fromName = toName; fromMeta = toMeta; fromB = toB;
     if (morphT < 1) { fromName = "~"; fromMeta = null; }
   }
@@ -300,6 +359,7 @@ export function createSwarm(container, options = {}) {
       const A = shape(a), B = shape(b);
       from.set(A); fromName = a; fromMeta = A.meta || null; fromB = A.bounds;
       to.set(B); toName = b; toMeta = B.meta || null; toB = B.bounds; fixed = !!B.fixed;
+      buildDroplets();
     }
     morphT = Math.min(1, Math.max(0, t)); driven = true;
   }
@@ -359,12 +419,16 @@ export function createSwarm(container, options = {}) {
     const swirl = act * (options.swirl ?? 0.7);
     for (let i = 0; i < count; i++) {
       const i3 = i * 3, e = effT(i);
+      // two legs: gather into the droplet, then flow out into the new shape
+      const ga = e < 0.5 ? (e / 0.5) * (e / 0.5) * (3.0 - 2.0 * (e / 0.5)) : 1.0;
+      const gb = e > 0.5 ? ((e - 0.5) / 0.5) * ((e - 0.5) / 0.5) * (3.0 - 2.0 * ((e - 0.5) / 0.5)) : 0.0;
       if (swirl > 0) {
         const X = pos[i3] * 1.6, Y = pos[i3 + 1] * 1.6;
         vel[i3] += (Math.sin(Y * 2.1 + time * 0.9) + Math.cos(Y * 1.3 - time * 0.6)) * swirl * dt;
         vel[i3 + 1] -= (Math.sin(X * 1.7 - time * 0.8) + Math.cos(X * 1.1 + time * 0.5)) * swirl * dt;
       }
-      let tx = from[i3] + (to[i3] - from[i3]) * e, ty = from[i3 + 1] + (to[i3 + 1] - from[i3 + 1]) * e, tz = from[i3 + 2] + (to[i3 + 2] - from[i3 + 2]) * e;
+      let tx = from[i3] + (drop[i3] - from[i3]) * ga, ty = from[i3 + 1] + (drop[i3 + 1] - from[i3 + 1]) * ga, tz = from[i3 + 2] + (drop[i3 + 2] - from[i3 + 2]) * ga;
+      tx += (to[i3] - tx) * gb; ty += (to[i3 + 1] - ty) * gb; tz += (to[i3 + 2] - tz) * gb;
       const rx = (cs * tx + sn * tz) * breathe, rz = (-sn * tx + cs * tz) * breathe;
       tx = rx; tz = rz; ty = ty * breathe + 0.01 * Math.sin(time * 2 + phase[i]);
       let ax = (tx - pos[i3]) * K, ay = (ty - pos[i3 + 1]) * K, az = (tz - pos[i3 + 2]) * K;
@@ -388,6 +452,7 @@ export function createSwarm(container, options = {}) {
     resize(); step(dt);
     postUniforms.uTime.value = time;
     renderer.setRenderTarget(rt); renderer.clear(); renderer.render(scene, camera);
+    blur();
     renderer.setRenderTarget(null); renderer.clear(); renderer.render(postScene, postCam);
   }
   resize();
@@ -405,7 +470,7 @@ export function createSwarm(container, options = {}) {
     setThreshold(v) { postUniforms.uTh.value = v; },
     setPaused(v) { paused = !!v; last = performance.now(); },
     burst(strength = 1) { for (let i = 0; i < count * 3; i++) vel[i] += (Math.random() - 0.5) * 1.2 * strength; },
-    destroy() { cancelAnimationFrame(raf); ro.disconnect(); geo.dispose(); mat.dispose(); postMat.dispose(); rt.dispose(); renderer.dispose(); renderer.domElement.remove(); },
+    destroy() { cancelAnimationFrame(raf); ro.disconnect(); geo.dispose(); mat.dispose(); postMat.dispose(); rt.dispose(); rtB.dispose(); blurMat.dispose(); renderer.dispose(); renderer.domElement.remove(); },
   };
 }
 

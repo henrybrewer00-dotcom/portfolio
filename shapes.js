@@ -12,9 +12,9 @@
       ctx.beginPath(); ctx.moveTo(0.06 * s, 0.5 * s);
       ctx.bezierCurveTo(0.3 * s, 0.12 * s, 0.7 * s, 0.12 * s, 0.94 * s, 0.5 * s);
       ctx.bezierCurveTo(0.7 * s, 0.88 * s, 0.3 * s, 0.88 * s, 0.06 * s, 0.5 * s);
-      ctx.closePath(); stroke(ctx, 0.055 * s);
-      ctx.beginPath(); ctx.arc(0.5 * s, 0.5 * s, 0.17 * s, 0, Math.PI * 2); ctx.fill();
-      for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; ctx.beginPath(); ctx.moveTo(0.5 * s + Math.cos(a) * 0.25 * s, 0.5 * s + Math.sin(a) * 0.25 * s); ctx.lineTo(0.5 * s + Math.cos(a) * 0.31 * s, 0.5 * s + Math.sin(a) * 0.31 * s); stroke(ctx, 0.035 * s); }
+      ctx.closePath(); stroke(ctx, 0.09 * s);
+      ctx.beginPath(); ctx.arc(0.5 * s, 0.5 * s, 0.19 * s, 0, Math.PI * 2); ctx.fill();
+      for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; ctx.beginPath(); ctx.moveTo(0.5 * s + Math.cos(a) * 0.25 * s, 0.5 * s + Math.sin(a) * 0.25 * s); ctx.lineTo(0.5 * s + Math.cos(a) * 0.33 * s, 0.5 * s + Math.sin(a) * 0.33 * s); stroke(ctx, 0.06 * s); }
     },
     wave(ctx, s) { // Lily — a voice
       const bars = 26;
@@ -26,7 +26,7 @@
       }
     },
     rec(ctx, s) { // Glasscast — record
-      ctx.beginPath(); ctx.arc(0.5 * s, 0.5 * s, 0.38 * s, 0, Math.PI * 2); stroke(ctx, 0.05 * s);
+      ctx.beginPath(); ctx.arc(0.5 * s, 0.5 * s, 0.38 * s, 0, Math.PI * 2); stroke(ctx, 0.09 * s);
       ctx.beginPath(); ctx.arc(0.5 * s, 0.5 * s, 0.21 * s, 0, Math.PI * 2); ctx.fill();
     },
     burger(ctx, s) { // Drive-thru
@@ -37,8 +37,8 @@
     },
     mic(ctx, s) { // Eleven Mile
       rr(ctx, 0.38 * s, 0.08 * s, 0.24 * s, 0.46 * s, 0.12 * s);
-      ctx.beginPath(); ctx.arc(0.5 * s, 0.46 * s, 0.25 * s, 0, Math.PI); stroke(ctx, 0.05 * s);
-      ctx.beginPath(); ctx.moveTo(0.5 * s, 0.71 * s); ctx.lineTo(0.5 * s, 0.86 * s); ctx.moveTo(0.34 * s, 0.87 * s); ctx.lineTo(0.66 * s, 0.87 * s); stroke(ctx, 0.05 * s);
+      ctx.beginPath(); ctx.arc(0.5 * s, 0.46 * s, 0.25 * s, 0, Math.PI); stroke(ctx, 0.08 * s);
+      ctx.beginPath(); ctx.moveTo(0.5 * s, 0.71 * s); ctx.lineTo(0.5 * s, 0.86 * s); ctx.moveTo(0.34 * s, 0.87 * s); ctx.lineTo(0.66 * s, 0.87 * s); stroke(ctx, 0.08 * s);
     },
     paw(ctx, s) { // PawBot
       const toe = (x, y) => { ctx.beginPath(); ctx.ellipse(x * s, y * s, 0.085 * s, 0.11 * s, 0, 0, Math.PI * 2); ctx.fill(); };
@@ -46,16 +46,16 @@
       ctx.beginPath(); ctx.ellipse(0.5 * s, 0.64 * s, 0.24 * s, 0.2 * s, 0, 0, Math.PI * 2); ctx.fill();
     },
     git(ctx, s) { // Open source — a merge
-      ctx.beginPath(); ctx.moveTo(0.3 * s, 0.22 * s); ctx.lineTo(0.3 * s, 0.78 * s); stroke(ctx, 0.05 * s);
-      ctx.beginPath(); ctx.moveTo(0.7 * s, 0.3 * s); ctx.bezierCurveTo(0.7 * s, 0.52 * s, 0.32 * s, 0.44 * s, 0.3 * s, 0.7 * s); stroke(ctx, 0.05 * s);
-      for (const [x, y] of [[0.3, 0.2], [0.3, 0.8], [0.7, 0.28]]) { ctx.beginPath(); ctx.arc(x * s, y * s, 0.075 * s, 0, Math.PI * 2); ctx.fill(); }
+      ctx.beginPath(); ctx.moveTo(0.3 * s, 0.22 * s); ctx.lineTo(0.3 * s, 0.78 * s); stroke(ctx, 0.085 * s);
+      ctx.beginPath(); ctx.moveTo(0.7 * s, 0.3 * s); ctx.bezierCurveTo(0.7 * s, 0.52 * s, 0.32 * s, 0.44 * s, 0.3 * s, 0.7 * s); stroke(ctx, 0.085 * s);
+      for (const [x, y] of [[0.3, 0.2], [0.3, 0.8], [0.7, 0.28]]) { ctx.beginPath(); ctx.arc(x * s, y * s, 0.095 * s, 0, Math.PI * 2); ctx.fill(); }
     },
     trophy(ctx, s) { // hackathon wins
       ctx.beginPath(); ctx.moveTo(0.3 * s, 0.14 * s); ctx.lineTo(0.7 * s, 0.14 * s); ctx.lineTo(0.66 * s, 0.46 * s);
       ctx.quadraticCurveTo(0.5 * s, 0.64 * s, 0.34 * s, 0.46 * s); ctx.closePath(); ctx.fill();
-      ctx.beginPath(); ctx.arc(0.27 * s, 0.29 * s, 0.1 * s, Math.PI * 0.5, Math.PI * 1.5, false); stroke(ctx, 0.045 * s);
-      ctx.beginPath(); ctx.arc(0.73 * s, 0.29 * s, 0.1 * s, -Math.PI * 0.5, Math.PI * 0.5, false); stroke(ctx, 0.045 * s);
-      rr(ctx, 0.46 * s, 0.58 * s, 0.08 * s, 0.16 * s, 0.02 * s);
+      ctx.beginPath(); ctx.arc(0.27 * s, 0.29 * s, 0.1 * s, Math.PI * 0.5, Math.PI * 1.5, false); stroke(ctx, 0.08 * s);
+      ctx.beginPath(); ctx.arc(0.73 * s, 0.29 * s, 0.1 * s, -Math.PI * 0.5, Math.PI * 0.5, false); stroke(ctx, 0.08 * s);
+      rr(ctx, 0.44 * s, 0.58 * s, 0.12 * s, 0.16 * s, 0.03 * s);
       rr(ctx, 0.32 * s, 0.74 * s, 0.36 * s, 0.09 * s, 0.03 * s);
     },
     play(ctx, s) { // the on-stage video — an outlined play button

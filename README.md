@@ -1,8 +1,11 @@
 # henry. — portfolio
 
-One screen of liquid metal. Eleven thousand particles are splatted into a
-density field and a screen-space shader carves the mercury surface out of it
-(dark rims, a reflected room, sharp highlights). Scrolling doesn't move the
+One screen of liquid silver, T-1000 style. Eleven thousand particles are
+splatted into a density field, blurred smooth, and a screen-space shader
+carves the mirror surface out of it and reflects a bright studio off it
+(sky, horizon line, softboxes, dark rims). Every transition goes shape →
+droplets → next shape: each region of the target pulls its particles into a
+ball, the balls drift in, then flatten into place. Scrolling doesn't move the
 page, it tells the liquid what to become next:
 
 a bubble → "henry." → "14" → "austin, tx" → "proud vibecoder" → "I make way

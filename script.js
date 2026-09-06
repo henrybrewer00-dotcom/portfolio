@@ -121,7 +121,7 @@ function initScroll() {
   }
   ScrollTrigger.create({
     trigger: track, start: "top top", end: "bottom bottom", scrub: true,
-    snap: reduceMotion ? false : { snapTo: STARTS.map((s) => s / LAST), duration: { min: 0.2, max: 0.5 }, delay: 0.08, ease: "power1.inOut" },
+    snap: reduceMotion || /nosnap/.test(location.search) ? false : { snapTo: STARTS.map((s) => s / LAST), duration: { min: 0.2, max: 0.5 }, delay: 0.08, ease: "power1.inOut" },
     onUpdate: (self) => update(self.scroll()),
   });
   $("[data-top]").addEventListener("click", (e) => { e.preventDefault(); goTo(0); });
@@ -195,7 +195,7 @@ function initSwarm() {
     const host = $("[data-swarm]");
     const start = () => {
       try {
-        swarm = window.createSwarm(host, { count: isSmall() ? 5000 : 11000, maxDpr: isSmall() ? 1.5 : 2, rtScale: isSmall() ? 0.4 : 0.5, blob: isSmall() ? 0.06 : 0.05, threshold: 0.95, accent: cssVar("--accent") });
+        swarm = window.createSwarm(host, { count: isSmall() ? 5000 : 11000, maxDpr: isSmall() ? 1.5 : 2, rtScale: isSmall() ? 0.4 : 0.5, blob: isSmall() ? 0.056 : 0.045, threshold: 0.66, blurPasses: 1, accent: cssVar("--accent") });
         document.addEventListener("mousemove", (e) => swarm.setPointer(e.clientX, e.clientY), { passive: true });
         document.addEventListener("mouseleave", () => swarm.clearPointer());
         document.addEventListener("touchmove", (e) => { const t = e.touches[0]; if (t) swarm.setPointer(t.clientX, t.clientY); }, { passive: true });
