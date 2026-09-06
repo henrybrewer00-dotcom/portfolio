@@ -1,75 +1,79 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>henry. — a neural network that learned to build things</title>
-    <meta name="description" content="I'm Henry. Fourteen, from Austin, and a proud vibecoder. I build voice AI, robots, a submarine, and a company called SiteLight. This page is one forward pass: scroll through the network." />
-    <meta name="theme-color" content="#07080a" />
-    <meta property="og:title" content="henry. — a neural network that learned to build things" />
-    <meta property="og:description" content="I make way too much stuff. Fourteen, Austin, proud vibecoder. Scroll to run the forward pass." />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>henry. — proud vibecoder, 14, Austin</title>
+    <meta name="description" content="I'm Henry. Fourteen, from Austin, and a proud vibecoder. I build voice AI, robots, a submarine, and a company called SiteLight. Scroll and the dots become each thing." />
+    <meta name="theme-color" content="#f3efe6" />
+    <meta property="og:title" content="henry. — proud vibecoder, 14, Austin" />
+    <meta property="og:description" content="I make way too much stuff. Scroll and the dots become each thing." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://henry93.vercel.app/" />
     <meta property="og:image" content="https://henry93.vercel.app/assets/share.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="henry. — a neural network that learned to build things" />
-    <meta name="twitter:description" content="I make way too much stuff. Fourteen, Austin, proud vibecoder. Scroll to run the forward pass." />
+    <meta name="twitter:title" content="henry. — proud vibecoder, 14, Austin" />
+    <meta name="twitter:description" content="I make way too much stuff. Scroll and the dots become each thing." />
     <meta name="twitter:image" content="https://henry93.vercel.app/assets/share.jpg" />
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20260906c" />
-    <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }</script>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css?v=20260905j" />
+    <script>
+      (function () {
+        try {
+          var m = localStorage.getItem("mode") || "dark";
+          document.documentElement.classList.remove("light", "dark"); document.documentElement.classList.add(m);
+        } catch (e) {}
+      })();
+    </script>
+    <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }</script>
   </head>
   <body>
-    <a class="skip" href="#about">Skip to content</a>
+    <!-- the dots -->
+    <div class="swarm-w" data-swarm aria-hidden="true"></div>
+    <!-- click layer over the dots (scroll passes through) -->
+    <div class="hit" data-hit aria-hidden="true"></div>
 
-    <!-- loading weights -->
-    <div class="pre" data-pre aria-hidden="true">
-      <div class="pre-in">
-        <div class="pre-dots" data-pre-dots><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-        <p>loading weights · <span class="pre-n" data-pre-n>000%</span></p>
-      </div>
-    </div>
+    <!-- chrome -->
+    <a class="brand" href="#top" data-top>henry.</a>
+    <nav class="nav" aria-label="Links">
+      <a href="https://github.com/henrybrewer00-dotcom" target="_blank" rel="noreferrer">github ↗</a>
+      <a href="mailto:henrybrewer00@gmail.com?subject=You%27re%20hired&amp;body=Hi%20Henry%2C%0A%0AHere%27s%20what%20I%27d%20love%20to%20build%20with%20you%3A%0A%0A">contact →</a>
+      <button type="button" class="theme" data-theme aria-label="Toggle dark mode">◐</button>
+    </nav>
+    <div class="caps" data-caps></div>
+    <div class="rail" data-rail aria-hidden="true"></div>
+    <div class="meta" aria-hidden="true">14 · austin, tx · proud vibecoder</div>
+    <div class="hint" data-hint aria-hidden="true">scroll ↓</div>
 
-    <!-- the network -->
-    <div class="net" data-net aria-hidden="true"></div>
-    <div class="grain" aria-hidden="true"></div>
-    <div class="fade fade-t" aria-hidden="true"></div>
-    <div class="fade fade-b" aria-hidden="true"></div>
-
-    <header class="hud">
-      <a class="brand" href="#hero" data-nav="hero">henry.</a>
-      <nav class="nav" aria-label="Sections">
-        <a href="#sitelight" data-nav="work">work</a>
-        <a href="#stack" data-nav="stack">stack</a>
-        <a href="#contact" data-nav="contact">contact</a>
-        <button type="button" data-sound aria-pressed="false">sound: off</button>
-      </nav>
-    </header>
-
-    <main id="main" data-main></main>
+    <!-- scroll length: one screen per scene (set by script) -->
+    <div class="track" data-track id="top"></div>
 
     <noscript>
       <div class="noscript">
-        <p>I'm Henry. Fourteen, from Austin, and a proud vibecoder. This page is a WebGL neural network that needs JavaScript. The links still work:</p>
-        <p><a href="https://github.com/henrybrewer00-dotcom">GitHub</a> · <a href="mailto:henrybrewer00@gmail.com">Email</a> · <a href="liquid/">older site: liquid metal</a> · <a href="deck/">older site: card deck</a> · <a href="old/">older site: terminal</a></p>
+        <p>I'm Henry. Fourteen, from Austin, and a proud vibecoder. This page is a particle animation that needs JavaScript. The links still work:</p>
+        <p><a href="https://github.com/henrybrewer00-dotcom">GitHub</a> · <a href="https://sitelight.xyz">SiteLight</a> · <a href="mailto:henrybrewer00@gmail.com">Email</a> · <a href="deck/">older card-deck site</a> · <a href="old/">older terminal site</a></p>
       </div>
     </noscript>
 
-    <div class="hud-b" aria-hidden="true">
-      <p class="layer" data-layer>layer <b>01</b> / 15 · <i>input</i></p>
-      <p class="stats-l" data-stats></p>
+    <!-- video lightbox -->
+    <div class="lightbox" id="lightbox" aria-hidden="true">
+      <div class="lightbox__backdrop" data-close></div>
+      <div class="lightbox__panel" role="dialog" aria-modal="true" aria-label="Demo video">
+        <button type="button" class="lightbox__close" data-close aria-label="Close video">✕</button>
+        <p class="lightbox__title"></p>
+        <video class="lightbox__video" controls playsinline preload="none"></video>
+      </div>
     </div>
-    <div class="prog" aria-hidden="true"><i data-prog></i></div>
-    <div class="cur" data-cur aria-hidden="true"><i></i><b></b></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
-    <script src="logos.js?v=20260906c"></script>
-    <script type="module" src="net.js?v=20260906c"></script>
-    <script src="script.js?v=20260906c" defer></script>
+    <script src="logos.js?v=20260905j"></script>
+    <script src="shapes.js?v=20260905j"></script>
+    <script type="module" src="swarm.js?v=20260905j"></script>
+    <script src="script.js?v=20260905j" defer></script>
   </body>
 </html>

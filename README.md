@@ -1,24 +1,30 @@
 # henry. — portfolio
 
-A neural network that learned to build things. The whole page is one
-forward pass: behind every section sits a layer of a WebGL network (Three.js
-points + line segments, ~1,400 nodes, ~4,100 edges), and scrolling dollies
-the camera from layer to layer. Nodes light up as they come into focus,
-signals run the edges, and touching a node fires it and everything
-downstream. Scrolling faster excites the network. Sound is off until asked
-(a Web Audio blip per fired neuron).
+The whole screen is a sheet of liquid metal, T-1000 style. It's a height
+field shaded as chrome: slow waves roll across it, and a dent follows the
+cursor. Every shape is a signed distance field (text, drawings and logos from
+a canvas; the rover, submarine and keycaps from rendered 3D silhouettes; the
+ball, the load-in drops and the voice bars are analytic). The field is built
+from anti-aliased coverage, softened by a texel or two and stored as
+half-float, then sampled bicubically, so the chrome shows no creases.
+Moving between two shapes is a smooth blend of their two fields, so the
+metal flows from one form to the next as a single continuous surface: the
+edge profile widens, a faint ring runs out, and unions loosen while it
+moves. Scrolling doesn't move the page, it tells the metal what to become
+next:
 
-Layers, in order: input (hero) → the input vector (who) → SiteLight (with
-the Stripe first-$2 receipt) → Lily (a sample call types itself out) → some
-hackathon wins → Glasscast → Lily's Drive-Thru → Eleven Mile → PawBot →
-S.I.E.G.E. → ROV Submarine → open source → the stack (cycles; hover holds)
-→ receipts (counters) → the output layer (email / GitHub).
+a bubble → "henry." → "14" → "austin, tx" → "proud vibecoder" → "I make way
+too much stuff." → a bubble (bio) → an eye (SiteLight, with the Stripe
+first-$2 receipt) → a live waveform (Lily, with a sample call typing itself
+out) → a trophy (hackathon wins) → a record button (Glasscast) → a burger
+(Lily's Drive-Thru) → a mic (Eleven Mile) → a paw (PawBot) → the S.I.E.G.E.
+rover → the ROV submarine → a merge graph (open source) → keycaps that cycle
+through the stack's logos → "99.5" (receipts) → "hire me".
 
-Chrome: wordmark + nav + sound toggle up top, `layer 03 / 15 · sitelight`
-and live network stats down below, a signal-colored progress line, a custom
-cursor on fine pointers, film grain, a "loading weights" preloader. Type is
-Geist, Geist Mono and Instrument Serif italic for the accent word. One
-signal color (`--acc`, chartreuse) on ink.
+The blend between two shapes is tied directly to scroll position (snapping at
+each scene; add `?nosnap=1` to turn snapping off). Each scene has a caption
+bottom-left with the real link; clicking the liquid opens it. The rail on
+the right jumps scenes.
 
 ## Run it
 
@@ -26,22 +32,20 @@ signal color (`--acc`, chartreuse) on ink.
 python3 -m http.server 8890   # then open http://localhost:8890
 ```
 
-No build step. GSAP + ScrollTrigger and Lenis from CDN; Three.js via an
-import map.
+No build step. GSAP + ScrollTrigger and Lenis from CDN; Three.js and its
+addons via an import map. Fonts: Geist, Geist Mono, Instrument Serif.
 
 ## Files
 
 | File | Purpose |
 |---|---|
-| `index.html` | The chrome (preloader, header, HUD, progress, cursor, scripts) |
-| `styles.css` | Ink / bone / signal, the section grid, type, chips, receipts, mobile |
-| `script.js` | `SECTIONS` (copy + links), rendering, scroll → focus, reveals, transcript, counters, stack cycle, sound, cursor, magnet buttons, preloader |
-| `net.js` | The network: layered layout, k-nearest edges, signal propagation, shaders, camera dolly, pointer firing |
-| `logos.js` | simple-icons paths for the stack chips |
-| `404.html` | "This layer doesn't exist." |
-| `assets/` | Stripe receipt, favicon, share image |
-| `liquid/`, `deck/`, `old/` | The three previous portfolios (liquid metal, card deck, terminal) |
+| `index.html` | The chrome (name, links, theme toggle, caption + rail hosts, scroll track) |
+| `styles.css` | Paper / ink / orange, captions, rail, light + dark, mobile |
+| `script.js` | The scene list (copy + links), scroll → scene, captions, actions, preloader |
+| `swarm.js` | The sheet: height-field chrome shader, signed distance fields (EDT from canvas + 3D silhouette RT, analytic ball/drops/bars), scroll blend |
+| `shapes.js` | The drawings (eye, wave, rec, burger, mic, paw, git, trophy…) + logo path sampling |
+| `logos.js` | simple-icons paths for the stack |
+| `assets/` | Lily demo video + poster, favicon, share image |
+| `deck/`, `old/` | The two previous portfolios |
 
-Edit copy and links in `SECTIONS` in `script.js`; add a section = add an
-entry (it becomes a layer automatically). Bump the `?v=` on the CSS/JS
-links in `index.html` when those files change.
+Bump the `?v=` on the CSS/JS links in `index.html` when those files change.
