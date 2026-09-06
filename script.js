@@ -9,8 +9,8 @@ const MAIL = "mailto:henrybrewer00@gmail.com?subject=" + encodeURIComponent("You
 
 const SCENES = [
   { id: "hero", shape: "text:I make way\ntoo much\nstuff.", hint: true, label: "hi" },
-  { id: "who", shape: "text:proud\nvibecoder", label: "me", kicker: "Hi", title: "I'm Henry.", body: "Fourteen, from Austin. I build voice AI, robots, a submarine, and a company. Founder of SiteLight. Straight A's, 99.5 in math, 125 words a minute." },
-  { id: "sitelight", shape: "draw:eye", label: "SiteLight", kicker: "01 · founder", title: "SiteLight", body: "Are you visible to AI? It checks whether assistants recommend your business when someone asks, then hands you the to-do list to become the answer. One-time $2.", tags: ["Founder", "AI visibility", "GEO"], action: { type: "link", href: "https://sitelight.xyz", label: "Open sitelight.xyz ↗" } },
+  { id: "who", shape: "sphere", label: "me", kicker: "Hi", title: "I'm Henry.", body: "Fourteen, from Austin. I build voice AI, robots, a submarine, and a company. Founder of SiteLight. Straight A's, 99.5 in math, 125 words a minute." },
+  { id: "sitelight", shape: "draw:eye", label: "SiteLight", kicker: "01 · founder", title: "SiteLight", body: "A personal challenge: go from nothing to revenue in under two weeks. I made it in 10 days. It checks whether AI assistants recommend your business when someone asks, then hands you the to-do list to become the answer.", tags: ["Founder", "AI visibility", "10 days"], action: { type: "link", href: "https://sitelight.xyz", label: "Go · $2 ↗" } },
   { id: "lily", shape: "draw:wave", label: "Lily", kicker: "02 · voice AI", title: "Lily", body: "Calls my grandma every morning, has an actual conversation, then texts the family how she sounded.", tags: ["ElevenLabs", "Twilio", "InsForge"], transcript: true },
   { id: "stage", shape: "draw:play", label: "On stage", kicker: "03 · a16z × Cursor hackathon", title: "Lily, on stage", body: "First place. This is the demo, in front of 150 people. Press the dots.", pressme: true, action: { type: "video", src: "assets/lily-demo.mp4", poster: "assets/lily-demo-poster.jpg", label: "Play the demo ▶" } },
   { id: "glasscast", shape: "draw:rec", label: "Glasscast", kicker: "04 · open source", title: "Glasscast", body: "Screen Studio costs money, so I made a free one. Cinematic zooms, auto-captions, a webcam bubble, bring your own AI keys.", tags: ["Electron", "TypeScript", "macOS"], action: { type: "link", href: GH + "/Glasscast", label: "Repo ↗" } },
@@ -75,17 +75,16 @@ function initScroll() {
   const setH = () => { track.style.height = N * window.innerHeight + "px"; };
   setH();
   if (window.Lenis && !reduceMotion) {
-    lenis = new Lenis({ lerp: 0.09, smoothWheel: true });
+    lenis = new Lenis({ lerp: 0.13, smoothWheel: true });
     lenis.on("scroll", ScrollTrigger.update);
     gsap.ticker.add((t) => lenis.raf(t * 1000));
     gsap.ticker.lagSmoothing(0);
   }
   ScrollTrigger.create({
     trigger: track, start: "top top", end: "bottom bottom", scrub: true,
-    snap: reduceMotion ? false : { snapTo: 1 / (N - 1), duration: { min: 0.25, max: 0.6 }, delay: 0.06, ease: "power1.inOut" },
+    snap: reduceMotion ? false : { snapTo: 1 / (N - 1), duration: { min: 0.15, max: 0.4 }, delay: 0.04, ease: "power1.inOut" },
     onUpdate(self) {
       activate(Math.round(self.progress * (N - 1)));
-      if (swarm) swarm.nudge(gsap.utils.clamp(-2, 2, self.getVelocity() * 0.00025));
     },
   });
   $("[data-top]").addEventListener("click", (e) => { e.preventDefault(); goTo(0); });
@@ -113,14 +112,14 @@ function placeShape() {
   if (!L) return;
   swarm.setFit({ fill: L.fill, fillX: L.fillX });
   const o = swarm.offset;
-  gsap.to({ x: o.x, y: o.y }, { x: L.x, y: L.y, duration: 1.2, ease: "power2.inOut", onUpdate() { const t = this.targets()[0]; swarm.setOffset(t.x, t.y); } });
+  gsap.to({ x: o.x, y: o.y }, { x: L.x, y: L.y, duration: 0.9, ease: "power2.inOut", onUpdate() { const t = this.targets()[0]; swarm.setOffset(t.x, t.y); } });
 }
 function activate(i) {
   if (i === current) return;
   const prev = SCENES[current];
   current = i;
   const s = SCENES[i];
-  if (swarm && ready) { const L = layoutFor(s); swarm.setShape(s.shape, 1.5, L ? { fill: L.fill, fillX: L.fillX } : {}); }
+  if (swarm && ready) { const L = layoutFor(s); swarm.setShape(s.shape, 1.0, L ? { fill: L.fill, fillX: L.fillX } : {}); }
   $$("[data-cap]").forEach((el) => el.classList.toggle("is-on", +el.dataset.cap === i));
   $$("[data-go]").forEach((el) => el.classList.toggle("is-on", +el.dataset.go === i));
   $("[data-hint]").classList.toggle("is-on", !!s.hint && ready);
@@ -218,19 +217,50 @@ async function boot() {
   initScroll();
   activate(Math.round(Math.min(1, window.scrollY / Math.max(1, (N - 1) * window.innerHeight)) * (N - 1)));
 
-  // preloader: the field of dots gathers into the first shape while the counter runs
-  const pre = $("[data-pre]"), pct = $("[data-pct]");
-  let first = true; try { first = localStorage.getItem("visited") === null; localStorage.setItem("visited", "true"); } catch (e) {}
-  const dur = reduceMotion ? 0.6 : first ? 2.2 : 1.3;
-  try { await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1500))]); } catch (e) {}
-  if (swarm) { const L = layoutFor(SCENES[current]); swarm.setShape(SCENES[current].shape, dur + 0.3, L ? { fill: L.fill, fillX: L.fillX } : {}); }
-  const counter = { v: 0 };
-  gsap.to(counter, { v: 100, duration: dur, ease: "power2.inOut", onUpdate() { pct.textContent = String(Math.round(counter.v)); }, onComplete() {
-    gsap.to(pre, { autoAlpha: 0, duration: 0.4, onComplete: () => pre.remove() });
+  runIntro();
+}
+
+/* ---------- the intro: plays every time ---------- */
+function runIntro() {
+  const pre = $("[data-pre]");
+  const beats = [
+    ["sphere", "hi", 0.9],
+    ["text:henry.", "that's me", 1.15],
+    ["text:14", "years old", 1.0],
+    ["text:austin, tx", "from", 1.15],
+    ["text:proud\nvibecoder", "and a", 1.3],
+  ];
+  if (lenis) lenis.stop();
+  document.documentElement.style.overflow = "hidden";
+  window.scrollTo(0, 0);
+  if (swarm) { swarm.setFit({ fill: 0.72, fillX: 0.86 }); swarm.setOffset(0, 0); }
+  const tl = gsap.timeline({ defaults: { ease: "none" } });
+  const fast = reduceMotion;
+  let t = fast ? 0 : 0.35;
+  if (!fast) {
+    if (swarm) tl.call(() => swarm.burst(0.5), null, 0.05);
+    beats.forEach(([shape, word, hold]) => {
+      tl.call(() => { if (swarm) swarm.setShape(shape, 0.8, { fill: 0.7, fillX: 0.86 }); pre.textContent = word; }, null, t);
+      t += hold;
+    });
+  }
+  tl.call(finish, null, t);
+  function finish() {
+    if (finish.done) return; finish.done = true;
+    tl.kill();
+    pre.textContent = "";
+    gsap.to(pre, { autoAlpha: 0, duration: 0.3, onComplete: () => pre.remove() });
     ready = true;
+    document.documentElement.style.overflow = "";
+    if (lenis) lenis.start();
+    const i = current < 0 ? 0 : current;
+    current = -1;
+    activate(i);
     document.body.classList.add("is-ready");
-    $("[data-hint]").classList.toggle("is-on", !!SCENES[current].hint);
-    $$("[data-cap]").forEach((el) => el.classList.toggle("is-on", +el.dataset.cap === current));
-  } });
+  }
+  // a click or a key skips ahead; scrolling waits
+  const skip = () => finish();
+  document.addEventListener("click", skip, { once: true });
+  document.addEventListener("keydown", skip, { once: true });
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();

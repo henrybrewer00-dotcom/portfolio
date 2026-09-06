@@ -200,8 +200,8 @@ export function createSwarm(container, options = {}) {
     morphT = 0; morphDur = dur; current = name;
     bounds = target.bounds; fixed = !!target.fixed;
     const is3d = !(name.startsWith("text:") || name.startsWith("draw:") || name === "field");
-    spin = opts.spin ?? (is3d ? 0.3 : 0);
-    wobble = opts.wobble ?? (is3d ? 0 : 0.12);
+    spin = opts.spin ?? (is3d ? 0.22 : 0);
+    wobble = 0;
     fitCurrent();
   }
 
@@ -223,13 +223,13 @@ export function createSwarm(container, options = {}) {
   const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const R = options.blowRadius || 0.17, F = options.blowForce || 0.6, WIND = options.wind || 0.03;
   let paused = false, raf = 0, last = performance.now(), time = 0, nudgeV = 0;
-  const K = 36, DAMP = 0.86;
+  const K = 52, DAMP = 0.84;
 
   function step(dt) {
     time += dt;
     if (morphT < 1) morphT = Math.min(1, morphT + dt / morphDur);
     curScale += (targetScale - curScale) * Math.min(1, dt * 4);
-    spinAngle += dt * spin + nudgeV * dt; nudgeV *= Math.pow(0.02, dt);
+    spinAngle += dt * spin;
     if (spin === 0) { const k = Math.round(spinAngle / (Math.PI * 2)) * Math.PI * 2; spinAngle += (k - spinAngle) * Math.min(1, dt * 2.5); }
     const tilt = wobble * Math.sin(time * 0.7);
     const cs = Math.cos(spinAngle + tilt), sn = Math.sin(spinAngle + tilt);
@@ -240,7 +240,7 @@ export function createSwarm(container, options = {}) {
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
       let e = 1;
-      if (morphT < 1) { const d = delay[i] * 0.45; e = ease(Math.min(1, Math.max(0, (morphT - d) / (1 - d)))); }
+      if (morphT < 1) { const d = delay[i] * 0.3; e = ease(Math.min(1, Math.max(0, (morphT - d) / (1 - d)))); }
       let tx = (from[i3] + (to[i3] - from[i3]) * e), ty = (from[i3 + 1] + (to[i3 + 1] - from[i3 + 1]) * e), tz = (from[i3 + 2] + (to[i3 + 2] - from[i3 + 2]) * e);
       const rx = (cs * tx + sn * tz) * breathe, rz = (-sn * tx + cs * tz) * breathe;
       tx = rx; tz = rz; ty = ty * breathe + 0.01 * Math.sin(time * 2 + phase[i]);
@@ -275,7 +275,7 @@ export function createSwarm(container, options = {}) {
     setOffset(x, y = 0) { points.position.x = x; points.position.y = y; },
     get offset() { return { x: points.position.x, y: points.position.y }; },
     setFit,
-    nudge(v) { nudgeV += v; },
+    nudge() {},
     setColors(ink, accent) { uniforms.uInk.value.set(ink); uniforms.uAccent.value.set(accent); },
     setPaused(v) { paused = !!v; last = performance.now(); },
     burst(strength = 1) { for (let i = 0; i < count * 3; i++) vel[i] += (Math.random() - 0.5) * 1.2 * strength; },
