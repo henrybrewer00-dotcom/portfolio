@@ -54,13 +54,15 @@
       ctx.beginPath(); ctx.arc(0.5 * s, 0.5 * s, 0.4 * s, 0, Math.PI * 2); stroke(ctx, 0.045 * s);
       ctx.beginPath(); ctx.moveTo(0.42 * s, 0.32 * s); ctx.lineTo(0.66 * s, 0.5 * s); ctx.lineTo(0.42 * s, 0.68 * s); ctx.closePath(); stroke(ctx, 0.045 * s);
     },
-    pressme(ctx, s) { // ...and after five seconds, a nudge
-      ctx.font = `bold ${0.26 * s}px Geist, sans-serif`;
+    pressme(ctx, s) { // the play button stays; PRESS ME shows up beside it, pointing at it
+      ctx.beginPath(); ctx.arc(0.7 * s, 0.5 * s, 0.26 * s, 0, Math.PI * 2); stroke(ctx, 0.04 * s);
+      ctx.beginPath(); ctx.moveTo(0.65 * s, 0.38 * s); ctx.lineTo(0.81 * s, 0.5 * s); ctx.lineTo(0.65 * s, 0.62 * s); ctx.closePath(); stroke(ctx, 0.04 * s);
+      ctx.font = `bold ${0.15 * s}px Geist, sans-serif`;
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillText("PRESS", 0.5 * s, 0.22 * s);
-      ctx.fillText("ME", 0.5 * s, 0.48 * s);
-      ctx.beginPath(); ctx.moveTo(0.5 * s, 0.64 * s); ctx.lineTo(0.5 * s, 0.9 * s); stroke(ctx, 0.055 * s);
-      ctx.beginPath(); ctx.moveTo(0.36 * s, 0.77 * s); ctx.lineTo(0.5 * s, 0.9 * s); ctx.lineTo(0.64 * s, 0.77 * s); stroke(ctx, 0.055 * s);
+      ctx.fillText("PRESS", 0.22 * s, 0.4 * s);
+      ctx.fillText("ME", 0.22 * s, 0.55 * s);
+      ctx.beginPath(); ctx.moveTo(0.1 * s, 0.68 * s); ctx.quadraticCurveTo(0.22 * s, 0.82 * s, 0.4 * s, 0.6 * s); stroke(ctx, 0.035 * s);
+      ctx.beginPath(); ctx.moveTo(0.3 * s, 0.6 * s); ctx.lineTo(0.41 * s, 0.59 * s); ctx.lineTo(0.37 * s, 0.7 * s); stroke(ctx, 0.035 * s);
     },
   };
 
@@ -85,6 +87,11 @@
     return out;
   }
 
+  /* a brand mark from an svg path (24×24 viewBox), centred */
+  function logoDrawer(d) {
+    return (ctx, s) => { const p = new Path2D(d); const k = (s * 0.74) / 24; ctx.save(); ctx.translate(s * 0.13, s * 0.13); ctx.scale(k, k); ctx.fill(p); ctx.restore(); };
+  }
+  window.logoDrawer = logoDrawer;
   window.SHAPES2D = SHAPES2D;
   window.sampleDrawing = sampleDrawing;
 })();

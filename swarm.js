@@ -1,7 +1,11 @@
 /* =========================================================================
    The swarm — a full-screen field of ink dots that gathers into whatever
-   the page asks for (text, drawings, little 3D models) and steps aside for
-   the cursor. Three.js Points + a CPU spring sim.
+   the page asks for (text, drawings, brand marks, little 3D models) and
+   steps aside for the cursor. Three.js Points + a CPU spring sim.
+
+   Two ways to drive it:
+     setBlend(a, b, t)   scroll-driven: sit exactly t of the way from shape a to b
+     setShape(name, dur) timed morph (load-in, hover overrides, PRESS ME)
    window.createSwarm(container, options) -> api
    ========================================================================= */
 import * as THREE from "three";
@@ -39,8 +43,22 @@ function centre(arr) {
   return arr;
 }
 
+/* the voice: bars that keep talking — rebuilt every frame from per-dot metadata */
+const WAVE_BARS = 30, WAVE_H = 1.5;
+const waveEnv = (b) => { const t = b / (WAVE_BARS - 1); return 0.12 + 0.88 * Math.abs(Math.sin(t * 9.4) * Math.sin(t * 2.3 + 0.7)) * (1 - Math.abs(t - 0.5) * 0.7); };
+function waveUpdate(arr, meta, time) {
+  const { bar, u } = meta;
+  const n = u.length;
+  for (let i = 0; i < n; i++) {
+    const b = bar[i];
+    const live = 0.55 + 0.45 * Math.sin(time * 2.7 + b * 0.63 + 0.9 * Math.sin(time * 1.3 + b * 0.21));
+    arr[i * 3 + 1] = u[i] * waveEnv(b) * live * WAVE_H;
+  }
+}
+const DYNAMIC = { wave: waveUpdate };
+
 const SHAPES3D = {
-  field(count, aspect) { // a flat field covering the whole screen
+  field(count, aspect) {
     const out = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) { out[i * 3] = (Math.random() * 2 - 1) * 1.6 * aspect; out[i * 3 + 1] = (Math.random() * 2 - 1) * 1.6; out[i * 3 + 2] = (Math.random() - 0.5) * 0.4; }
     out.bounds = { x: 1.6 * aspect, y: 1.6 }; out.fixed = true;
@@ -54,13 +72,27 @@ const SHAPES3D = {
     }
     return centre(out);
   },
-  keycaps(count) { // home row + spacebar
+  wave(count) {
+    const out = new Float32Array(count * 3);
+    const bar = new Int16Array(count), u = new Float32Array(count);
+    const sp = 0.115;
+    for (let i = 0; i < count; i++) {
+      bar[i] = Math.floor(Math.random() * WAVE_BARS); u[i] = Math.random() * 2 - 1;
+      out[i * 3] = (bar[i] - (WAVE_BARS - 1) / 2) * sp + (Math.random() - 0.5) * 0.085;
+      out[i * 3 + 2] = (Math.random() - 0.5) * 0.06;
+    }
+    out.meta = { bar, u };
+    waveUpdate(out, out.meta, 0);
+    out.bounds = { x: (WAVE_BARS / 2) * sp, y: WAVE_H };
+    return out;
+  },
+  keycaps(count) {
     const parts = [];
     for (let i = 0; i < 5; i++) parts.push([new RoundedBoxGeometry(0.52, 0.34, 0.52, 3, 0.09), [(i - 2) * 0.62, 0.12, -0.1], [-0.35, 0, 0]]);
     parts.push([new RoundedBoxGeometry(2.6, 0.3, 0.46, 3, 0.09), [0, -0.42, 0.42], [-0.35, 0, 0]]);
     return centre(sampleMesh(merged(parts), count));
   },
-  car(count) { // S.I.E.G.E.
+  car(count) {
     const wheel = () => new THREE.CylinderGeometry(0.26, 0.26, 0.2, 24);
     return centre(sampleMesh(merged([
       [new RoundedBoxGeometry(2.0, 0.42, 1.1, 3, 0.08), [0, 0.05, 0]],
@@ -71,7 +103,7 @@ const SHAPES3D = {
       [wheel(), [0.65, -0.18, -0.55], [Math.PI / 2, 0, 0]], [wheel(), [-0.65, -0.18, -0.55], [Math.PI / 2, 0, 0]],
     ]), count));
   },
-  sub(count) { // ROV submarine
+  sub(count) {
     return centre(sampleMesh(merged([
       [new THREE.CapsuleGeometry(0.42, 1.9, 6, 24), [0, 0, 0], [0, 0, Math.PI / 2]],
       [new RoundedBoxGeometry(0.6, 0.4, 0.34, 3, 0.06), [0.15, 0.55, 0]],
@@ -82,6 +114,7 @@ const SHAPES3D = {
     ]), count));
   },
 };
+const IS_3D = new Set(["sphere", "keycaps", "car", "sub"]);
 
 /* text and drawings become flat shapes with a whisper of depth */
 function flat(pts2, count, depth = 0.06) {
@@ -165,7 +198,6 @@ export function createSwarm(container, options = {}) {
     w = nw; h = nh; aspect = w / h;
     renderer.setSize(w, h, false);
     camera.aspect = aspect; camera.updateProjectionMatrix();
-    fitCurrent();
   }
 
   /* ---------- shapes ---------- */
@@ -176,43 +208,73 @@ export function createSwarm(container, options = {}) {
     let arr;
     if (name.startsWith("text:")) arr = flat(textPoints(count, name.slice(5), options.textFont), count, 0.05);
     else if (name.startsWith("draw:")) { const fn = window.SHAPES2D && window.SHAPES2D[name.slice(5)]; arr = flat(fn ? window.sampleDrawing(fn, count) : new Float32Array(count * 2), count, 0.08); }
+    else if (name.startsWith("logo:")) { const L = window.LOGOS && window.LOGOS[name.slice(5)]; arr = flat(L && window.logoDrawer ? window.sampleDrawing(window.logoDrawer(L.d), count, 360) : new Float32Array(count * 2), count, 0.08); }
     else arr = (SHAPES3D[name] || SHAPES3D.sphere)(count);
     cache[name] = arr;
     return arr;
   }
 
+  // the two endpoints of the current morph
+  let fromName = "field", toName = "field", fromMeta = null, toMeta = null, fromB = { x: 1, y: 1 }, toB = { x: 1, y: 1 }, fixed = true;
+  let morphT = 1, morphDur = 1.2, driven = false; // driven: morphT comes from scroll, not time
+  let override = null, pending = null;
+  let spinAngle = 0, targetScale = 1, curScale = 1, time = 0;
+  let fit = { fill: options.fill ?? 0.8, fillX: options.fillX ?? 0.86 };
   const start = shape("field");
-  pos.set(start); from.set(start); to.set(start);
-  let morphT = 1, morphDur = 1.6, current = "field", spin = 0, wobble = 0, spinAngle = 0, targetScale = 1, curScale = 1;
-  let bounds = start.bounds, fixed = true, fit = { fill: options.fill ?? 0.8, fillX: options.fillX ?? 0.86 };
+  pos.set(start); from.set(start); to.set(start); fromB = toB = start.bounds;
 
-  /* scale the shape so it fills the screen (~80% tall / ~86% wide), whichever bites first */
-  function fitCurrent() {
+  function loadTo(name) {
+    const arr = shape(name);
+    to.set(arr); toName = name; toMeta = arr.meta || null; toB = arr.bounds; fixed = !!arr.fixed;
+  }
+  const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const effT = (i) => { if (morphT >= 1) return 1; const d = delay[i] * 0.3; return ease(Math.min(1, Math.max(0, (morphT - d) / (1 - d)))); };
+
+  /* freeze whatever the dots are currently heading for as the new "from" */
+  function freezeFrom() {
+    if (morphT >= 1) { from.set(to); }
+    else for (let i = 0; i < count; i++) { const e = effT(i), i3 = i * 3; from[i3] += (to[i3] - from[i3]) * e; from[i3 + 1] += (to[i3 + 1] - from[i3 + 1]) * e; from[i3 + 2] += (to[i3 + 2] - from[i3 + 2]) * e; }
+    fromName = toName; fromMeta = toMeta; fromB = toB;
+    if (morphT < 1) { fromName = "~"; fromMeta = null; }
+  }
+  function setShape(name, dur = 1.2) {
+    freezeFrom();
+    loadTo(name);
+    morphT = 0; morphDur = dur; driven = false;
+  }
+  function setBlend(a, b, t) {
+    if (override) { pending = [a, b, t]; return; }
+    if (a !== fromName || b !== toName) {
+      const A = shape(a), B = shape(b);
+      from.set(A); fromName = a; fromMeta = A.meta || null; fromB = A.bounds;
+      to.set(B); toName = b; toMeta = B.meta || null; toB = B.bounds; fixed = !!B.fixed;
+    }
+    morphT = Math.min(1, Math.max(0, t)); driven = true;
+  }
+  function setOverride(name, dur = 0.9) {
+    if (!override) pending = driven ? [fromName, toName, morphT] : null;
+    override = name; setShape(name, dur);
+  }
+  function clearOverride(dur = 0.9) {
+    if (!override) return;
+    override = null;
+    if (pending) { const p = pending; pending = null; freezeFrom(); loadTo(p[1]); const A = shape(p[0]); /* land back on the scroll blend via a short timed morph */ const tmp = new Float32Array(to.length); for (let i = 0; i < count; i++) { const i3 = i * 3, e = ease(p[2]); tmp[i3] = A[i3] + (to[i3] - A[i3]) * e; tmp[i3 + 1] = A[i3 + 1] + (to[i3 + 1] - A[i3 + 1]) * e; tmp[i3 + 2] = A[i3 + 2] + (to[i3 + 2] - A[i3 + 2]) * e; } to.set(tmp); toName = "~"; toMeta = null; morphT = 0; morphDur = dur; driven = false; }
+  }
+
+  function fitNow() {
     if (fixed) { targetScale = 1; return; }
-    targetScale = Math.min((halfH * fit.fill) / bounds.y, (halfH * aspect * fit.fillX) / bounds.x, 2.4);
-  }
-  function setFit(f) { fit = { fill: f.fill ?? fit.fill, fillX: f.fillX ?? fit.fillX }; fitCurrent(); }
-  function setShape(name, dur = 1.6, opts = {}) {
-    if (opts.fill !== undefined || opts.fillX !== undefined) fit = { fill: opts.fill ?? fit.fill, fillX: opts.fillX ?? fit.fillX };
-    if (name === current && morphT >= 1) { fitCurrent(); return; }
-    const target = shape(name);
-    from.set(to); to.set(target);
-    morphT = 0; morphDur = dur; current = name;
-    bounds = target.bounds; fixed = !!target.fixed;
-    const is3d = !(name.startsWith("text:") || name.startsWith("draw:") || name === "field");
-    spin = opts.spin ?? (is3d ? 0.22 : 0);
-    wobble = 0;
-    fitCurrent();
+    const e = ease(morphT), bx = fromB.x + (toB.x - fromB.x) * e, by = fromB.y + (toB.y - fromB.y) * e;
+    targetScale = Math.min((halfH * fit.fill) / by, (halfH * aspect * fit.fillX) / bx, 2.4);
   }
 
-  /* ---------- pointer: a soft nudge, not a blast ---------- */
+  /* ---------- pointer: a soft nudge ---------- */
   const pointer = { x: 0, y: 0, vx: 0, vy: 0, active: false, last: 0 };
-  const tmp = new THREE.Vector3();
+  const tmpV = new THREE.Vector3();
   function setPointer(clientX, clientY) {
     const r = renderer.domElement.getBoundingClientRect();
     if (r.width < 2) return;
-    tmp.set(((clientX - r.left) / r.width) * 2 - 1, -(((clientY - r.top) / r.height) * 2 - 1), 0.5).unproject(camera);
-    const dir = tmp.sub(camera.position).normalize(), dist = -camera.position.z / dir.z;
+    tmpV.set(((clientX - r.left) / r.width) * 2 - 1, -(((clientY - r.top) / r.height) * 2 - 1), 0.5).unproject(camera);
+    const dir = tmpV.sub(camera.position).normalize(), dist = -camera.position.z / dir.z;
     const wx = camera.position.x + dir.x * dist, wy = camera.position.y + dir.y * dist;
     const now = performance.now(), dt = Math.max(8, now - pointer.last) / 1000;
     if (pointer.active) { pointer.vx = (wx - pointer.x) / dt; pointer.vy = (wy - pointer.y) / dt; }
@@ -220,28 +282,28 @@ export function createSwarm(container, options = {}) {
   }
   function clearPointer() { pointer.active = false; pointer.vx = pointer.vy = 0; }
 
-  const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const R = options.blowRadius || 0.17, F = options.blowForce || 0.6, WIND = options.wind || 0.03;
-  let paused = false, raf = 0, last = performance.now(), time = 0, nudgeV = 0;
+  let paused = false, raf = 0, last = performance.now();
   const K = 52, DAMP = 0.84;
 
   function step(dt) {
     time += dt;
-    if (morphT < 1) morphT = Math.min(1, morphT + dt / morphDur);
+    if (!driven && morphT < 1) morphT = Math.min(1, morphT + dt / morphDur);
+    if (fromMeta && DYNAMIC[fromName]) DYNAMIC[fromName](from, fromMeta, time);
+    if (toMeta && DYNAMIC[toName]) DYNAMIC[toName](to, toMeta, time);
+    fitNow();
     curScale += (targetScale - curScale) * Math.min(1, dt * 4);
+    const spin = IS_3D.has(morphT < 0.5 ? fromName : toName) ? 0.22 : 0;
     spinAngle += dt * spin;
     if (spin === 0) { const k = Math.round(spinAngle / (Math.PI * 2)) * Math.PI * 2; spinAngle += (k - spinAngle) * Math.min(1, dt * 2.5); }
-    const tilt = wobble * Math.sin(time * 0.7);
-    const cs = Math.cos(spinAngle + tilt), sn = Math.sin(spinAngle + tilt);
+    const cs = Math.cos(spinAngle), sn = Math.sin(spinAngle);
     const ox = points.position.x, oy = points.position.y;
     const px = pointer.x - ox, py = pointer.y - oy, active = pointer.active;
     const wvx = pointer.vx * WIND, wvy = pointer.vy * WIND;
     const breathe = curScale * (1 + 0.008 * Math.sin(time * 1.1));
     for (let i = 0; i < count; i++) {
-      const i3 = i * 3;
-      let e = 1;
-      if (morphT < 1) { const d = delay[i] * 0.3; e = ease(Math.min(1, Math.max(0, (morphT - d) / (1 - d)))); }
-      let tx = (from[i3] + (to[i3] - from[i3]) * e), ty = (from[i3 + 1] + (to[i3 + 1] - from[i3 + 1]) * e), tz = (from[i3 + 2] + (to[i3 + 2] - from[i3 + 2]) * e);
+      const i3 = i * 3, e = effT(i);
+      let tx = from[i3] + (to[i3] - from[i3]) * e, ty = from[i3 + 1] + (to[i3 + 1] - from[i3 + 1]) * e, tz = from[i3 + 2] + (to[i3 + 2] - from[i3 + 2]) * e;
       const rx = (cs * tx + sn * tz) * breathe, rz = (-sn * tx + cs * tz) * breathe;
       tx = rx; tz = rz; ty = ty * breathe + 0.01 * Math.sin(time * 2 + phase[i]);
       let ax = (tx - pos[i3]) * K, ay = (ty - pos[i3 + 1]) * K, az = (tz - pos[i3 + 2]) * K;
@@ -269,13 +331,12 @@ export function createSwarm(container, options = {}) {
   const ro = new ResizeObserver(resize); ro.observe(container);
 
   return {
-    setShape, setPointer, clearPointer,
-    get shape() { return current; },
+    setShape, setBlend, setOverride, clearOverride, setPointer, clearPointer,
+    get override() { return override; },
     get halfH() { return halfH; }, get aspect() { return aspect; },
+    setFit(f) { fit = { fill: f.fill ?? fit.fill, fillX: f.fillX ?? fit.fillX }; },
     setOffset(x, y = 0) { points.position.x = x; points.position.y = y; },
     get offset() { return { x: points.position.x, y: points.position.y }; },
-    setFit,
-    nudge() {},
     setColors(ink, accent) { uniforms.uInk.value.set(ink); uniforms.uAccent.value.set(accent); },
     setPaused(v) { paused = !!v; last = performance.now(); },
     burst(strength = 1) { for (let i = 0; i < count * 3; i++) vel[i] += (Math.random() - 0.5) * 1.2 * strength; },
