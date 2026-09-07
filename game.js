@@ -1,18 +1,21 @@
 /* =========================================================================
-   The little planet. A small world with a ring road around it; every
-   project is a landmark beside the road. You drive the S.I.E.G.E. rover
-   along the road (scroll, keys or drag) and the planet turns under it.
+   Henry's little planet — the game. A small low-poly world you drive the
+   S.I.E.G.E. rover around. Every project is a landmark somewhere on the
+   globe: find all of them. Coins along the roads, a dog that runs from the
+   rover, a compass on the ground pointing to the nearest stop you haven't
+   found.
 
-   window.createPlanet(container, options) -> api
-     setProgress(u)      0..1 along the road (scroll-driven)
-     setPointer(x, y)    the camera leans a little
-     hotTool(slug)       lift one crate on the stack
-     stats(), setPaused(v), destroy()
+   window.createGame(container, options) -> api
+     input(x, z, boost)   -1..1 on each axis (keys or joystick)
+     setPointer / clearPointer
+     hotTool(slug), setPaused(v), stats(), reset()
+     on(event, fn): enter(stopIndex), leave(stopIndex), coin(total), dog(), tick(stats)
    ========================================================================= */
 import * as THREE from "three";
 
-const R = 4.0;                       // planet radius
+const R = 7.0;                       // planet radius
 const TAU = Math.PI * 2;
+const UP = new THREE.Vector3(0, 1, 0);
 
 /* ---------- small deterministic noise ---------- */
 function mulberry32(a) { return function () { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -226,7 +229,23 @@ function makeRover() {
   return g;
 }
 
-export function createPlanet(container, options = {}) {
+
+/* ---------- the dog (from S.I.E.G.E.: "chases my dogs around") ---------- */
+function makeDog() {
+  const g = new THREE.Group();
+  g.add(box(0.34, 0.16, 0.16, C.wood, 0, 0.2, 0)); g.add(box(0.16, 0.14, 0.14, C.wood, 0.22, 0.3, 0)); g.add(box(0.05, 0.08, 0.03, C.wood2, 0.26, 0.4, 0.06)); g.add(box(0.05, 0.08, 0.03, C.wood2, 0.26, 0.4, -0.06));
+  g.add(box(0.04, 0.04, 0.04, C.black, 0.31, 0.3, 0));
+  const tail = box(0.12, 0.03, 0.03, C.wood, -0.22, 0.28, 0); tail.rotation.z = 0.6; g.add(tail);
+  const legs = [[0.12, 0.06], [-0.12, 0.06], [0.12, -0.06], [-0.12, -0.06]].map(([x, z]) => { const l = box(0.05, 0.14, 0.05, C.wood2, x, 0.07, z); g.add(l); return l; });
+  g.userData.legs = legs; g.userData.tail = tail;
+  return g;
+}
+function makeCoin() {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.06, 14), mat(C.yellow, { metalness: 0.5, roughness: 0.4, emissive: 0xf6d55c, emissiveIntensity: 0.25 }));
+  m.rotation.z = Math.PI / 2; m.castShadow = true; return m;
+}
+
+export function createGame(container, options = {}) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
   const dpr = Math.min(window.devicePixelRatio || 1, options.maxDpr || 1.5);
   renderer.setPixelRatio(dpr);
@@ -237,16 +256,16 @@ export function createPlanet(container, options = {}) {
   container.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0x0d1024, 14, 30);
-  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 200);
+  scene.fog = new THREE.Fog(0x0d1024, 16, 34);
+  const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 200);
   const small = !!options.small;
-  const CAM = new THREE.Vector3(small ? 0 : -1.0, R + 2.1, small ? 13.5 : 10.6), LOOK = new THREE.Vector3(small ? 0 : -1.0, R * 0.66, 0);
+  const CAM = new THREE.Vector3(0, R + 3.6, small ? 10.2 : 8.0), LOOK = new THREE.Vector3(0, R + 0.1, -0.9);
   camera.position.copy(CAM); camera.lookAt(LOOK);
 
   /* ---------- light ---------- */
-  const sun = new THREE.DirectionalLight(0xfff2dc, 2.4); sun.position.set(-6, 11, 7); sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048); sun.shadow.camera.near = 1; sun.shadow.camera.far = 40; sun.shadow.camera.left = -7.5; sun.shadow.camera.right = 7.5; sun.shadow.camera.top = 8; sun.shadow.camera.bottom = -5; sun.shadow.bias = -0.0008; sun.shadow.normalBias = 0.02;
-  scene.add(sun); scene.add(sun.target);
+  const sun = new THREE.DirectionalLight(0xfff2dc, 2.4); sun.position.set(-6, R + 8, 7); sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048); sun.shadow.camera.near = 1; sun.shadow.camera.far = 40; sun.shadow.camera.left = -8; sun.shadow.camera.right = 8; sun.shadow.camera.top = 8; sun.shadow.camera.bottom = -6; sun.shadow.bias = -0.0008; sun.shadow.normalBias = 0.02;
+  scene.add(sun); scene.add(sun.target); sun.target.position.set(0, R, 0);
   scene.add(new THREE.HemisphereLight(0x9fb8ff, 0x3a2f2f, 0.75));
   scene.add(new THREE.AmbientLight(0xffffff, 0.12));
 
@@ -257,80 +276,111 @@ export function createPlanet(container, options = {}) {
   for (let i = 0; i < pos.count; i++) {
     tmp.fromBufferAttribute(pos, i); const n = tmp.clone().normalize();
     const h = noise3(n.x * 3.1 + 5, n.y * 3.1 + 7, n.z * 3.1 + 9) * 0.7 + noise3(n.x * 7 + 1, n.y * 7 + 2, n.z * 7 + 3) * 0.3;
-    const road = Math.exp(-Math.pow(n.z * 9, 2));             // flat along the ring road
-    const bump = (h - 0.5) * 0.22 * (1 - road);
+    const bump = (h - 0.5) * 0.16;
     tmp.copy(n).multiplyScalar(R + bump); pos.setXYZ(i, tmp.x, tmp.y, tmp.z);
-    const polar = Math.abs(n.z);
-    if (bump < -0.05) cg.setHex(C.sand); else cg.setHex(h > 0.55 ? C.grass2 : C.grass);
-    if (road > 0.7) cg.setHex(C.dirt);
+    if (bump < -0.04) cg.setHex(C.sand); else cg.setHex(h > 0.55 ? C.grass2 : C.grass);
     col[i * 3] = cg.r; col[i * 3 + 1] = cg.g; col[i * 3 + 2] = cg.b;
   }
   geo.setAttribute("color", new THREE.BufferAttribute(col, 3)); geo.computeVertexNormals();
   const ground = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.95 }));
   ground.receiveShadow = true; ground.castShadow = true; planet.add(ground);
 
-  /* trees and rocks off the road */
-  for (let i = 0; i < 150; i++) {
-    const th = rnd() * TAU, ph = Math.acos(rnd() * 2 - 1); const n = new THREE.Vector3(Math.sin(ph) * Math.cos(th), Math.sin(ph) * Math.sin(th), Math.cos(ph));
-    if (n.z > -0.32 && n.z < 0.2) continue;
-    const t = rnd() < 0.8 ? tree(0.5 + rnd() * 0.6, rnd() < 0.5 ? C.leaf : C.leaf2) : (() => { const g = new THREE.Group(); g.add(ball(0.08 + rnd() * 0.1, C.stone, 0, 0.05, 0, 6)); return g; })();
-    t.position.copy(n).multiplyScalar(R - 0.02); t.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), n); t.rotateY(rnd() * TAU); planet.add(t);
-  }
-  /* the ring road */
-  const roadMesh = new THREE.Mesh(new THREE.TorusGeometry(R + 0.005, 0.2, 6, 160), mat(C.dirt)); roadMesh.scale.z = 0.12; roadMesh.receiveShadow = true; planet.add(roadMesh);
+  /* helpers on the sphere */
+  const stand = (obj, n, yaw = 0) => { obj.position.copy(n).multiplyScalar(R - 0.02); obj.quaternion.setFromUnitVectors(UP, n); if (yaw) obj.rotateY(yaw); };
+  const fromFlat = (u, v) => new THREE.Vector3(u, R, -v).normalize();   // tangent offsets at the start (x right, v forward)
+  const dist = (a, b) => Math.acos(Math.max(-1, Math.min(1, a.dot(b)))) * R;   // arc length between unit vectors
 
-  /* ---------- landmarks along the road ---------- */
-  const stops = [];   // { angle, group }
-  function place(group, angle, side = -1, offset = 0.6) {
-    const n = new THREE.Vector3(Math.cos(angle), Math.sin(angle), 0);
-    group.scale.setScalar(0.85);
-    group.position.copy(n).multiplyScalar(R - 0.01); group.position.z = side * offset;
-    group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), n);
-    planet.add(group); return group;
+  /* ---------- stops ---------- */
+  const stopsIn = options.stops || [];
+  const stops = [];        // { i, n (unit, planet-local), group, radius, found, kind }
+  const spiral = []; {
+    const cand = []; for (let k = 0; k < 90; k++) { const y = 1 - (2 * (k + 0.5)) / 90, r = Math.sqrt(1 - y * y), ph = k * 2.399963 + 0.7; cand.push(new THREE.Vector3(Math.cos(ph) * r, y, Math.sin(ph) * r)); }
+    cand.sort((a, b) => a.angleTo(UP) - b.angleTo(UP));
+    for (const c of cand) { if (spiral.length >= 14) break; if (c.angleTo(UP) < 0.62) continue; if (spiral.some((s) => s.angleTo(c) < 0.66)) continue; spiral.push(c); }
   }
-  let crateGroup = null;
-  (options.stops || []).forEach((s, i) => {
-    const kind = s.kind, arg = s.arg || "";
+  let signK = 0, projK = 0, crateGroup = null;
+  stopsIn.forEach((s, i) => {
+    let n;
+    if (s.kind === "house") n = fromFlat(-1.6, 0.4);
+    else if (s.kind === "sign") { n = fromFlat(signK % 2 ? 1.4 : -1.4, 1.8 + signK * 1.5); signK++; }
+    else if (s.kind === "billboard") n = fromFlat(0, 8.6);
+    else n = spiral[projK++ % spiral.length];
     let g;
-    if (kind === "sign") g = LM.sign(arg);
-    else if (kind === "billboard") g = LM.billboard(arg.split("|"));
-    else if (kind === "crates") g = crateGroup = LM.crates(options.tools || []);
-    else g = (LM[kind] || LM.sign)(kind);
-    const angle = Math.PI / 2 + s.u * TAU;
-    place(g, angle, -1, kind === "ocean" ? 1.1 : kind === "sign" ? 0.55 : (i % 2 ? 1.0 : 0.65));
-    stops.push({ angle, group: g });
+    if (s.kind === "sign") g = LM.sign(s.arg);
+    else if (s.kind === "billboard") g = LM.billboard((s.arg || "").split("|"));
+    else if (s.kind === "crates") g = crateGroup = LM.crates(options.tools || []);
+    else g = (LM[s.kind] || LM.sign)(s.kind);
+    g.scale.setScalar(0.9);
+    stand(g, n, s.kind === "house" ? 0.9 : 0); planet.add(g);
+    stops.push({ i, n, group: g, radius: s.kind === "billboard" ? 1.2 : s.kind === "sign" ? 0.35 : s.kind === "ocean" ? 1.3 : 0.9, found: false, kind: s.kind, face: s.kind === "sign" || s.kind === "billboard" || s.kind === "scoreboard" });
   });
+
+  /* trees and rocks, away from the stops */
+  const props = [];
+  for (let i = 0; i < 220; i++) {
+    const th = rnd() * TAU, ph = Math.acos(rnd() * 2 - 1); const n = new THREE.Vector3(Math.sin(ph) * Math.cos(th), Math.cos(ph), Math.sin(ph) * Math.sin(th));
+    if (stops.some((s) => dist(s.n, n) < s.radius + 1.6)) continue;
+    if (dist(n, UP) < 1.6) continue;
+    const isTree = rnd() < 0.8;
+    const t = isTree ? tree(0.5 + rnd() * 0.6, rnd() < 0.5 ? C.leaf : C.leaf2) : (() => { const g = new THREE.Group(); g.add(ball(0.1 + rnd() * 0.12, C.stone, 0, 0.05, 0, 6)); return g; })();
+    stand(t, n, rnd() * TAU); planet.add(t); props.push({ n, r: isTree ? 0.32 : 0.2 });
+  }
+
+  /* ---------- coins along three great circles ---------- */
+  const coins = [];
+  for (const s of stops) {
+    if (s.kind === "sign" || s.kind === "house" || s.kind === "billboard") continue;
+    const t0 = new THREE.Vector3(1, 0, 0).cross(s.n).normalize(), t1 = s.n.clone().cross(t0).normalize();
+    for (let k = 0; k < 10; k++) { const a = (k / 10) * TAU, rr = (s.radius + 1.0) / R; const n = s.n.clone().multiplyScalar(Math.cos(rr)).addScaledVector(t0, Math.sin(rr) * Math.cos(a)).addScaledVector(t1, Math.sin(rr) * Math.sin(a)).normalize(); const m = makeCoin(); m.position.copy(n).multiplyScalar(R + 0.2); m.quaternion.setFromUnitVectors(UP, n); planet.add(m); coins.push({ n, m, got: false, phase: rnd() * TAU }); }
+  }
+  for (let c = 0; c < 3; c++) {
+    const axis = new THREE.Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).normalize();
+    const a0 = new THREE.Vector3(1, 0, 0).cross(axis).normalize();
+    for (let k = 0; k < 26; k++) {
+      const n = a0.clone().applyAxisAngle(axis, (k / 26) * TAU);
+      if (stops.some((s) => dist(s.n, n) < s.radius + 0.5)) continue;
+      const m = makeCoin(); m.position.copy(n).multiplyScalar(R + 0.2); m.quaternion.setFromUnitVectors(UP, n); planet.add(m);
+      coins.push({ n, m, got: false, phase: rnd() * TAU });
+    }
+  }
 
   /* ---------- the rover, on top of the world ---------- */
   const rover = makeRover(); rover.position.set(0, R + 0.005, 0); scene.add(rover);
-  sun.target.position.set(0, R, 0);
+  /* the compass: an arrow on the ground that points to the nearest stop you haven't found */
+  const compass = new THREE.Group();
+  const arrow = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.34, 3), new THREE.MeshBasicMaterial({ color: 0xf6d55c, transparent: true, opacity: 0.85 })); arrow.rotation.x = -Math.PI / 2; arrow.rotation.z = Math.PI; arrow.position.z = -0.95; compass.add(arrow);
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.62, 0.66, 40), new THREE.MeshBasicMaterial({ color: 0xf6d55c, transparent: true, opacity: 0.35, side: THREE.DoubleSide })); ring.rotation.x = -Math.PI / 2; compass.add(ring);
+  compass.position.set(0, R + 0.03, 0); scene.add(compass);
 
-  /* ---------- sky: stars, a moon, the atmosphere ---------- */
-  const starGeo = new THREE.BufferGeometry(), NS = 1400, sp = new Float32Array(NS * 3), ss = new Float32Array(NS);
-  for (let i = 0; i < NS; i++) { const th = rnd() * TAU, ph = Math.acos(rnd() * 2 - 1), r = 60 + rnd() * 30; sp[i * 3] = r * Math.sin(ph) * Math.cos(th); sp[i * 3 + 1] = r * Math.sin(ph) * Math.sin(th); sp[i * 3 + 2] = r * Math.cos(ph); ss[i] = rnd(); }
+  /* ---------- the dog ---------- */
+  const dog = makeDog(); planet.add(dog);
+  const dogS = { n: fromFlat(2.6, -1.2), yaw: 0, state: "wander", wanderT: 0, dir: new THREE.Vector3(1, 0, 0), bark: 0 };
+  stand(dog, dogS.n);
+
+  /* ---------- sky ---------- */
+  const starGeo = new THREE.BufferGeometry(), NS = 1600, sp = new Float32Array(NS * 3), ss = new Float32Array(NS);
+  for (let i = 0; i < NS; i++) { const th = rnd() * TAU, ph = Math.acos(rnd() * 2 - 1), r = 70 + rnd() * 30; sp[i * 3] = r * Math.sin(ph) * Math.cos(th); sp[i * 3 + 1] = r * Math.sin(ph) * Math.sin(th); sp[i * 3 + 2] = r * Math.cos(ph); ss[i] = rnd(); }
   starGeo.setAttribute("position", new THREE.BufferAttribute(sp, 3)); starGeo.setAttribute("aSeed", new THREE.BufferAttribute(ss, 1));
   const starMat = new THREE.ShaderMaterial({ uniforms: { uTime: { value: 0 }, uPx: { value: dpr } }, transparent: true, depthWrite: false, fog: false,
     vertexShader: `attribute float aSeed; uniform float uTime, uPx; varying float vA; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); float tw = 0.6 + 0.4 * sin(uTime * (1.0 + aSeed * 2.0) + aSeed * 40.0); vA = tw * (0.4 + 0.6 * aSeed); gl_PointSize = (1.2 + 1.8 * aSeed) * uPx; gl_Position = projectionMatrix * mv; }`,
     fragmentShader: `precision highp float; varying float vA; void main(){ vec2 c = gl_PointCoord - 0.5; float d = length(c) * 2.0; float a = smoothstep(1.0, 0.3, d) * vA; gl_FragColor = vec4(vec3(0.92, 0.95, 1.0), a); }` });
   scene.add(new THREE.Points(starGeo, starMat));
-  const moon = ball(0.32, C.stone, 0, 0, 0, 10); moon.castShadow = false; scene.add(moon);
-  const atmo = new THREE.Mesh(new THREE.SphereGeometry(R * 1.09, 48, 32), new THREE.ShaderMaterial({ transparent: true, depthWrite: false, side: THREE.BackSide, blending: THREE.AdditiveBlending, fog: false,
+  const moon = ball(0.4, C.stone, 0, 0, 0, 10); moon.castShadow = false; scene.add(moon);
+  const atmo = new THREE.Mesh(new THREE.SphereGeometry(R * 1.08, 48, 32), new THREE.ShaderMaterial({ transparent: true, depthWrite: false, side: THREE.BackSide, blending: THREE.AdditiveBlending, fog: false,
     vertexShader: `varying vec3 vN, vV; void main(){ vec4 wp = modelMatrix * vec4(position, 1.0); vN = normalize(mat3(modelMatrix) * normal); vV = normalize(cameraPosition - wp.xyz); gl_Position = projectionMatrix * viewMatrix * wp; }`,
     fragmentShader: `precision highp float; varying vec3 vN, vV; void main(){ float f = pow(1.0 - abs(dot(vN, vV)), 3.2); gl_FragColor = vec4(vec3(0.45, 0.65, 1.0) * f * 1.6, f); }` }));
   scene.add(atmo);
-  /* clouds */
   const clouds = [];
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < 10; i++) {
     const g = new THREE.Group(); const n = 3 + Math.floor(rnd() * 3);
-    for (let k = 0; k < n; k++) { const b = ball(0.12 + rnd() * 0.14, C.white, (k - n / 2) * 0.16, rnd() * 0.06, (rnd() - 0.5) * 0.1, 8, { roughness: 1 }); b.castShadow = true; g.add(b); }
-    const axis = new THREE.Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).normalize(); const start = rnd() * TAU; const rad = R + 0.9 + rnd() * 0.5;
+    for (let k = 0; k < n; k++) { const b = ball(0.14 + rnd() * 0.16, C.white, (k - n / 2) * 0.18, rnd() * 0.06, (rnd() - 0.5) * 0.1, 8, { roughness: 1 }); b.castShadow = true; g.add(b); }
+    const axis = new THREE.Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).normalize(); const start = rnd() * TAU; const rad = R + 1.1 + rnd() * 0.6;
     clouds.push({ g, axis, start, rad, speed: 0.02 + rnd() * 0.03 }); scene.add(g);
   }
-
-  /* ---------- dust puffs ---------- */
-  const NP = 60, puffs = []; for (let i = 0; i < NP; i++) { const p = ball(0.05, C.sand, 0, -10, 0, 6, { transparent: true, opacity: 0.6 }); p.material = p.material.clone(); p.castShadow = false; p.receiveShadow = false; scene.add(p); puffs.push({ m: p, life: 0, v: new THREE.Vector3() }); }
+  /* dust puffs + sparkles */
+  const NP = 70, puffs = []; for (let i = 0; i < NP; i++) { const p = ball(0.05, C.sand, 0, -10, 0, 6, { transparent: true, opacity: 0.6 }); p.material = p.material.clone(); p.castShadow = false; p.receiveShadow = false; scene.add(p); puffs.push({ m: p, life: 0, v: new THREE.Vector3(), c: 0 }); }
   let puffHead = 0;
-  function puff(x, z) { const p = puffs[puffHead]; puffHead = (puffHead + 1) % NP; p.m.position.set(x, R + 0.06, z); p.life = 1; p.v.set((Math.random() - 0.5) * 0.4, 0.5 + Math.random() * 0.4, (Math.random() - 0.5) * 0.4); p.m.scale.setScalar(0.6 + Math.random() * 0.6); }
+  function puff(x, z, color = C.sand, up = 0.5, scale = 1) { const p = puffs[puffHead]; puffHead = (puffHead + 1) % NP; p.m.position.set(x, R + 0.06, z); p.life = 1; p.v.set((Math.random() - 0.5) * 0.6, up + Math.random() * 0.5, (Math.random() - 0.5) * 0.6); p.m.material.color.setHex(color); p.m.scale.setScalar((0.6 + Math.random() * 0.6) * scale); }
 
   /* ---------- state ---------- */
   let w = 2, h = 2, aspect = 1;
@@ -338,41 +388,115 @@ export function createPlanet(container, options = {}) {
     const r = container.getBoundingClientRect(); const nw = Math.max(2, Math.round(r.width)), nh = Math.max(2, Math.round(r.height));
     if (nw === w && nh === h) return; w = nw; h = nh; aspect = w / h; renderer.setSize(w, h, false); camera.aspect = aspect; camera.updateProjectionMatrix();
   }
-  let progress = 0, progressCur = 0, speed = 0, time = 0, wheelSpin = 0, hot = null, hotLift = 0;
-  const pointer = { x: 0, y: 0, active: false }, camOff = new THREE.Vector3();
-  const listeners = [];
-  let paused = false, raf = 0, last = performance.now(), fps = 60, fpsAcc = 0, fpsN = 0;
+  const input = { x: 0, z: 0, boost: false };
+  const vel = new THREE.Vector3(), heading = new THREE.Vector3(0, 0, -1);
+  let yaw = 0, speed = 0, time = 0, playTime = 0, running = false, wheelSpin = 0, hot = null, nearStop = -1, coinsGot = 0, dogCaught = false, bounce = 0;
+  const pointer = { x: 0, y: 0, active: false }, camOff = new THREE.Vector3(), camLead = new THREE.Vector3();
+  const handlers = {}; const emit = (ev, ...a) => { (handlers[ev] || []).forEach((fn) => fn(...a)); };
+  const q = new THREE.Quaternion(), axis = new THREE.Vector3(), wp = new THREE.Vector3(), tan = new THREE.Vector3();
+  const MAX = 4.2, BOOST = 7.0;
+
+  function worldOf(n, out) { return out.copy(n).applyQuaternion(planet.quaternion); }
+  function localDir(worldDir, out) { return out.copy(worldDir).applyQuaternion(planet.quaternion.clone().invert()); }
+  /* roll the planet so the rover moves by `d` along world tangent `dir` */
+  function roll(dir, d) { if (d === 0) return; axis.crossVectors(dir, UP).normalize(); q.setFromAxisAngle(axis, d / R); planet.quaternion.premultiply(q); }
+  /* move a planet-local unit vector along a world tangent direction */
+  function moveLocal(n, worldDir, d) { const a = axis.crossVectors(worldOf(n, wp).normalize(), worldDir).normalize(); localDir(a, tan); n.applyAxisAngle(tan, d / R).normalize(); }
 
   function step(dt) {
-    time += dt;
-    const prev = progressCur;
-    progressCur += (progress - progressCur) * Math.min(1, dt * 7);
-    const dAng = (progressCur - prev) * TAU;
-    speed += ((Math.abs(dAng) / Math.max(dt, 1e-4)) - speed) * Math.min(1, dt * 6);
-    planet.rotation.z = -progressCur * TAU;
-    // rover: wheels spin, the body bobs and leans into the drive
-    wheelSpin += (dAng * R) / 0.11;
+    time += dt; if (running) playTime += dt;
+    // --- drive
+    const want = new THREE.Vector3(input.x, 0, -input.z);
+    const mag = Math.min(1, want.length());
+    if (mag > 0.05) want.normalize().multiplyScalar(mag * (input.boost ? BOOST : MAX));
+    else want.set(0, 0, 0);
+    const accel = mag > 0.05 ? 6.5 : 4.5;
+    vel.lerp(want, Math.min(1, dt * accel));
+    speed = vel.length();
+    if (speed > 0.15) { const target = Math.atan2(vel.x, -vel.z); let d = target - yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); yaw += d * Math.min(1, dt * 9); }
+    heading.set(Math.sin(yaw), 0, -Math.cos(yaw));
+    if (speed > 0.001) { const dir = vel.clone().normalize(); roll(dir, speed * dt); }
+    // collisions: stops and trees push the rover back out
+    for (const s of stops) {
+      worldOf(s.n, wp); if (wp.y < 0) continue;
+      const dd = dist(s.n.clone().applyQuaternion(planet.quaternion), UP);   // arc from the top
+      const rr = s.radius * 0.9 + 0.35;
+      if (dd < rr) { const push = new THREE.Vector3(-wp.x, 0, -wp.z); if (push.lengthSq() < 1e-6) push.set(1, 0, 0); push.normalize(); roll(push, rr - dd); const along = vel.dot(push); if (along < 0) vel.addScaledVector(push, -along * 1.4); bounce = 1; }
+    }
+    for (const p of props) {
+      worldOf(p.n, wp); if (wp.y < R * 0.8) continue;
+      const dd = dist(wp.clone().normalize(), UP), rr = p.r + 0.3;
+      if (dd < rr) { const push = new THREE.Vector3(-wp.x, 0, -wp.z).normalize(); roll(push, rr - dd); const along = vel.dot(push); if (along < 0) vel.addScaledVector(push, -along * 1.2); }
+    }
+    // rover body
+    wheelSpin += (speed * dt) / 0.11;
     rover.userData.wheels.forEach((wh) => { wh.rotation.y = wheelSpin; });
+    rover.rotation.y = Math.PI / 2 - yaw;
     const body = rover.userData.body;
-    body.position.y = Math.abs(Math.sin(time * 14)) * 0.012 * Math.min(1, speed * 0.6);
-    body.rotation.z += ((-dAng / Math.max(dt, 1e-4)) * 0.08 - body.rotation.z) * Math.min(1, dt * 5);
-    if (speed > 0.25 && Math.random() < Math.min(0.9, speed * 0.35)) puff((Math.random() - 0.5) * 0.3 - Math.sign(dAng) * 0.25, (Math.random() - 0.5) * 0.3);
-    // landmarks' idle animations
-    for (const s of stops) if (s.group.userData.anim) s.group.userData.anim(time, dt);
-    // the crate on the stack that is "hot" lifts and glows
+    bounce *= Math.exp(-dt * 8);
+    body.position.y = Math.abs(Math.sin(time * 16)) * 0.012 * Math.min(1, speed * 0.4) + bounce * 0.06;
+    const turn = Math.atan2(Math.sin(Math.atan2(vel.x, -vel.z) - yaw), 1);
+    body.rotation.x += (-(speed > 0.15 ? turn : 0) * 0.35 - body.rotation.x) * Math.min(1, dt * 6);
+    body.rotation.z += ((input.boost ? 0.06 : 0) * Math.min(1, speed / MAX) - body.rotation.z) * Math.min(1, dt * 5);
+    if (speed > 0.8 && Math.random() < Math.min(0.95, speed * 0.22)) puff(-heading.x * 0.3 + (Math.random() - 0.5) * 0.25, -heading.z * 0.3 + (Math.random() - 0.5) * 0.25, input.boost ? C.orange : C.sand, input.boost ? 0.9 : 0.5);
+    // --- coins
+    for (const c of coins) {
+      if (c.got) continue;
+      c.m.rotation.y = time * 2.5 + c.phase;
+      worldOf(c.n, wp); if (wp.y < R * 0.85) continue;
+      if (dist(wp.clone().normalize(), UP) < 0.62) { c.got = true; c.m.visible = false; coinsGot++; for (let k = 0; k < 6; k++) puff(wp.x, wp.z, C.yellow, 1.2, 0.6); emit("coin", coinsGot, coins.length); }
+    }
+    // --- the dog
+    worldOf(dogS.n, wp); const dArc = dist(wp.clone().normalize(), UP);
+    if (dogS.state !== "follow") {
+      if (dArc < 2.6 && wp.y > 0) { dogS.state = "flee"; const away = new THREE.Vector3(wp.x, 0, wp.z); if (away.lengthSq() > 1e-6) { dogS.dir.copy(away.normalize()); } }
+      else if (dogS.state === "flee" && dArc > 4) dogS.state = "wander";
+      if (dogS.state === "wander") { dogS.wanderT -= dt; if (dogS.wanderT <= 0) { dogS.wanderT = 1 + Math.random() * 2; const a = Math.random() * TAU; dogS.dir.set(Math.cos(a), 0, Math.sin(a)); } }
+      const sp = dogS.state === "flee" ? 3.4 : 1.1;
+      // keep the direction tangent at the dog's world position
+      const nW = wp.clone().normalize(); dogS.dir.addScaledVector(nW, -dogS.dir.dot(nW)).normalize();
+      moveLocal(dogS.n, dogS.dir, sp * dt);
+      if (dArc < 0.55 && wp.y > 0) { dogS.state = "follow"; dogCaught = true; emit("dog"); for (let k = 0; k < 12; k++) puff(wp.x, wp.z, C.pink, 1.4, 0.8); }
+    } else {
+      // trots behind the rover
+      const behind = new THREE.Vector3(-heading.x * 0.75, R, -heading.z * 0.75).normalize();
+      const target = localDir(behind, new THREE.Vector3());
+      dogS.n.lerp(target, Math.min(1, dt * 4)).normalize();
+      worldOf(dogS.n, wp); dogS.dir.copy(heading);
+    }
+    stand(dog, dogS.n); { const nW = worldOf(dogS.n, wp).normalize(); const dwp = nW.clone().multiplyScalar(R - 0.02); dog.up.copy(nW); dog.lookAt(dwp.clone().add(dogS.dir)); dog.rotateY(-Math.PI / 2); }
+    const trot = dogS.state === "follow" ? Math.min(1, speed / 2) : dogS.state === "flee" ? 1 : 0.35;
+    dog.userData.legs.forEach((l, k) => { l.rotation.z = Math.sin(time * 14 + k * 1.6) * 0.5 * trot; });
+    dog.userData.tail.rotation.z = 0.6 + Math.sin(time * 9) * 0.35;
+    // --- stops: enter / leave
+    let near = -1, nearD = 1e9, nearest = -1, nearestD = 1e9;
+    for (const s of stops) {
+      worldOf(s.n, wp); const dd = dist(wp.clone().normalize(), UP);
+      if (s.kind !== "sign" && dd < s.radius + 1.0 && dd < nearD) { near = s.i; nearD = dd; }
+      if (!s.found && s.kind !== "sign" && dd < nearestD) { nearest = s.i; nearestD = dd; }
+      if (s.group.userData.anim) s.group.userData.anim(time, dt);
+      if (s.face) { const nW = wp.clone().normalize(), wpos = nW.clone().multiplyScalar(R); const toCam = camera.position.clone().sub(wpos); toCam.addScaledVector(nW, -toCam.dot(nW)); if (toCam.lengthSq() > 1e-4) { s.group.up.copy(nW); s.group.lookAt(wpos.add(toCam.normalize())); } }
+    }
+    if (near !== nearStop) { if (nearStop >= 0) emit("leave", nearStop); nearStop = near; if (near >= 0) { const s = stops[near]; const fresh = !s.found; s.found = true; emit("enter", near, fresh); if (fresh) for (let k = 0; k < 16; k++) puff((Math.random() - 0.5) * 1.2, (Math.random() - 0.5) * 1.2, C.yellow, 1.6, 0.7); } }
+    // compass
+    compass.visible = nearest >= 0;
+    if (nearest >= 0) { worldOf(stops[nearest].n, wp); const a = Math.atan2(wp.x, -wp.z); compass.rotation.y = -a; compass.children[0].material.opacity = 0.5 + 0.35 * Math.sin(time * 4); }
+    // crates
     if (crateGroup) for (const [slug, m] of Object.entries(crateGroup.userData.crates)) { const on = slug === hot; m.userData.lift = (m.userData.lift || 0) + ((on ? 1 : 0) - (m.userData.lift || 0)) * Math.min(1, dt * 6); m.position.y = m.userData.baseY ?? (m.userData.baseY = m.position.y); m.position.y += m.userData.lift * 0.22; m.material.emissive.setHex(0xf6d55c); m.material.emissiveIntensity = m.userData.lift * 0.5; }
     // sky
     starMat.uniforms.uTime.value = time;
-    const ma = time * 0.08; moon.position.set(Math.cos(ma) * 7.8, 1.6 + Math.sin(ma * 0.7) * 0.8, Math.sin(ma) * 7.8);
-    for (const c of clouds) { const a = c.start + time * c.speed; const q = new THREE.Quaternion().setFromAxisAngle(c.axis, a); const p = new THREE.Vector3(c.rad, 0, 0).applyQuaternion(q); c.g.position.copy(p); c.g.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), p.clone().normalize()); }
-    // puffs
-    for (const p of puffs) { if (p.life <= 0) continue; p.life -= dt * 1.6; p.m.position.addScaledVector(p.v, dt); p.m.material.opacity = 0.55 * Math.max(0, p.life); p.m.scale.multiplyScalar(1 + dt * 1.5); if (p.life <= 0) p.m.position.y = -10; }
-    // camera leans with the pointer, nothing turns
-    camOff.x += ((pointer.active ? pointer.x : 0) * 0.35 - camOff.x) * Math.min(1, dt * 2.5);
-    camOff.y += ((pointer.active ? pointer.y : 0) * 0.2 - camOff.y) * Math.min(1, dt * 2.5);
-    camera.position.set(CAM.x + camOff.x, CAM.y + camOff.y, CAM.z); camera.lookAt(LOOK.x + camOff.x * 0.6, LOOK.y + camOff.y * 0.6, LOOK.z);
-    for (const fn of listeners) fn(speed, dAng);
+    const ma = time * 0.07; moon.position.set(Math.cos(ma) * 9.5, 2 + Math.sin(ma * 0.7) * 1.0, Math.sin(ma) * 9.5);
+    for (const c of clouds) { const a = c.start + time * c.speed; const qq = new THREE.Quaternion().setFromAxisAngle(c.axis, a); const p = new THREE.Vector3(c.rad, 0, 0).applyQuaternion(qq); c.g.position.copy(p); c.g.quaternion.setFromUnitVectors(UP, p.clone().normalize()); }
+    for (const p of puffs) { if (p.life <= 0) continue; p.life -= dt * 1.5; p.m.position.addScaledVector(p.v, dt); p.m.material.opacity = 0.6 * Math.max(0, p.life); p.m.scale.multiplyScalar(1 + dt * 1.4); if (p.life <= 0) p.m.position.y = -10; }
+    // camera: leads the rover a little, leans with the pointer
+    camLead.lerp(vel.clone().multiplyScalar(0.12), Math.min(1, dt * 2));
+    camOff.x += ((pointer.active ? pointer.x : 0) * 0.3 - camOff.x) * Math.min(1, dt * 2.5);
+    camOff.y += ((pointer.active ? pointer.y : 0) * 0.15 - camOff.y) * Math.min(1, dt * 2.5);
+    camera.position.set(CAM.x + camOff.x + camLead.x, CAM.y + camOff.y, CAM.z + camLead.z); camera.lookAt(LOOK.x + camOff.x * 0.5 + camLead.x, LOOK.y + camOff.y * 0.5, LOOK.z + camLead.z);
+    emit("tick", { speed, boost: input.boost, playTime, coins: coinsGot, coinsTotal: coins.length, found: stops.filter((s) => s.found && s.kind !== "sign" && s.kind !== "house" && s.kind !== "billboard").length, total: stops.filter((s) => s.kind !== "sign" && s.kind !== "house" && s.kind !== "billboard").length, dog: dogCaught, nearest });
   }
+
+  let paused = false, raf = 0, last = performance.now(), fps = 60, fpsAcc = 0, fpsN = 0;
   function loop(now) {
     raf = requestAnimationFrame(loop);
     if (paused || document.hidden) { last = now; return; }
@@ -385,17 +509,19 @@ export function createPlanet(container, options = {}) {
   const ro = new ResizeObserver(resize); ro.observe(container);
 
   return {
-    setProgress(u) { progress = Math.max(0, Math.min(1, u)); },
-    jump(u) { progress = progressCur = Math.max(0, Math.min(1, u)); },
+    input(x, z, boost) { input.x = Math.max(-1, Math.min(1, x || 0)); input.z = Math.max(-1, Math.min(1, z || 0)); input.boost = !!boost; },
+    start() { running = true; },
+    setFound(list) { for (const i of list) if (stops[i]) stops[i].found = true; },
     setPointer(cx, cy) { const r = renderer.domElement.getBoundingClientRect(); if (r.width < 2) return; pointer.x = ((cx - r.left) / r.width) * 2 - 1; pointer.y = -(((cy - r.top) / r.height) * 2 - 1); pointer.active = true; },
     clearPointer() { pointer.active = false; },
     hotTool(slug) { hot = slug; },
-    onDrive(fn) { listeners.push(fn); },
-    stats() { return { fps: Math.round(fps), speed, progress: progressCur }; },
+    on(ev, fn) { (handlers[ev] = handlers[ev] || []).push(fn); },
+    stats() { return { fps: Math.round(fps), speed, playTime, coins: coinsGot, found: stops.filter((s) => s.found).length }; },
+    _facing() { const out = []; for (const s of stops) { if (!s.face) continue; const z = new THREE.Vector3(0, 0, 1).applyQuaternion(s.group.getWorldQuaternion(new THREE.Quaternion())); const p = s.group.getWorldPosition(new THREE.Vector3()); const toCam = camera.position.clone().sub(p).normalize(); out.push(+z.dot(toCam).toFixed(2)); } return out; },
     setPaused(v) { paused = !!v; last = performance.now(); },
     destroy() { cancelAnimationFrame(raf); ro.disconnect(); renderer.dispose(); renderer.domElement.remove(); },
   };
 }
 
-window.createPlanet = createPlanet;
-window.dispatchEvent(new Event("planet-ready"));
+window.createGame = createGame;
+window.dispatchEvent(new Event("game-ready"));

@@ -2,59 +2,95 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
     <title>henry. — proud vibecoder, 14, Austin</title>
-    <meta name="description" content="I'm Henry. Fourteen, from Austin, and a proud vibecoder. I build voice AI, robots, a submarine, and a company called SiteLight. Drive the rover around a little planet and see everything I've made." />
+    <meta name="description" content="I'm Henry. Fourteen, from Austin, and a proud vibecoder. Drive a rover around a little planet and find everything I've built: voice AI, robots, a submarine, and a company called SiteLight." />
     <meta name="theme-color" content="#0d1024" />
     <meta property="og:title" content="henry. — proud vibecoder, 14, Austin" />
-    <meta property="og:description" content="I make way too much stuff. Drive the rover around a little planet and see all of it." />
+    <meta property="og:description" content="I make way too much stuff. Drive the rover around my little planet and find all of it." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://henry93.vercel.app/" />
     <meta property="og:image" content="https://henry93.vercel.app/assets/share.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="henry. — proud vibecoder, 14, Austin" />
-    <meta name="twitter:description" content="I make way too much stuff. Drive the rover around a little planet and see all of it." />
+    <meta name="twitter:description" content="I make way too much stuff. Drive the rover around my little planet and find all of it." />
     <meta name="twitter:image" content="https://henry93.vercel.app/assets/share.jpg" />
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20260906q" />
+    <link rel="stylesheet" href="styles.css?v=20260906s" />
     <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }</script>
   </head>
   <body>
-    <!-- the planet -->
-    <div class="planet-w" data-planet aria-hidden="true"></div>
+    <!-- the world -->
+    <div class="game-w" data-game aria-hidden="true"></div>
     <div class="veil" aria-hidden="true"></div>
 
     <!-- chrome -->
-    <a class="brand" href="#top" data-top>henry.</a>
+    <a class="brand" href="#" data-top title="pause">henry.</a>
     <nav class="nav" aria-label="Links">
       <a href="https://github.com/henrybrewer00-dotcom" target="_blank" rel="noreferrer">github ↗</a>
       <a href="mailto:henrybrewer00@gmail.com?subject=You%27re%20hired&amp;body=Hi%20Henry%2C%0A%0AHere%27s%20what%20I%27d%20love%20to%20build%20with%20you%3A%0A%0A">contact →</a>
       <button type="button" class="sound" data-sound aria-pressed="false">sound: off</button>
     </nav>
-    <div class="nudge" data-nudge aria-hidden="true">turn sound on for the engine ↑</div>
+    <div class="hud" aria-live="polite">
+      <p class="hud-line" data-hud>0/15 stops · $0 · 0:00</p>
+      <p class="mission"><i></i><span data-mission>find the bust</span></p>
+    </div>
+    <div class="toast" data-toast aria-live="polite"></div>
     <div class="caps" data-caps></div>
-    <div class="rail" data-rail aria-hidden="true"></div>
+    <div class="stops" data-rail aria-label="Stops"></div>
     <div class="meta" aria-hidden="true">14 · austin, tx · proud vibecoder</div>
-    <div class="hint" data-hint aria-hidden="true">scroll, drag or arrow keys to drive →</div>
 
-    <!-- scroll length: one screen per stop (set by script) -->
-    <div class="track" data-track id="top"></div>
+    <!-- touch controls -->
+    <div class="stick" data-stick aria-hidden="true"><div class="knob" data-knob></div></div>
+    <button type="button" class="boost" data-boost aria-label="Boost">boost</button>
+
+    <!-- title -->
+    <div class="title" data-title>
+      <div class="title-in">
+        <p class="kicker">henry. · 14 · austin, tx · proud vibecoder</p>
+        <h1>Henry's<br /><em>little planet</em></h1>
+        <p class="lede">A small world with everything I've built standing on it. Drive the rover, find all fifteen stops, grab the coins, and try to catch the dog.</p>
+        <button type="button" class="btn" data-start>Start driving →</button>
+        <p class="controls"><span class="k">WASD</span> or <span class="k">arrows</span> to drive · <span class="k">space</span> boost · <span class="k">esc</span> pause</p>
+        <p class="controls is-touch">drag anywhere to drive · hold <span class="k">boost</span></p>
+        <p class="sound-row"><button type="button" class="sound" data-sound aria-pressed="false">sound: off</button></p>
+      </div>
+    </div>
+
+    <!-- pause -->
+    <div class="modal" data-pause>
+      <div class="modal-in">
+        <p class="kicker">paused</p>
+        <h2>Take a breath.</h2>
+        <p class="controls"><span class="k">WASD</span> / <span class="k">arrows</span> drive · <span class="k">space</span> boost · <span class="k">esc</span> resume</p>
+        <div class="acts"><button type="button" class="btn" data-resume>Keep driving →</button><button type="button" class="act is-soft" data-reset>Start over</button></div>
+        <p class="links"><a href="https://github.com/henrybrewer00-dotcom" target="_blank" rel="noreferrer">GitHub ↗</a> · <a href="mailto:henrybrewer00@gmail.com">Email</a> · <a href="deck/">older site: card deck</a> · <a href="old/">older site: terminal</a></p>
+      </div>
+    </div>
+
+    <!-- the end -->
+    <div class="modal" data-end>
+      <div class="modal-in">
+        <p class="kicker">you found everything</p>
+        <h2>That's all of it.<br /><em>For now.</em></h2>
+        <p class="stats" data-end-stats></p>
+        <p>Got an idea? Let's build it this weekend.</p>
+        <div class="acts"><a class="btn" href="mailto:henrybrewer00@gmail.com?subject=You%27re%20hired&amp;body=Hi%20Henry%2C%0A%0AHere%27s%20what%20I%27d%20love%20to%20build%20with%20you%3A%0A%0A">Email me →</a><a class="act" href="https://github.com/henrybrewer00-dotcom" target="_blank" rel="noreferrer">GitHub ↗</a><button type="button" class="act is-soft" data-keep>Keep driving</button></div>
+      </div>
+    </div>
 
     <noscript>
       <div class="noscript">
-        <p>I'm Henry. Fourteen, from Austin, and a proud vibecoder. This page is a WebGL planet that needs JavaScript. The links still work:</p>
+        <p>I'm Henry. Fourteen, from Austin, and a proud vibecoder. This page is a WebGL game that needs JavaScript. The links still work:</p>
         <p><a href="https://github.com/henrybrewer00-dotcom">GitHub</a> · <a href="mailto:henrybrewer00@gmail.com">Email</a> · <a href="deck/">older card-deck site</a> · <a href="old/">older terminal site</a></p>
       </div>
     </noscript>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-    <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
-    <script src="logos.js?v=20260906q"></script>
-    <script type="module" src="planet.js?v=20260906q"></script>
-    <script src="script.js?v=20260906q" defer></script>
+    <script src="logos.js?v=20260906s"></script>
+    <script type="module" src="game.js?v=20260906s"></script>
+    <script src="script.js?v=20260906s" defer></script>
   </body>
 </html>
