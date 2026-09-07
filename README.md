@@ -1,29 +1,29 @@
 # henry. — portfolio
 
-One screen: a block of marble in a marble hall. Scrolling carves it into
-the next thing, exactly as far as you've scrolled. The whole picture is one
-fragment shader: the hall (floor, fluted columns, fog, shafts of light), the
-polished floor's reflection, and the block itself are signed distance fields
-raymarched together, so moving between two shapes is a smooth blend of two
-fields, roughened like chisel work while it changes. Chips fly off and
-collect on the floor under the work, dust drifts (and glows) in the shafts of
-light, the light itself drifts slowly like an afternoon, and (if you turn
-sound on) a chisel taps while it carves. Click or tap the marble and you take
-a bite out of it yourself; the cursor turns into a chisel over the stone. The
-block arrives rough and settles smooth. Arrow keys, page keys, space, Home and
-End walk the gallery.
+One screen: a little planet with a ring road around it, and every project is
+a landmark beside the road. You drive the S.I.E.G.E. rover along the road
+(scroll, drag sideways, or hold the arrow keys) and the planet turns under
+it. Each stop raises a placard with the real link.
 
-a block → "henry." → "14" → "austin, tx" → "proud vibecoder" → "I make way
-too much stuff." → a bust (bio) → an eye (SiteLight, with the Stripe first-$2
-receipt) → a live waveform (Lily, with a sample call typing itself out) → a
-trophy (some hackathon wins) → a record button (Glasscast) → a burger
-(Lily's Drive-Thru) → a mic (Eleven Mile) → a paw (PawBot) → the S.I.E.G.E.
-rover → the ROV submarine → a merge graph (open source) → keycaps (the stack
-cycles through tool logos; hover holds one) → "99.5" (receipts) → "hire me".
+The stops, in order: home → "henry." → "14" → "austin, tx" → "proud
+vibecoder" (signposts) → the billboard ("I make way too much stuff.") → a bust
+(bio) → a lighthouse (SiteLight, with the Stripe first-$2 receipt) → a phone
+box with a live waveform (Lily, with a sample call typing itself out) → three
+trophies (some hackathon wins) → a camera on a tripod (Glasscast) → a
+drive-thru (Lily's Drive-Thru) → a stage with two mics (Eleven Mile) → a dog
+house (PawBot) → the S.I.E.G.E. garage → a lake with the submarine → a merge
+tree (open source) → a stack of crates with tool logos (the stack cycles;
+hover holds one, and its crate lifts) → the "99.5" scoreboard → a mailbox
+with the flag up ("hire me").
 
-Every scene has a museum placard bottom-left with the real link, and the
-rail on the right is the gallery index (I–XV). Add `?nosnap=1` to turn scene
-snapping off, `?lq=1` for the low-quality renderer.
+Low-poly world: flat-shaded planet with hills flattened along the road,
+trees and rocks, a dirt ring road, clouds that drift around the planet, a
+moon in orbit, an atmosphere rim, twinkling stars, soft shadows, dust puffs
+behind the rover, spinning wheels, and idle animations at the landmarks (the
+lighthouse beam turns, the sound bars bounce, the sub bobs, the camera reels
+spin). Sound is off until asked: a little engine that follows your speed and
+a ding at each stop. The rail on the right is the list of stops (I–XV);
+Home/End jump to the ends; add `?nosnap=1` to turn stop snapping off.
 
 ## Run it
 
@@ -39,16 +39,14 @@ import map. Fonts: Geist, Geist Mono, Instrument Serif.
 | File | Purpose |
 |---|---|
 | `index.html` | The chrome (name, links, sound toggle, placard + rail hosts, scroll track) |
-| `styles.css` | Stone / charcoal / oxide red, placards, rail, mobile |
-| `script.js` | `SCENES` (copy + links), scroll → blend, placards, transcript, stack cycle, chisel sound |
-| `marble.js` | The renderer: raymarched hall + object, 3D shape SDFs (block, bust, car, sub, keycaps, bars), extruded 2D fields for text/drawings/logos, chips, dust |
-| `shapes.js` | The drawings (eye, wave, rec, burger, mic, paw, git, trophy…) + logo path drawing |
-| `logos.js` | simple-icons paths for the stack |
+| `styles.css` | Night sky, placards, rail, mobile |
+| `script.js` | `SCENES` (copy, links, which landmark), scroll/keys/drag → driving, placards, transcript, stack cycle, engine sound |
+| `planet.js` | The world: planet mesh, landmarks (`LM.*`), the rover, sky, clouds, puffs, camera |
+| `logos.js` | simple-icons paths for the crate faces |
 | `assets/` | Stripe receipt, favicon, share image |
 | `deck/`, `old/` | The two previous portfolios (card deck, terminal) |
 
-Edit copy and links in `SCENES` in `script.js`; add a scene = add an entry
-(shape: `text:...`, `draw:<SHAPES2D name>`, `logo:<slug>`, or one of the 3D
-shapes `block`, `sphere`, `bust`, `car`, `sub`, `keycaps`, `wave`; `len` =
-screens of scroll). New 3D shapes are SDF functions in `marble.js`. Bump the
-`?v=` on the CSS/JS links in `index.html` when those files change.
+Edit copy and links in `SCENES` in `script.js`; add a stop = add an entry
+with a `stop` (one of the `LM` builders in `planet.js`, or `sign` / `billboard`
+with an `arg`) and a `len` (screens of scroll). Bump the `?v=` on the CSS/JS
+links in `index.html` when those files change.
