@@ -1,30 +1,24 @@
-# Henry — portfolio
+# henry. — portfolio
 
-A one-page portfolio for Henry (14): voice AI, robots, a submarine, and some
-open source. The design is a one-to-one take on the Off+Brand agency site
-layout — an iridescent WebGL orb that travels down the page, "difference"
-blended type, a preloader that fills the H. mark, a 3D fly-through grid of
-work tiles, and a gradient closing section — with Henry's own content.
+One screen: a block of marble in a marble hall. Scrolling carves it into
+the next thing, exactly as far as you've scrolled. The whole picture is one
+fragment shader: the hall (floor, fluted columns, fog, shafts of light), the
+polished floor's reflection, and the block itself are signed distance fields
+raymarched together, so moving between two shapes is a smooth blend of two
+fields, roughened like chisel work while it changes. Chips fly off, dust
+drifts in the light, and (if you turn sound on) a chisel taps while it carves.
 
-## Sections
+a block → "henry." → "14" → "austin, tx" → "proud vibecoder" → "I make way
+too much stuff." → a bust (bio) → an eye (SiteLight, with the Stripe first-$2
+receipt) → a live waveform (Lily, with a sample call typing itself out) → a
+trophy (some hackathon wins) → a record button (Glasscast) → a burger
+(Lily's Drive-Thru) → a mic (Eleven Mile) → a paw (PawBot) → the S.I.E.G.E.
+rover → the ROV submarine → a merge graph (open source) → keycaps (the stack
+cycles through tool logos; hover holds one) → "99.5" (receipts) → "hire me".
 
-1. **Hero** — "I make way too much stuff." split-character intro, orb behind it.
-2. **Statement** — who Henry is, in the big indented headline + two columns.
-3. **Built with** — tool logos grid (hover swaps the tag).
-4. **Featured work** — 9 project cards (SiteLight with the Stripe first-$2
-   receipt, Lily, Glasscast, Lily's Drive-Thru, Eleven Mile, PawBot,
-   S.I.E.G.E., ROV Submarine, Open Source). Sticky eyebrow + "All repos".
-   Cards without a real link are plain tiles; typographic covers for the
-   projects without real imagery.
-5. **3D grid** — "Building things in unexpected ways" over a scroll-driven
-   perspective grid of tiles (desktop only, like the reference).
-6. **Recognitions + Awards** — hackathon wins (InsForge, Frontier Tower, a16z × Cursor), school, merged PRs (SymPy, Biome, Astro), typing.
-7. **Closing** — "Where Different Is the Standard. Hire Henry." with the
-   rotating H. mark revealing the gradient.
-8. **Footer** — "How about we build a thing, To+Gether" + sitemap/connect.
-
-Also: fixed HUD (brand, GitHub / Contact, scroll dot, bottom-right
-menu with light/dark toggle), custom cursor, Lenis smooth scroll.
+Every scene has a museum placard bottom-left with the real link, and the
+rail on the right is the gallery index (I–XV). Add `?nosnap=1` to turn scene
+snapping off, `?lq=1` for the low-quality renderer.
 
 ## Run it
 
@@ -32,23 +26,24 @@ menu with light/dark toggle), custom cursor, Lenis smooth scroll.
 python3 -m http.server 8890   # then open http://localhost:8890
 ```
 
-No build step. Vanilla HTML/CSS/JS. GSAP + ScrollTrigger, SplitType and Lenis
-load from CDN; Three.js (the orb) via an import map. Font is Geist (Google
-Fonts) — the closest open alternative to the reference's custom Ataero.
+No build step. GSAP + ScrollTrigger and Lenis from CDN; Three.js via an
+import map. Fonts: Geist, Geist Mono, Instrument Serif.
 
 ## Files
 
 | File | Purpose |
 |---|---|
-| `index.html` | Markup: HUD, sections, orb, preloader, lightbox |
-| `styles.css` | The whole look (em-based 12-col grid, light/dark, responsive) |
-| `script.js` | Content data + preloader, hero, scroll choreography, menu |
-| `orb.js` | Three.js iridescent blob (custom shader), `createOrb()` |
-| `logos.js` | simple-icons paths for the "Built with" grid |
-| `assets/work/` | Project covers (rendered with the same orb shader) + real shots |
-| `assets/mark.svg` | The H. logomark (preloader mask, favicon) |
-| `deck/` | The previous scroll-dealt card-deck portfolio |
-| `old/` | The original terminal portfolio |
+| `index.html` | The chrome (name, links, sound toggle, placard + rail hosts, scroll track) |
+| `styles.css` | Stone / charcoal / oxide red, placards, rail, mobile |
+| `script.js` | `SCENES` (copy + links), scroll → blend, placards, transcript, stack cycle, chisel sound |
+| `marble.js` | The renderer: raymarched hall + object, 3D shape SDFs (block, bust, car, sub, keycaps, bars), extruded 2D fields for text/drawings/logos, chips, dust |
+| `shapes.js` | The drawings (eye, wave, rec, burger, mic, paw, git, trophy…) + logo path drawing |
+| `logos.js` | simple-icons paths for the stack |
+| `assets/` | Stripe receipt, favicon, share image |
+| `deck/`, `old/` | The two previous portfolios (card deck, terminal) |
 
-Cache-busting: the `?v=` on the CSS/JS links in `index.html` — bump it when
-those files change.
+Edit copy and links in `SCENES` in `script.js`; add a scene = add an entry
+(shape: `text:...`, `draw:<SHAPES2D name>`, `logo:<slug>`, or one of the 3D
+shapes `block`, `sphere`, `bust`, `car`, `sub`, `keycaps`, `wave`; `len` =
+screens of scroll). New 3D shapes are SDF functions in `marble.js`. Bump the
+`?v=` on the CSS/JS links in `index.html` when those files change.
