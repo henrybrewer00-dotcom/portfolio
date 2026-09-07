@@ -19,7 +19,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20260906o" />
+    <link rel="stylesheet" href="styles.css?v=20260906p" />
     <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }</script>
   </head>
   <body>
@@ -33,10 +33,12 @@
       <a href="mailto:henrybrewer00@gmail.com?subject=You%27re%20hired&amp;body=Hi%20Henry%2C%0A%0AHere%27s%20what%20I%27d%20love%20to%20build%20with%20you%3A%0A%0A">contact →</a>
       <button type="button" class="sound" data-sound aria-pressed="false">sound: off</button>
     </nav>
+    <div class="veil" aria-hidden="true"></div>
+    <div class="nudge" data-nudge aria-hidden="true">turn sound on for the chisel ↑</div>
     <div class="caps" data-caps></div>
     <div class="rail" data-rail aria-hidden="true"></div>
     <div class="meta" aria-hidden="true">14 · austin, tx · proud vibecoder</div>
-    <div class="hint" data-hint aria-hidden="true">scroll to carve ↓</div>
+    <div class="hint" data-hint aria-hidden="true">scroll to carve · click the marble ↓</div>
 
     <!-- scroll length: one screen per scene (set by script) -->
     <div class="track" data-track id="top"></div>
@@ -51,9 +53,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
-    <script src="logos.js?v=20260906o"></script>
-    <script src="shapes.js?v=20260906o"></script>
-    <script type="module" src="marble.js?v=20260906o"></script>
-    <script src="script.js?v=20260906o" defer></script>
+    <script src="logos.js?v=20260906p"></script>
+    <script src="shapes.js?v=20260906p"></script>
+    <script type="module" src="marble.js?v=20260906p"></script>
+    <script src="script.js?v=20260906p" defer></script>
   </body>
 </html>

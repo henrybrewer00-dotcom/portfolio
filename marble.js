@@ -108,20 +108,22 @@ function fieldFromAlpha(alpha, stride, w) {
 
 /* 3d shapes are analytic in the shader; these are their extents for fitting */
 const SOLID = {
-  block: { mode: 1, bounds: { x: 1.0, y: 1.25 }, thick: 0 },
-  sphere: { mode: 2, bounds: { x: 1.0, y: 1.0 }, thick: 0 },
-  bust: { mode: 3, bounds: { x: 1.15, y: 1.35 }, thick: 0 },
-  car: { mode: 4, bounds: { x: 1.35, y: 0.8 }, thick: 0 },
-  sub: { mode: 5, bounds: { x: 1.65, y: 0.95 }, thick: 0 },
-  keycaps: { mode: 6, bounds: { x: 1.55, y: 0.7 }, thick: 0 },
-  wave: { mode: 7, bounds: { x: (BARS / 2) * WAVE_SP, y: WAVE_H * 0.5 }, thick: 0 },
+  block: { mode: 1, bounds: { x: 1.0, y: 1.25 }, thick: 0, front: 0.8 },
+  sphere: { mode: 2, bounds: { x: 1.0, y: 1.0 }, thick: 0, front: 0.9 },
+  bust: { mode: 3, bounds: { x: 1.15, y: 1.35 }, thick: 0, front: 0.5 },
+  car: { mode: 4, bounds: { x: 1.35, y: 0.8 }, thick: 0, front: 0.6 },
+  sub: { mode: 5, bounds: { x: 1.65, y: 0.95 }, thick: 0, front: 0.42 },
+  keycaps: { mode: 6, bounds: { x: 1.55, y: 0.7 }, thick: 0, front: 0.35 },
+  wave: { mode: 7, bounds: { x: (BARS / 2) * WAVE_SP, y: WAVE_H * 0.5 }, thick: 0, front: 0.16 },
 };
 
 const QUAD_VERT = /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
 const HALL_FRAG = /* glsl */ `
   precision highp float;
   uniform sampler2D tA, tB;
-  uniform float uModeA, uModeB, uThickA, uThickB, uMix, uMelt, uScale, uTime, uHE, uAspect, uQ;
+  uniform float uModeA, uModeB, uThickA, uThickB, uMix, uMelt, uScale, uTime, uHE, uAspect, uQ, uRough, uDebris;
+  uniform vec4 uHit;
+  uniform vec3 uLight;
   uniform vec2 uShiftA, uShiftB, uRes;
   uniform vec3 uOff, uCamPos, uCamFwd, uCamRight, uCamUp;
   uniform float uTanHalf;
@@ -210,12 +212,27 @@ const HALL_FRAG = /* glsl */ `
     if (mode < 6.5) return sdKeycaps(q);
     return sdWave(q);
   }
+  // chisel marks: long strokes with a fine tooth
+  float chisel(vec3 q){ return (fbm(q * vec3(7.0, 19.0, 7.0) + uTime * 0.15) - 0.5) * 0.09 + (noise(q * 42.0) - 0.5) * 0.012; }
   float sdObject(vec3 p){
     vec3 q = (p - uOff) / uScale;
     float d = mix(shapeOf(uModeA, tA, uShiftA, uThickA, q), shapeOf(uModeB, tB, uShiftB, uThickB, q), uMix);
-    // chisel: the surface roughens while it changes, then settles
-    if (uMelt > 0.001) d += uMelt * (fbm(q * 9.0 + uTime * 0.2) - 0.5) * 0.09;
+    // the surface roughens while it changes (or when it has just arrived), then settles
+    float rough = max(uMelt, uRough);
+    if (rough > 0.001) d += rough * chisel(q);
+    // a strike takes a bite and roughens the stone around it
+    if (uHit.w > 0.001) {
+      float hd = length(p - uHit.xyz);
+      d = max(d, -(hd - 0.22 * uScale * uHit.w) / uScale);
+      d += uHit.w * smoothstep(0.8 * uScale, 0.0, hd) * chisel(q * 1.6) * 0.9;
+    }
     return d * uScale;
+  }
+  // marble dust and chips that have collected on the floor under the work
+  float debrisAt(vec3 p){
+    vec2 c = (p.xz - vec2(uOff.x, 0.3)) / vec2(1.0, 0.55);
+    float R = (0.9 + 1.1 * uDebris) * uScale;
+    return uDebris * smoothstep(R, R * 0.15, length(c)) * (0.5 + 0.5 * noise(p * 5.0));
   }
 
   /* ---- the hall ---- */
@@ -230,7 +247,7 @@ const HALL_FRAG = /* glsl */ `
   }
   // (distance, material) — 0 floor, 1 columns, 2 the marble
   vec2 map(vec3 p){
-    float dF = p.y + ${FLOOR_Y.toFixed(2)};
+    float dF = p.y + ${FLOOR_Y.toFixed(2)} - 0.05 * debrisAt(p);
     float dC = sdColumns(p);
     float bound = length(p - uOff) - uScale * 2.4;
     float dO = bound > 0.6 ? bound : sdObject(p);
@@ -266,7 +283,6 @@ const HALL_FRAG = /* glsl */ `
     return v * 0.55 + fbm(q * 3.0) * 0.08;
   }
 
-  const vec3 LIGHT = normalize(vec3(0.55, 0.78, 0.34));
   const vec3 LCOL = vec3(1.0, 0.95, 0.86);
   const vec3 SKY = vec3(0.58, 0.61, 0.66);
   const vec3 GROUND = vec3(0.42, 0.38, 0.34);
@@ -282,7 +298,8 @@ const HALL_FRAG = /* glsl */ `
 
   vec3 shade(vec3 p, vec3 n, float m, vec3 rd){
     vec3 alb;
-    if (m < 0.5) { alb = vec3(0.50, 0.485, 0.46) + marbleVeins(p, 1.1) * 0.22; }
+    vec3 LIGHT = uLight;
+    if (m < 0.5) { alb = vec3(0.50, 0.485, 0.46) + marbleVeins(p, 1.1) * 0.22; float db = clamp(debrisAt(p) * 1.5, 0.0, 1.0); alb = mix(alb, vec3(0.88, 0.865, 0.84) + (noise(p * 90.0) - 0.5) * 0.14, db); }
     else if (m < 1.5) { alb = vec3(0.86, 0.845, 0.815) + marbleVeins(p, 0.7) * 0.12; }
     else { alb = vec3(0.94, 0.925, 0.895) + marbleVeins(p - uOff, 1.6 / uScale) * 0.28; }
     float sh = shadow(p + n * 0.02, LIGHT, 10.0);
@@ -321,7 +338,7 @@ const HALL_FRAG = /* glsl */ `
       if (m < 0.5 && uQ > 0.5) {
         vec3 rr = reflect(rd, n); float tr = 0.05; float hit = -1.0;
         for (int i = 0; i < 40; i++) { vec2 h = map(p + rr * tr); if (h.x < 0.004 * tr) { hit = h.y; break; } tr += h.x; if (tr > 16.0) break; }
-        if (hit > 1.5) { vec3 rp = p + rr * tr; col = mix(col, shade(rp, normalAt(rp), hit, rr) * 0.9, 0.22 * exp(-tr * 0.12)); }
+        if (hit >= 0.5) { vec3 rp = p + rr * tr; col = mix(col, shade(rp, normalAt(rp), hit, rr) * 0.9, (hit > 1.5 ? 0.24 : 0.13) * exp(-tr * 0.12)); }
       }
       far = t;
     } else {
@@ -375,6 +392,7 @@ export function createMarble(container, options = {}) {
     uOff: { value: new THREE.Vector3() }, uCamPos: { value: new THREE.Vector3() }, uCamFwd: { value: new THREE.Vector3() }, uCamRight: { value: new THREE.Vector3() }, uCamUp: { value: new THREE.Vector3() },
     uTanHalf: { value: Math.tan((camera.fov / 2) * Math.PI / 180) },
     uBars: { value: new Float32Array(BARS) },
+    uRough: { value: 1 }, uDebris: { value: 0 }, uHit: { value: new THREE.Vector4(0, 0, 0, 0) }, uLight: { value: new THREE.Vector3(0.55, 0.78, 0.34).normalize() },
   };
   const hall = new THREE.Scene();
   hall.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ uniforms: U, vertexShader: QUAD_VERT, fragmentShader: HALL_FRAG, depthWrite: false, depthTest: false })));
@@ -399,6 +417,12 @@ export function createMarble(container, options = {}) {
   dustGeo.setAttribute("aLife", new THREE.BufferAttribute(dustLife, 1).setUsage(THREE.DynamicDrawUsage));
   const dust = new THREE.Points(dustGeo, new THREE.ShaderMaterial({ uniforms: { uCol: { value: new THREE.Color(1.0, 0.97, 0.9) } }, vertexShader: DOT_VERT, fragmentShader: DOT_FRAG, transparent: true, depthWrite: false, depthTest: false }));
   const overlay = new THREE.Scene(); overlay.add(dust); overlay.add(chips);
+  // the same two shafts of light as the shader, for the dust
+  function beamJS(x, y, z) {
+    const n = Math.hypot(0.42, 1.0, 0.25), ux = -0.42 / n, uy = -1.0 / n, uz = -0.25 / n;
+    const r = (ax, ay, az) => { const t = ax * ux + ay * uy + az * uz; return Math.hypot(ax - t * ux, ay - t * uy, az - t * uz); };
+    return Math.max(0, 1 - r(x - 5.5, y - 9, z + 3) / 2.6) * 0.9 + Math.max(0, 1 - r(x - 9, y - 9, z + 11) / 2.2) * 0.6;
+  }
   let chipHead = 0;
   function spawnChips(n, energy) {
     for (let k = 0; k < n; k++) {
@@ -410,6 +434,39 @@ export function createMarble(container, options = {}) {
       chipVel[i * 3] = x * sp * 0.8 + (Math.random() - 0.5); chipVel[i * 3 + 1] = Math.abs(y) * sp * 0.5 + 1.5 + Math.random() * 1.5; chipVel[i * 3 + 2] = 1.0 + Math.random() * 2.0;
       chipLife[i] = 1; chipSize[i] = 0.05 + Math.random() * 0.09;
     }
+  }
+
+  function spawnChipsAt(x, y, z, n, energy) {
+    for (let k = 0; k < n; k++) {
+      const i = chipHead; chipHead = (chipHead + 1) % NCHIP;
+      chipPos[i * 3] = x + (Math.random() - 0.5) * 0.1; chipPos[i * 3 + 1] = y + (Math.random() - 0.5) * 0.1; chipPos[i * 3 + 2] = z;
+      const a = Math.random() * Math.PI * 2, sp = (1.0 + Math.random() * 2.5) * energy;
+      chipVel[i * 3] = Math.cos(a) * sp; chipVel[i * 3 + 1] = 1.2 + Math.random() * 2.4 * energy; chipVel[i * 3 + 2] = 1.5 + Math.random() * 2.5;
+      chipLife[i] = 1; chipSize[i] = 0.04 + Math.random() * 0.08;
+    }
+  }
+  const ndcV = new THREE.Vector3(), rayc = new THREE.Raycaster(), ndc2 = new THREE.Vector2();
+  function project(x, y, z) { return ndcV.set(x, y, z).project(camera); }
+  function hitTest(cx, cy) {
+    const r = renderer.domElement.getBoundingClientRect(); if (r.width < 2) return false;
+    const px = ((cx - r.left) / r.width) * 2 - 1, py = -(((cy - r.top) / r.height) * 2 - 1);
+    const c = project(offset.x, offset.y, 0);
+    const e = ease(morphT), bx = fromB.x + (toB.x - fromB.x) * e, by = fromB.y + (toB.y - fromB.y) * e;
+    const rx = (bx * curScale) / (halfH * aspect) * 1.05, ry = (by * curScale) / halfH * 1.05;
+    const dx = (px - c.x) / rx, dy = (py - c.y) / ry;
+    return dx * dx + dy * dy < 1;
+  }
+  function strike(cx, cy) {
+    const r = renderer.domElement.getBoundingClientRect(); if (r.width < 2) return;
+    ndc2.set(((cx - r.left) / r.width) * 2 - 1, -(((cy - r.top) / r.height) * 2 - 1));
+    rayc.setFromCamera(ndc2, camera);
+    const e = ease(morphT), zf = (fromF + (toF - fromF) * e) * curScale, t = (zf - rayc.ray.origin.z) / rayc.ray.direction.z;
+    const p = rayc.ray.origin.clone().addScaledVector(rayc.ray.direction, t);
+    U.uHit.value.set(p.x, p.y, zf, 1); hitW = 1;
+    spawnChipsAt(p.x, p.y, zf + 0.1, 26, 1.3);
+    debris = Math.min(1, debris + 0.06);
+    kick.set((Math.random() - 0.5) * 0.06, -0.035);
+    for (const fn of strikers) fn(p);
   }
 
   let w = 2, h = 2, aspect = 1;
@@ -437,14 +494,16 @@ export function createMarble(container, options = {}) {
       else if (name.startsWith("logo:")) { const L = window.LOGOS && window.LOGOS[name.slice(5)]; canvas = shapeCanvas(L && window.logoDrawer ? drawFn2d(window.logoDrawer(L.d)) : () => {}); }
       else return shape("block");
       s = { mode: 0, ...fieldFromCanvas(canvas), thick: name.startsWith("text:") ? 0.17 : 0.26 };
+      s.front = s.thick;
     }
     return (cache[name] = s);
   }
 
   /* ---------- morph state ---------- */
-  let fromName = "block", toName = "block", fromB = { x: 1, y: 1 }, toB = { x: 1, y: 1 };
+  let fromName = "block", toName = "block", fromB = { x: 1, y: 1 }, toB = { x: 1, y: 1 }, fromF = 0.8, toF = 0.8;
   let morphT = 1, morphDur = 1.2, driven = false, override = null, pending = null;
-  let targetScale = 1, curScale = 1, time = 0, lastMix = 0, carve = 0;
+  let targetScale = 1, curScale = 1, time = 0, lastMix = 0, carve = 0, rough = 1, debris = 0, hitW = 0;
+  const kick = new THREE.Vector2(), strikers = [];
   let fit = { fill: options.fill ?? 0.72, fillX: options.fillX ?? 0.6 };
   const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const listeners = [];
@@ -453,7 +512,7 @@ export function createMarble(container, options = {}) {
     const A = shape(fromName), B = shape(toName);
     U.tA.value = A.tex; U.uModeA.value = A.mode; U.uShiftA.value.set(A.shift[0], A.shift[1]); U.uThickA.value = A.thick;
     U.tB.value = B.tex; U.uModeB.value = B.mode; U.uShiftB.value.set(B.shift[0], B.shift[1]); U.uThickB.value = B.thick;
-    fromB = A.bounds; toB = B.bounds;
+    fromB = A.bounds; toB = B.bounds; fromF = A.front; toF = B.front;
   }
   function setShape(name, dur = 1.2) {
     fromName = morphT < 0.5 && driven ? fromName : toName;
@@ -483,24 +542,30 @@ export function createMarble(container, options = {}) {
   let paused = false, raf = 0, last = performance.now(), fps = 60, fpsAcc = 0, fpsN = 0;
   const offset = new THREE.Vector3(0, 0, 0);
   const camOff = new THREE.Vector3();
-  function step(dt) {
+  function step(dt, wall) {
     time += dt;
     if (!driven && morphT < 1) morphT = Math.min(1, morphT + dt / morphDur);
     fitNow();
     curScale += (targetScale - curScale) * Math.min(1, dt * 4);
     const e = ease(morphT), melt = Math.sin(Math.PI * e);
     U.uMix.value = e; U.uMelt.value = melt;
+    rough *= Math.exp(-wall * 1.1); U.uRough.value = rough > 0.01 ? rough : 0;
+    hitW *= Math.exp(-wall * 1.6); U.uHit.value.w = hitW > 0.01 ? hitW : 0;
+    U.uDebris.value = debris;
+    const sun = 0.22 * Math.sin(time * 0.018);
+    U.uLight.value.set(0.55 + sun * 0.9, 0.78, 0.34 - sun * 0.5).normalize();
+    kick.multiplyScalar(Math.exp(-wall * 6));
     U.uOff.value.copy(offset); U.uScale.value = curScale; U.uTime.value = time;
     // carving = how much the shape moved this frame while it was rough
     const moved = Math.abs(e - lastMix); lastMix = e;
     carve = Math.min(1, moved * 30) * melt;
-    if (carve > 0.02) spawnChips(Math.min(12, Math.round(carve * 14)), 0.5 + carve);
+    if (carve > 0.02) { spawnChips(Math.min(12, Math.round(carve * 14)), 0.5 + carve); debris = Math.min(1, debris + carve * dt * 0.35); }
     for (const fn of listeners) fn(carve, melt);
     if (fromName === "wave" || toName === "wave") { const b = U.uBars.value; for (let i = 0; i < BARS; i++) b[i] = waveEnv(i) * waveLive(i, time) * WAVE_H; }
     // camera
     camOff.x += ((pointer.active ? pointer.x : 0) * 0.28 - camOff.x) * Math.min(1, dt * 2.2);
     camOff.y += ((pointer.active ? pointer.y : 0) * 0.16 - camOff.y) * Math.min(1, dt * 2.2);
-    camera.position.set(CAM.x + camOff.x, CAM.y + camOff.y, CAM.z); camera.lookAt(LOOK.x + camOff.x, LOOK.y + camOff.y, LOOK.z);
+    camera.position.set(CAM.x + camOff.x + kick.x, CAM.y + camOff.y + kick.y, CAM.z); camera.lookAt(LOOK.x + camOff.x + kick.x, LOOK.y + camOff.y + kick.y, LOOK.z);
     camera.updateMatrixWorld();
     U.uCamPos.value.copy(camera.position);
     camera.getWorldDirection(U.uCamFwd.value);
@@ -521,16 +586,16 @@ export function createMarble(container, options = {}) {
       dustPos[i * 3] += Math.sin(time * 0.3 + s0 * 20.0) * 0.08 * dt + (s1 - 0.5) * 0.03 * dt;
       dustPos[i * 3 + 1] += (Math.cos(time * 0.25 + s1 * 17.0) * 0.06 - 0.02) * dt;
       if (dustPos[i * 3 + 1] < -1.1) dustPos[i * 3 + 1] = 4.0;
-      dustLife[i] = (0.25 + 0.35 * Math.abs(Math.sin(time * 0.6 + s0 * 30.0))) * (0.5 + 0.5 * s1);
+      dustLife[i] = (0.12 + 0.2 * Math.abs(Math.sin(time * 0.6 + s0 * 30.0))) * (0.5 + 0.5 * s1) * (0.5 + 1.6 * beamJS(dustPos[i * 3], dustPos[i * 3 + 1], dustPos[i * 3 + 2]));
     }
     dustGeo.attributes.position.needsUpdate = true; dustGeo.attributes.aLife.needsUpdate = true;
   }
   function loop(now) {
     raf = requestAnimationFrame(loop);
     if (paused || document.hidden) { last = now; return; }
-    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    const wall = Math.min(0.6, (now - last) / 1000), dt = Math.min(0.05, wall); last = now;
     fpsAcc += dt; fpsN++; if (fpsAcc > 1) { fps = fpsN / fpsAcc; fpsAcc = 0; fpsN = 0; if (fps < 34 && U.uQ.value > 0.5 && time > 4) U.uQ.value = 0; }
-    resize(); step(dt);
+    resize(); step(dt, wall);
     renderer.setRenderTarget(null); renderer.clear();
     renderer.render(hall, postCam);
     renderer.render(overlay, camera);
@@ -549,8 +614,11 @@ export function createMarble(container, options = {}) {
     setColors() {},
     setPaused(v) { paused = !!v; last = performance.now(); },
     burst(n = 40) { spawnChips(n, 1.4); },
+    hitTest, strike,
+    onStrike(fn) { strikers.push(fn); },
+    arrive() { rough = 1; spawnChips(30, 1.2); },
     onCarve(fn) { listeners.push(fn); },
-    stats() { return { fps: Math.round(fps), quality: U.uQ.value }; },
+    stats() { return { fps: Math.round(fps), quality: U.uQ.value, rough, melt: U.uMelt.value, mix: U.uMix.value, hit: hitW, debris, scale: curScale, from: fromName, to: toName }; },
     destroy() { cancelAnimationFrame(raf); ro.disconnect(); renderer.dispose(); renderer.domElement.remove(); },
   };
 }

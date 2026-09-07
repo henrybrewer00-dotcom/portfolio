@@ -5,8 +5,13 @@ the next thing, exactly as far as you've scrolled. The whole picture is one
 fragment shader: the hall (floor, fluted columns, fog, shafts of light), the
 polished floor's reflection, and the block itself are signed distance fields
 raymarched together, so moving between two shapes is a smooth blend of two
-fields, roughened like chisel work while it changes. Chips fly off, dust
-drifts in the light, and (if you turn sound on) a chisel taps while it carves.
+fields, roughened like chisel work while it changes. Chips fly off and
+collect on the floor under the work, dust drifts (and glows) in the shafts of
+light, the light itself drifts slowly like an afternoon, and (if you turn
+sound on) a chisel taps while it carves. Click or tap the marble and you take
+a bite out of it yourself; the cursor turns into a chisel over the stone. The
+block arrives rough and settles smooth. Arrow keys, page keys, space, Home and
+End walk the gallery.
 
 a block → "henry." → "14" → "austin, tx" → "proud vibecoder" → "I make way
 too much stuff." → a bust (bio) → an eye (SiteLight, with the Stripe first-$2

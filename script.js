@@ -124,6 +124,14 @@ function initScroll() {
     onUpdate: (self) => update(self.scroll()),
   });
   $("[data-top]").addEventListener("click", (e) => { e.preventDefault(); goTo(0); });
+  document.addEventListener("keydown", (e) => {
+    if (e.target.closest("input, textarea, button, a")) return;
+    const next = ["ArrowDown", "PageDown", " ", "ArrowRight"], prev = ["ArrowUp", "PageUp", "ArrowLeft"];
+    if (next.includes(e.key)) { e.preventDefault(); goTo(Math.min(N - 1, active + 1)); }
+    else if (prev.includes(e.key)) { e.preventDefault(); goTo(Math.max(0, active - 1)); }
+    else if (e.key === "Home") { e.preventDefault(); goTo(0); }
+    else if (e.key === "End") { e.preventDefault(); goTo(N - 1); }
+  });
   let rt;
   window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { setH(); ScrollTrigger.refresh(); update(window.scrollY); }, 200); });
 }
@@ -137,6 +145,7 @@ function activate(i) {
   $$("[data-cap]").forEach((el) => el.classList.toggle("is-on", +el.dataset.cap === i));
   $$("[data-go]").forEach((el) => el.classList.toggle("is-on", +el.dataset.go === i));
   $("[data-hint]").classList.toggle("is-on", !!s.hint);
+  document.title = s.title ? "henry. — " + s.title : "henry. — proud vibecoder, 14, Austin";
   stopCycle();
   if (marble && marble.override) marble.clearOverride(0.9);
   if (s.tools && marble) setTimeout(() => { if (active === i) startCycle(); }, 900);
@@ -213,6 +222,14 @@ const Sound = {
   },
 };
 function initSound() { $("[data-sound]").addEventListener("click", () => Sound.toggle()); }
+let nudged = false;
+function nudgeSound() {
+  if (nudged || Sound.on) return;
+  try { if (sessionStorage.getItem("nudged")) { nudged = true; return; } sessionStorage.setItem("nudged", "1"); } catch (e) {}
+  nudged = true;
+  const n = $("[data-nudge]"); if (!n) return;
+  n.classList.add("is-on"); setTimeout(() => n.classList.remove("is-on"), 4200);
+}
 
 /* ---------- the marble ---------- */
 function initMarble() {
@@ -221,10 +238,11 @@ function initMarble() {
     const start = () => {
       try {
         marble = window.createMarble(host, { maxDpr: isSmall() ? 1 : 1.25, quality: isSmall() || /lq/.test(location.search) ? "low" : "high" });
-        document.addEventListener("mousemove", (e) => marble.setPointer(e.clientX, e.clientY), { passive: true });
+        document.addEventListener("mousemove", (e) => { marble.setPointer(e.clientX, e.clientY); document.body.classList.toggle("over-marble", !e.target.closest(".cap, .nav, .rail, .brand") && marble.hitTest(e.clientX, e.clientY)); }, { passive: true });
+        document.addEventListener("pointerdown", (e) => { if (e.target.closest("a, button, .cap, .rail")) return; if (marble.hitTest(e.clientX, e.clientY)) { marble.strike(e.clientX, e.clientY); Sound.tap(1.6); nudgeSound(); } }, { passive: true });
         document.addEventListener("mouseleave", () => marble.clearPointer());
         document.addEventListener("visibilitychange", () => marble.setPaused(document.hidden));
-        marble.onCarve((carve) => { if (carve > 0.04) Sound.tap(carve); });
+        marble.onCarve((carve) => { if (carve > 0.04) Sound.tap(carve); if (carve > 0.25) nudgeSound(); });
       } catch (e) { console.warn(e); }
       resolve(marble);
     };
@@ -244,6 +262,6 @@ async function boot() {
   const u = window.scrollY / window.innerHeight;
   let i0 = 0; for (let k = 0; k < N; k++) if (u >= STARTS[k]) i0 = k;
   if (marble) { const L = layoutFor(SCENES[i0]); marble.setFit({ fill: L.fill, fillX: L.fillX }); marble.setOffset(L.x, L.y); marble.setShape(SCENES[i0].shape, reduceMotion ? 0.4 : 1.6); }
-  setTimeout(() => { ready = true; document.body.classList.add("is-ready"); update(window.scrollY); }, reduceMotion ? 450 : 1500);
+  setTimeout(() => { ready = true; document.body.classList.add("is-ready"); if (marble && !reduceMotion) marble.arrive(); update(window.scrollY); }, reduceMotion ? 450 : 900);
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
