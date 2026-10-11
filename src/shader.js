@@ -224,9 +224,12 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
   /* ---------- hover: letters near the cursor rise and lean toward it ---------- */
   const FLIP = 750;
   let cur = null, prev = null, flipping = false;
-  const pointer = { x: 0, y: 0, on: false };
+  // hover intent: a mouse just passing through barely stirs the letters; slowing down over them lets them rise
+  const pointer = { x: 0, y: 0, on: false, t: 0, speed: 0, intent: 0 };
   const busy = (el) => el && el.closest && el.closest("a, button, input, .bar, .card, .pin, .chips, .answer, .results-head, .foot");
   addEventListener("pointermove", (e) => {
+    const dt = Math.max(e.timeStamp - pointer.t, 8), d = Math.hypot(e.clientX / 2 - pointer.x, e.clientY / 2 - pointer.y) * 2;
+    pointer.speed += (d / dt - pointer.speed) * 0.3; pointer.t = e.timeStamp;
     pointer.x = e.clientX / 2; pointer.y = e.clientY / 2;
     pointer.on = e.pointerType !== "touch" && !busy(e.target);
   }, { passive: true });
@@ -236,12 +239,15 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
   function stepHover(word) {
     let moving = false;
     const R = word.size * 0.55;
+    pointer.speed *= 0.9;                          // no pointermove means the mouse is resting
+    const want = pointer.on ? clamp(1.4 - pointer.speed, 0.15, 1) : 0;
+    pointer.intent += (want - pointer.intent) * (want > pointer.intent ? 0.06 : 0.2);
     for (const l of word.letters) {
       const dx = pointer.x - l.rx, dy = pointer.y - l.ry;
-      const target = pointer.on ? Math.exp(-(dx * dx + dy * dy) / (R * R)) : 0;
+      const target = pointer.on ? Math.exp(-(dx * dx + dy * dy) / (R * R)) * pointer.intent : 0;
       const lean = pointer.on ? clamp(dx / R, -1, 1) * 0.08 * target : 0;
       const nl = l.lift + (target - l.lift) * 0.16, nlean = (l.lean || 0) + (lean - (l.lean || 0)) * 0.16;
-      if (Math.abs(nl - l.lift) > 0.002 || Math.abs(nlean - (l.lean || 0)) > 0.0005) moving = true;
+      if (Math.abs(want - pointer.intent) > 0.01 || Math.abs(nl - l.lift) > 0.002 || Math.abs(nlean - (l.lean || 0)) > 0.0005) moving = true;
       l.lift = nl; l.lean = nlean;
     }
     return moving;
