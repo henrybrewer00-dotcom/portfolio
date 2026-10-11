@@ -26,13 +26,17 @@ function limited(ip) {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") { res.status(405).end(); return; }
   const key = process.env.ANTHROPIC_API_KEY;
+  // GET with no question is a health check: is the key wired up? (no model call, nothing to abuse)
+  // On preview deploys only, GET ?q= also answers, so a deploy can be tested from a plain link.
+  const previewGet = req.method === "GET" && process.env.VERCEL_ENV === "preview" && req.query && req.query.q;
+  if (req.method === "GET" && !previewGet) { res.status(200).json({ ready: Boolean(key), model: MODEL }); return; }
+  if (req.method !== "POST" && !previewGet) { res.status(405).end(); return; }
   if (!key) { res.status(503).end(); return; }
   const ip = String(req.headers["x-forwarded-for"] || "").split(",")[0] || "?";
   if (limited(ip)) { res.status(429).end(); return; }
 
-  const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
+  const body = previewGet ? { q: req.query.q, intent: req.query.intent } : typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
   const q = String(body.q || "").slice(0, 200).trim();
   if (!q) { res.status(400).end(); return; }
   const intent = intentById[body.intent];
