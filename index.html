@@ -19,8 +19,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-    <link rel="preload" href="model/model.json?v=20261011i" as="fetch" crossorigin />
-    <link rel="stylesheet" href="styles.css?v=20261011i" />
+    <link rel="preload" href="model/model.json?v=20261011j" as="fetch" crossorigin />
+    <link rel="stylesheet" href="styles.css?v=20261011j" />
   </head>
   <body>
     <canvas class="engraving" data-engraving aria-hidden="true"></canvas>
@@ -57,7 +57,10 @@
           <h2 id="results-title" class="results-title" data-results-title></h2>
           <button type="button" class="act is-soft" data-close>close ✕</button>
         </div>
-        <p class="answer" data-answer hidden></p>
+        <div class="answer" data-answer hidden>
+          <div class="turns" data-turns></div>
+          <form class="follow" data-follow autocomplete="off"><input name="q" maxlength="200" placeholder="Ask a follow-up" aria-label="Ask a follow-up"><button class="key" aria-label="Send">↵</button></form>
+        </div>
         <div class="cards" data-cards></div>
       </section>
 
@@ -88,6 +91,6 @@
       </noscript>
     </main>
 
-    <script type="module" src="src/app.js?v=20261011i"></script>
+    <script type="module" src="src/app.js?v=20261011j"></script>
   </body>
 </html>

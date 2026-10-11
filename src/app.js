@@ -32,7 +32,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261011i")
+fetch("model/model.json?v=20261011j")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -123,28 +123,44 @@ function decide() {
   chips.append(chip("everything", () => open("browse")));
 }
 
-/* ---------- the spoken answer: one or two sentences from Claude Haiku 5.5 (api/ask.js) ---------- */
-const answerEl = $("[data-answer]");
-let asking = null;
-async function ask(q, intentId) {
+/* ---------- the spoken answer: Claude Haiku 5.5 (api/ask.js), with follow-ups ---------- */
+const answerEl = $("[data-answer]"), turnsEl = $("[data-turns]"), followForm = $("[data-follow]");
+let asking = null, turns = [], askIntent = null;   // turns: [{q, a}] so follow-ups keep the context
+async function ask(q, intentId, followUp = false) {
   if (asking) asking.abort();
-  answerEl.hidden = true; answerEl.textContent = ""; answerEl.classList.remove("is-done");
+  if (!followUp) { turns = []; turnsEl.innerHTML = ""; answerEl.hidden = true; askIntent = intentId; }
   if (!q || location.protocol === "file:") return;
   const ctl = (asking = new AbortController());
+  const turn = document.createElement("div");
+  turn.className = "turn";
+  if (followUp) turn.append(Object.assign(document.createElement("p"), { className: "turn-q", textContent: q }));
+  const a = Object.assign(document.createElement("p"), { className: "turn-a" });
+  turn.append(a);
   try {
-    const r = await fetch("api/ask", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ q, intent: intentId }), signal: ctl.signal });
-    if (!r.ok || !r.body) return;   // no key, rate limited, or offline: the cards stand on their own
+    const r = await fetch("api/ask", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ q, intent: askIntent, history: turns }), signal: ctl.signal });
+    if (!r.ok || !r.body) { if (followUp) { a.textContent = "Couldn't answer that one right now."; a.classList.add("is-done"); turnsEl.append(turn); } return; }
+    turnsEl.append(turn);
     answerEl.hidden = false;
     const reader = r.body.getReader(), dec = new TextDecoder();
     for (;;) {
       const { value, done } = await reader.read();
       if (done) break;
-      answerEl.textContent += dec.decode(value, { stream: true });
+      a.textContent += dec.decode(value, { stream: true });
     }
-    answerEl.classList.add("is-done");
-    if (!answerEl.textContent.trim()) answerEl.hidden = true;
+    a.classList.add("is-done");
+    if (!a.textContent.trim()) { turn.remove(); if (!turns.length) answerEl.hidden = true; return; }
+    turns.push({ q, a: a.textContent.trim() });
+    turns = turns.slice(-6);
   } catch (e) { /* aborted or failed: leave the cards */ }
 }
+followForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const f = followForm.elements.q, q = f.value.trim();
+  if (!q) return;
+  f.value = "";
+  ask(q, askIntent, true);
+});
+followForm.addEventListener("keydown", (e) => { if (e.key === "Escape") { e.stopPropagation(); followForm.elements.q.blur(); } });
 
 function open(intentId, q = "") {
   const intent = intentById[intentId];

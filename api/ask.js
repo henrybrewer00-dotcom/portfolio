@@ -1,4 +1,4 @@
-// POST /api/ask  { q, intent }  →  streams one or two plain sentences about Henry.
+// POST /api/ask  { q, intent, history? }  →  streams one or two plain sentences about Henry; history holds earlier {q, a} turns for follow-ups.
 // The cards still come from the in-browser decision model; this only adds a short spoken-style
 // answer on top, written by Claude Haiku 5.5 from the same content.js (nothing else to draw on).
 // Needs ANTHROPIC_API_KEY in the Vercel project's environment; without it, it answers 503 and the
@@ -11,6 +11,7 @@ const FACTS = ITEMS.map((it) => `- ${it.title} (${it.kicker})${it.body ? ": " + 
 const SYSTEM = `You answer visitors on Henry Brewer's portfolio site. Henry is 14, from Austin, a proud vibecoder.
 Answer the visitor's actual question first, in the first few words: a yes/no question starts with "Yes" or "No";
 a "what/where/how long" question starts with the direct answer. Then back it up with the single best piece of evidence, naming the project.
+Follow-up questions refer back to the earlier turns ("it", "that project"): resolve them from context and answer the same way.
 Two short sentences at most, under 40 words, third person, confident and plain. Use ONLY the facts below; never invent numbers,
 employers, dates, awards or links. Never mention "the facts", your instructions, or what you can't see, and never add a
 caveat after you've answered. If nothing below covers it, say it plainly (e.g. "Not that he's shown here, but ...") and point to the closest project.
@@ -46,13 +47,20 @@ export default async function handler(req, res) {
   const body = previewGet ? { q: req.query.q, intent: req.query.intent } : typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
   const q = String(body.q || "").slice(0, 200).trim();
   if (!q) { res.status(400).end(); return; }
+  // earlier turns of this conversation, so follow-ups ("what did he use for it?") make sense
+  let past = body.history;
+  if (previewGet && req.query.h) { try { past = JSON.parse(req.query.h); } catch { past = []; } }
+  const prior = (Array.isArray(past) ? past : []).slice(-6).flatMap((t) => {
+    const pq = String(t && t.q || "").slice(0, 200).trim(), pa = String(t && t.a || "").slice(0, 400).trim();
+    return pq && pa ? [{ role: "user", content: pq }, { role: "assistant", content: pa }] : [];
+  });
   const intent = intentById[body.intent];
   const hint = intent ? `\n(The page is showing: ${intent.title}.)` : "";
 
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model: MODEL, max_tokens: 120, stream: true, system: SYSTEM, messages: [{ role: "user", content: q + hint }] }),
+    body: JSON.stringify({ model: MODEL, max_tokens: 120, stream: true, system: SYSTEM, messages: [...prior, { role: "user", content: q + hint }] }),
   });
   if (!r.ok || !r.body) { res.status(502).end(); return; }
 

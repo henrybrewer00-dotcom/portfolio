@@ -3,7 +3,8 @@
    whose thickness carries the shading; the word is drawn to an offscreen mask
    and the lines swell where it is.
 
-   Kept calm on purpose: hovering a letter flips it once, like a coin, and
+   Kept calm on purpose: letters near the cursor rise a little, lean toward it
+   and blush pink, easing back when it leaves; a new word flips in, and
    Enter drops one soft ripple (a small wave-equation grid on the CPU) that
    the lines ride. Raw WebGL2, no library.
    ========================================================================= */
@@ -49,9 +50,9 @@ void main() {
   float front = uMix * 1.5 - 0.25;
   float m = uMix >= 1.0 ? 1.0 : 1.0 - smoothstep(front - 0.08, front + 0.08, uv.x + rag);
   vec2 wt = tuv - g * 0.012;                       // the word refracts through the water
-  vec2 src = mix(texture(uA, wt).rg, texture(uB, wt).rg, m);
+  vec3 src = mix(texture(uA, wt).rgb, texture(uB, wt).rgb, m);
   float hot = mix(uHotA, uHotB, m);
-  float sharp = src.r, glow = src.g;
+  float sharp = src.r, glow = src.g, blush = src.b;
 
   float n = fbm(p * 0.0024 + vec2(uTime * 0.03, -uTime * 0.02));
   float relief = glow * 2.2 + sharp * 0.35;        // lines bow over the letters, so the word reads as raised metal
@@ -61,13 +62,13 @@ void main() {
   // light from the top left: slopes facing away from it get heavier lines, slopes facing it get lighter
   float shade = clamp((g.x - g.y) * 1.6, -1.0, 1.0);
   float field = 0.06 + 0.04 * n;
-  float tone = clamp(field + max(shade, 0.0) * 0.4 + glow * 0.26 + sharp * mix(0.62, 0.3, hot), 0.0, 0.92);
+  float tone = clamp(field + max(shade, 0.0) * 0.4 + glow * 0.26 + sharp * mix(0.62, 0.3, max(hot, blush)), 0.0, 0.92);
   tone *= 1.0 - max(-shade, 0.0) * 0.6;
   float ink = engrave(v, tone);
 
   // the "money" cross-hatch, only in the letter cores
   float v2 = (p.x - p.y * 0.55) / 3.4 + relief * 0.6;
-  ink = max(ink, engrave(v2, 0.32) * smoothstep(0.55, 0.95, sharp) * (1.0 - hot));
+  ink = max(ink, engrave(v2, 0.32) * smoothstep(0.55, 0.95, sharp) * (1.0 - max(hot, blush)));
 
   float vig = smoothstep(1.15, 0.25, length((uv - vec2(0.5, 0.55)) * vec2(uRes.x / uRes.y, 1.0)));
   ink *= mix(0.25, 1.0, max(max(vig, sharp), min(abs(h) * 2.0, 1.0)));   // ripples show even out at the edges
@@ -79,7 +80,7 @@ void main() {
   paper -= (vnoise(p * 0.9) - 0.5) * 0.02;
   paper += max(-shade, 0.0) * 0.035;                // a glint on the lit side of a wave
   // pink is a fill, never a line: the answer's letters, and the crest of a big splash
-  paper = mix(paper, uPink, hot * smoothstep(0.35, 0.8, sharp) + smoothstep(0.6, 1.6, h) * 0.45);
+  paper = mix(paper, uPink, clamp(hot * smoothstep(0.35, 0.8, sharp) + blush * 0.75 + smoothstep(0.6, 1.6, h) * 0.45, 0.0, 1.0));
   o = vec4(mix(paper, uInk, ink * strength), 1.0);
 }`;
 
@@ -191,7 +192,7 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
     const letters = [...text].map((ch, i) => {
       const before = mx.measureText(text.slice(0, i)).width, w = mx.measureText(ch).width;
       // radius: a letter is roughly as wide as it is, but never thinner than a third of the type size
-      return { ch, w, r: Math.max(w, size * 0.32) * 0.5, rx: x0 + before + w / 2, ry: y, flipAt: -1e9 };
+      return { ch, w, r: Math.max(w, size * 0.32) * 0.5, rx: x0 + before + w / 2, ry: y, flipAt: -1e9, lift: 0 };
     });
     return { text, hot, size, letters };
   }
@@ -202,38 +203,49 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
     mx.globalCompositeOperation = "lighter";
     mx.font = font(word.size); mx.textBaseline = "middle"; mx.textAlign = "center";
     const pass = (color, blur) => {
-      mx.fillStyle = color; mx.shadowColor = color; mx.shadowBlur = blur;
+      mx.fillStyle = color === "blue" ? "#000" : color; mx.shadowColor = color === "blue" ? "#000" : color; mx.shadowBlur = blur;
       for (const l of word.letters) {
         // a flip is one full turn around the letter's vertical axis: its width goes 1 → 0 → -1 (the back) → 1
         const t = clamp((now - l.flipAt) / FLIP, 0, 1), e = t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
-        const sx = Math.cos(e * Math.PI * 2), lift = 1 + Math.sin(e * Math.PI) * 0.06;
-        mx.save(); mx.translate(l.rx, l.ry); mx.scale((Math.abs(sx) < 0.04 ? 0.04 * Math.sign(sx || 1) : sx) * lift, lift);
+        const sx = Math.cos(e * Math.PI * 2), grow = 1 + Math.sin(e * Math.PI) * 0.06 + l.lift * 0.12;
+        mx.save(); mx.translate(l.rx, l.ry - word.size * 0.05 * l.lift); mx.rotate(l.lean || 0);
+        mx.scale((Math.abs(sx) < 0.04 ? 0.04 * Math.sign(sx || 1) : sx) * grow, grow);
+        if (color === "blue") mx.fillStyle = `rgb(0,0,${Math.round(l.lift * 255)})`;
         mx.fillText(l.ch, 0, 0); mx.restore();
       }
     };
     pass("#00ff00", word.size * 0.3);
     pass("#ff0000", 0);
+    pass("blue", 0);                               // B = how lifted each letter is (the hover blush)
     gl.bindTexture(gl.TEXTURE_2D, target);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mask);
   }
 
-  /* ---------- hover: a letter flips once when the cursor reaches it ---------- */
+  /* ---------- hover: letters near the cursor rise and lean toward it ---------- */
   const FLIP = 750;
-  let cur = null, prev = null, hovered = null, flipping = false;
-  const letterAt = (x, y) => {
-    let best = null, bd = Infinity;
-    for (const l of cur.letters) {
-      const d = Math.hypot(l.rx - x / 2, l.ry - y / 2);
-      if (d < l.r && d < bd) { best = l; bd = d; }
-    }
-    return best;
-  };
+  let cur = null, prev = null, flipping = false;
+  const pointer = { x: 0, y: 0, on: false };
+  const busy = (el) => el && el.closest && el.closest("a, button, input, .bar, .card, .pin, .chips, .answer, .results-head, .foot");
   addEventListener("pointermove", (e) => {
-    if (reduceMotion || !cur) return;
-    const l = letterAt(e.clientX, e.clientY);
-    if (l && l !== hovered && performance.now() - l.flipAt > FLIP) { l.flipAt = performance.now(); flipping = true; }
-    hovered = l;
+    pointer.x = e.clientX / 2; pointer.y = e.clientY / 2;
+    pointer.on = e.pointerType !== "touch" && !busy(e.target);
   }, { passive: true });
+  document.documentElement.addEventListener("pointerleave", () => { pointer.on = false; });
+
+  // eases every letter's lift toward how close the cursor is; true while anything is still moving
+  function stepHover(word) {
+    let moving = false;
+    const R = word.size * 0.55;
+    for (const l of word.letters) {
+      const dx = pointer.x - l.rx, dy = pointer.y - l.ry;
+      const target = pointer.on ? Math.exp(-(dx * dx + dy * dy) / (R * R)) : 0;
+      const lean = pointer.on ? clamp(dx / R, -1, 1) * 0.08 * target : 0;
+      const nl = l.lift + (target - l.lift) * 0.16, nlean = (l.lean || 0) + (lean - (l.lean || 0)) * 0.16;
+      if (Math.abs(nl - l.lift) > 0.002 || Math.abs(nlean - (l.lean || 0)) > 0.0005) moving = true;
+      l.lift = nl; l.lean = nlean;
+    }
+    return moving;
+  }
 
   /* ---------- frame ---------- */
   let mixStart = -1e9, tiltTarget = 0, tiltNow = 0, dpr = 1;
@@ -255,7 +267,8 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
 
   function frame(now) {
     if (!reduceMotion) {
-      if (flipping) { paint(tex[1], cur, now); flipping = cur.letters.some((l) => now - l.flipAt < FLIP); if (!flipping) paint(tex[1], cur, now); }
+      const hovering = stepHover(cur);
+      if (flipping || hovering) { paint(tex[1], cur, now); flipping = cur.letters.some((l) => now - l.flipAt < FLIP); }
       stepWater();
     }
     const k = Math.min(1, (now - mixStart) / FADE), e = k * k * (3 - 2 * k);
@@ -286,7 +299,6 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
     /** Cross-fade the engraving to a new word; `hot` turns its letters pink. */
     show(text, hot) {
       if (text === cur.text) return;
-      hovered = null;
       prev = cur; cur = layout(text, hot ? 1 : 0);
       if (!reduceMotion) { const t0 = performance.now() + 350; cur.letters.forEach((l, i) => { l.flipAt = t0 + i * 60; }); flipping = true; }
       [tex[0], tex[1]] = [tex[1], tex[0]];

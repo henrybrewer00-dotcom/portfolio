@@ -95,7 +95,16 @@ body.has-results .pinned { display: none; }
 .results.is-single .results-head { justify-content: flex-end; }
 .results.is-single .results-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .answer { margin: 0 0 1rem; padding: 1rem 1.3rem; position: relative; font: 400 1.05rem/1.5 var(--sans); color: var(--ink); background: var(--card); border: 1px solid var(--border); border-radius: 20px; animation: pop 0.4s var(--spring) both; }
-.answer:not(.is-done)::after { content: ""; display: inline-block; width: 2px; height: 1.05em; margin-left: 2px; background: var(--ink); vertical-align: -0.15em; animation: caret 0.8s steps(1) infinite; }
+.turns { display: grid; gap: 0.8rem; }
+.turn-q { margin: 0; font: 500 0.9rem/1.4 var(--sans); color: var(--muted); }
+.turn-a { margin: 0; }
+.turn + .turn { padding-top: 0.8rem; border-top: 1px solid var(--border); animation: pop 0.4s var(--spring) both; }
+.follow { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.9rem; padding: 0.3rem 0.3rem 0.3rem 1rem; background: var(--paper); border: 1px solid var(--border); border-radius: 999px; transition: border-color 0.2s, box-shadow 0.2s; }
+.follow:focus-within { border-color: var(--ink); box-shadow: 0 0 0 3px color-mix(in srgb, var(--pink) 55%, transparent); }
+.follow input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: 400 0.95rem/1.4 var(--sans); color: var(--ink); }
+.follow input::placeholder { color: var(--muted); }
+.follow .key { cursor: pointer; }
+.turn-a:not(.is-done)::after { content: ""; display: inline-block; width: 2px; height: 1.05em; margin-left: 2px; background: var(--ink); vertical-align: -0.15em; animation: caret 0.8s steps(1) infinite; }
 .cards { display: grid; gap: 1rem; }
 .card { position: relative; padding: 1.5rem 1.6rem; background: var(--card); border: 1px solid var(--border); border-radius: 22px; animation: deal 0.7s var(--ease) both; animation-delay: calc(0.1s + var(--i, 0) * 60ms); transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease); }
 .card:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(20, 20, 18, 0.07); }
