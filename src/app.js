@@ -32,7 +32,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261011f")
+fetch("model/model.json?v=20261011g")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -203,6 +203,8 @@ input.addEventListener("input", () => {
   }
   lastText = text;
   update();
+  // each keystroke taps the water just under the caret
+  if (engraving) { const r = typedEl.getBoundingClientRect(), b = bar.getBoundingClientRect(); engraving.ripple(Math.min(r.right, b.right - 120), b.bottom + 6, 0.7); }
 });
 input.addEventListener("scroll", syncScroll);
 input.addEventListener("keydown", (e) => {
