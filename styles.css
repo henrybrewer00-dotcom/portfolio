@@ -62,8 +62,9 @@ body.has-results .main { padding-top: 6.5rem; }
 @keyframes caret { 50% { opacity: 0; } }
 .bar input.is-accepted { animation: accepted 0.45s var(--ease); }
 @keyframes accepted { 0% { text-shadow: 0 0 0 var(--pink); background: linear-gradient(90deg, rgba(242, 169, 184, 0.45), transparent) no-repeat; } }
-.key { flex: none; font: 500 0.72rem var(--sans); color: var(--soft-ink); background: var(--soft); border-radius: 999px; padding: 0.55em 0.95em; transition: background 0.2s, color 0.2s, transform 0.2s var(--spring); position: relative; z-index: 1; }
+.key { flex: none; font: 500 0.72rem var(--sans); color: var(--soft-ink); background: var(--soft); border-radius: 999px; padding: 0.55em 0.95em; transition: background 0.2s, color 0.2s, opacity 0.25s, transform 0.2s var(--spring); position: relative; z-index: 1; }
 .key[type="submit"] { background: var(--ink); color: var(--paper); }
+.key.is-off { opacity: 0.35; pointer-events: none; }
 .key:hover, .key:focus-visible { background: var(--pink); color: var(--ink); outline: 0; }
 .key:active { transform: scale(0.95); }
 .hint { display: table; margin: 0.85rem 0 0 0.8rem; padding: 0.2rem 0.6rem; border-radius: 999px; background: var(--paper); font: 0.8rem var(--sans); color: var(--muted); }

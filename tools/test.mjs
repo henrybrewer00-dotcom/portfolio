@@ -15,6 +15,7 @@ const HELD_OUT = [
   ["what's his job", "crawft"], ["henry's startup", "sitelight"], ["where's he employed", "crawft"], ["the ai visibility thing", "sitelight"],
   ["show me henrys cyber work", "vurn"], ["is he into hacking", "vurn"], ["the pentest tool", "vurn"],
   ["show me his marketing", "sitelight"], ["can he market a product", "sitelight"],
+  ["how long has henry bean building", "about"], ["how long has he been making things", "about"],
   ["who's henry", "about"], ["how old are you", "about"], ["where are you from", "about"],
   ["the grandma ai", "lily"], ["what calls grandma", "lily"], ["lily app", "lily"],
   ["the drivethru", "drivethru"], ["voice food ordering", "drivethru"],

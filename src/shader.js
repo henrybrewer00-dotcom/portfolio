@@ -1,16 +1,11 @@
 /* =========================================================================
-   henry. — the engraving ("money shader"), ink on paper, and the physics
-   behind it. Wavy banknote lines whose thickness carries the shading; the
-   word is drawn to an offscreen mask and the lines swell where it is.
+   henry. — the engraving ("money shader"), ink on paper. Wavy banknote lines
+   whose thickness carries the shading; the word is drawn to an offscreen mask
+   and the lines swell where it is.
 
-   Two simulations run on the CPU every frame:
-   - a water surface (2D wave equation on a coarse grid) that the cursor drags
-     through, typing taps, and Enter splashes. The lines ride its height, and
-     its slopes shade them like light on a relief.
-   - the letters of the word, each a small rigid body on a spring. The cursor is
-     a solid disc that knocks them; you can grab one, throw it, and it wobbles
-     home. Fast letters splash the water.
-   Raw WebGL2, no library.
+   Kept calm on purpose: hovering a letter flips it once, like a coin, and
+   Enter drops one soft ripple (a small wave-equation grid on the CPU) that
+   the lines ride. Raw WebGL2, no library.
    ========================================================================= */
 
 const VERT = `#version 300 es
@@ -165,7 +160,7 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
         const row = j * GW;
         for (let i = 1; i < GW - 1; i++) {
           const c = row + i;
-          wb[c] = ((wa[c - 1] + wa[c + 1] + wa[c - GW] + wa[c + GW]) * 0.5 - wb[c]) * 0.982;
+          wb[c] = ((wa[c - 1] + wa[c + 1] + wa[c - GW] + wa[c + GW]) * 0.5 - wb[c]) * 0.975;
         }
       }
       const t = wa; wa = wb; wb = t;
@@ -196,12 +191,12 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
     const letters = [...text].map((ch, i) => {
       const before = mx.measureText(text.slice(0, i)).width, w = mx.measureText(ch).width;
       // radius: a letter is roughly as wide as it is, but never thinner than a third of the type size
-      return { ch, w, r: Math.max(w, size * 0.32) * 0.48, rx: x0 + before + w / 2, ry: y, ox: 0, oy: 0, vx: 0, vy: 0, a: 0, va: 0 };
+      return { ch, w, r: Math.max(w, size * 0.32) * 0.5, rx: x0 + before + w / 2, ry: y, flipAt: -1e9 };
     });
-    return { text, hot, size, letters, awake: true };
+    return { text, hot, size, letters };
   }
 
-  function paint(target, word) {
+  function paint(target, word, now = 0) {
     mx.globalCompositeOperation = "source-over"; mx.shadowBlur = 0;
     mx.fillStyle = "#000"; mx.fillRect(0, 0, W, H);
     mx.globalCompositeOperation = "lighter";
@@ -209,12 +204,11 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
     const pass = (color, blur) => {
       mx.fillStyle = color; mx.shadowColor = color; mx.shadowBlur = blur;
       for (const l of word.letters) {
-        // squash and stretch along the direction of travel
-        const sp = Math.hypot(l.vx, l.vy), st = Math.min(sp * 0.012, 0.22);
-        const dir = sp > 0.01 ? Math.atan2(l.vy, l.vx) : 0;
-        mx.save(); mx.translate(l.rx + l.ox, l.ry + l.oy);
-        mx.rotate(dir); mx.scale(1 + st, 1 - st * 0.6); mx.rotate(-dir);
-        mx.rotate(l.a); mx.fillText(l.ch, 0, 0); mx.restore();
+        // a flip is one full turn around the letter's vertical axis: its width goes 1 → 0 → -1 (the back) → 1
+        const t = clamp((now - l.flipAt) / FLIP, 0, 1), e = t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
+        const sx = Math.cos(e * Math.PI * 2), lift = 1 + Math.sin(e * Math.PI) * 0.06;
+        mx.save(); mx.translate(l.rx, l.ry); mx.scale((Math.abs(sx) < 0.04 ? 0.04 * Math.sign(sx || 1) : sx) * lift, lift);
+        mx.fillText(l.ch, 0, 0); mx.restore();
       }
     };
     pass("#00ff00", word.size * 0.3);
@@ -223,96 +217,23 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mask);
   }
 
-  /* ---------- the cursor ---------- */
-  const mouse = { x: -1e4, y: -1e4, px: -1e4, py: -1e4, vx: 0, vy: 0, inside: false, grab: null, gx: 0, gy: 0 };
-  const CURSOR_R = 26;                             // css px: the solid disc the cursor pushes with
-  let cur = null, prev = null;
-
+  /* ---------- hover: a letter flips once when the cursor reaches it ---------- */
+  const FLIP = 750;
+  let cur = null, prev = null, hovered = null, flipping = false;
   const letterAt = (x, y) => {
     let best = null, bd = Infinity;
     for (const l of cur.letters) {
-      const d = Math.hypot(l.rx + l.ox - x / 2, l.ry + l.oy - y / 2);
-      if (d < l.r * 1.15 && d < bd) { best = l; bd = d; }
+      const d = Math.hypot(l.rx - x / 2, l.ry - y / 2);
+      if (d < l.r && d < bd) { best = l; bd = d; }
     }
     return best;
   };
-  const busy = (el) => el && el.closest && el.closest("a, button, input, .card, .pin, .chips, .bar, .answer");
-
   addEventListener("pointermove", (e) => {
-    if (mouse.x < -1e3) { mouse.px = e.clientX; mouse.py = e.clientY; }
-    mouse.x = e.clientX; mouse.y = e.clientY; mouse.inside = true;
-    if (!mouse.grab && e.pointerType !== "touch") {
-      document.documentElement.style.cursor = !busy(e.target) && letterAt(e.clientX, e.clientY) ? "grab" : "";
-    }
-  }, { passive: true });
-  document.documentElement.addEventListener("pointerleave", () => { mouse.inside = false; });
-  addEventListener("pointerdown", (e) => {
-    if (reduceMotion || busy(e.target)) return;
+    if (reduceMotion || !cur) return;
     const l = letterAt(e.clientX, e.clientY);
-    if (!l) { disturb(e.clientX, e.clientY, 60, -2.2); return; }   // a click on the paper is a tap on the water
-    mouse.grab = l; mouse.gx = e.clientX / 2 - (l.rx + l.ox); mouse.gy = e.clientY / 2 - (l.ry + l.oy);
-    mouse.x = mouse.px = e.clientX; mouse.y = mouse.py = e.clientY; mouse.inside = true;
-    document.documentElement.style.cursor = "grabbing"; document.body.style.userSelect = "none";
-    cur.awake = true;
-    e.preventDefault();
-  });
-  const release = () => { if (mouse.grab) { mouse.grab = null; document.documentElement.style.cursor = ""; document.body.style.userSelect = ""; } };
-  addEventListener("pointerup", release);
-  addEventListener("pointercancel", release);
-
-  /* ---------- letter physics, in mask px ---------- */
-  function stepLetters(word) {
-    let moving = false;
-    const L = word.letters, cmx = mouse.x / 2, cmy = mouse.y / 2, cr = CURSOR_R / 2;
-    const mvx = clamp(mouse.vx / 2, -18, 18), mvy = clamp(mouse.vy / 2, -18, 18);
-    for (const l of L) {
-      if (l === mouse.grab) {
-        // held: chase the hand hard, tilt with the swing
-        const tx = cmx - mouse.gx - l.rx, ty = cmy - mouse.gy - l.ry;
-        l.vx = (tx - l.ox) * 0.45; l.vy = (ty - l.oy) * 0.45;
-        l.va += (clamp(l.vx * 0.03, -0.5, 0.5) - l.a) * 0.2; l.va *= 0.7;
-      } else {
-        l.vx += -l.ox * 0.055; l.vy += -l.oy * 0.055; // spring home
-        l.va += -l.a * 0.06;
-        l.vx *= 0.9; l.vy *= 0.9; l.va *= 0.88;
-        // the cursor is solid: if it overlaps a letter, the letter is pushed out and picks up its momentum
-        if (mouse.inside && !mouse.grab) {
-          const cx = l.rx + l.ox, cy = l.ry + l.oy, dx = cx - cmx, dy = cy - cmy, d = Math.hypot(dx, dy) || 1, min = l.r + cr;
-          if (d < min) {
-            const nx = dx / d, ny = dy / d, push = min - d;
-            l.ox += nx * push * 0.5; l.oy += ny * push * 0.5;
-            const along = Math.max(0, mvx * nx + mvy * ny);
-            l.vx += nx * (along * 0.55 + 0.5); l.vy += ny * (along * 0.55 + 0.5);
-            l.va += (mvx * ny - mvy * nx) * 0.004;   // a glancing hit spins it
-          }
-        }
-      }
-      l.ox += l.vx; l.oy += l.vy; l.a = clamp(l.a + l.va, -1.2, 1.2);
-      // a loose tether: thrown letters can fly, but never off into the corners
-      const far = Math.hypot(l.ox, l.oy), lim = word.size * (l === mouse.grab ? 3 : 1.4);
-      if (far > lim) { l.ox *= lim / far; l.oy *= lim / far; l.vx *= 0.5; l.vy *= 0.5; }
-    }
-    // letters bump each other instead of passing through
-    for (let i = 0; i < L.length; i++) for (let j = i + 1; j < Math.min(L.length, i + 3); j++) {
-      const p = L[i], q = L[j];
-      const dx = (q.rx + q.ox) - (p.rx + p.ox), dy = (q.ry + q.oy) - (p.ry + p.oy), d = Math.hypot(dx, dy) || 1;
-      const rest = Math.hypot(q.rx - p.rx, q.ry - p.ry), min = Math.min(rest, (p.r + q.r) * 0.8);
-      if (d < min) {
-        const nx = dx / d, ny = dy / d, k = (min - d) * 0.5;
-        if (p !== mouse.grab) { p.ox -= nx * k; p.oy -= ny * k; }
-        if (q !== mouse.grab) { q.ox += nx * k; q.oy += ny * k; }
-        const rv = (q.vx - p.vx) * nx + (q.vy - p.vy) * ny;
-        if (rv < 0) { p.vx += nx * rv * 0.5; p.vy += ny * rv * 0.5; q.vx -= nx * rv * 0.5; q.vy -= ny * rv * 0.5; }
-      }
-    }
-    for (const l of L) {
-      const sp = Math.hypot(l.vx, l.vy);
-      if (sp > 4) disturb((l.rx + l.ox) * 2, (l.ry + l.oy) * 2, 34, Math.min(sp * 0.05, 0.9));   // fast letters splash
-      if (l === mouse.grab || Math.abs(l.ox) + Math.abs(l.oy) + Math.abs(l.a) * 40 + sp + Math.abs(l.va) * 40 > 0.05) moving = true;
-      else { l.ox = l.oy = l.vx = l.vy = l.a = l.va = 0; }
-    }
-    return moving;
-  }
+    if (l && l !== hovered && performance.now() - l.flipAt > FLIP) { l.flipAt = performance.now(); flipping = true; }
+    hovered = l;
+  }, { passive: true });
 
   /* ---------- frame ---------- */
   let mixStart = -1e9, tiltTarget = 0, tiltNow = 0, dpr = 1;
@@ -334,15 +255,7 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
 
   function frame(now) {
     if (!reduceMotion) {
-      // cursor velocity, then the cursor drags a wake through the water along the path it moved
-      mouse.vx = mouse.x - mouse.px; mouse.vy = mouse.y - mouse.py;
-      const sp = Math.hypot(mouse.vx, mouse.vy);
-      if (mouse.inside && sp > 0.5 && !mouse.grab) {
-        const steps = Math.min(8, Math.ceil(sp / 14)), amt = -Math.min(0.25 + sp * 0.02, 1.1) / steps;
-        for (let s = 1; s <= steps; s++) disturb(mouse.px + (mouse.vx * s) / steps, mouse.py + (mouse.vy * s) / steps, 38, amt);
-      }
-      if (cur.awake || mouse.inside) { cur.awake = stepLetters(cur); paint(tex[1], cur); }
-      mouse.px = mouse.x; mouse.py = mouse.y;
+      if (flipping) { paint(tex[1], cur, now); flipping = cur.letters.some((l) => now - l.flipAt < FLIP); if (!flipping) paint(tex[1], cur, now); }
       stepWater();
     }
     const k = Math.min(1, (now - mixStart) / FADE), e = k * k * (3 - 2 * k);
@@ -373,22 +286,18 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
     /** Cross-fade the engraving to a new word; `hot` turns its letters pink. */
     show(text, hot) {
       if (text === cur.text) return;
-      mouse.grab = null;
+      hovered = null;
       prev = cur; cur = layout(text, hot ? 1 : 0);
+      if (!reduceMotion) { const t0 = performance.now() + 350; cur.letters.forEach((l, i) => { l.flipAt = t0 + i * 60; }); flipping = true; }
       [tex[0], tex[1]] = [tex[1], tex[0]];
       paint(tex[1], cur);
       mixStart = reduceMotion ? -1e9 : performance.now();
       if (reduceMotion) frame(performance.now());
     },
-    /** Enter: a splash at (x, y) in css px. The wave rolls out and knocks the letters on its way. */
+    /** Enter: one soft ripple from (x, y) in css px. (The new word's letters flip in on show.) */
     pulse(x, y) {
       if (reduceMotion) return;
-      disturb(x, y, 120, 5);
-      for (const l of cur.letters) {
-        const dx = l.rx - x / 2, dy = l.ry - y / 2, d = Math.hypot(dx, dy) || 1;
-        l.vx += (dx / d) * 6; l.vy += (dy / d) * 6 - 3; l.va += (Math.random() - 0.5) * 0.1;
-      }
-      cur.awake = true;
+      disturb(x, y, 110, 1.4);
     },
     /** A small tap on the water, e.g. under the caret as you type. */
     ripple(x, y, amount = 0.9) { if (!reduceMotion) disturb(x, y, 26, -amount); },

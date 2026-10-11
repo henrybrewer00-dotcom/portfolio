@@ -32,7 +32,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261011g")
+fetch("model/model.json?v=20261011h")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -40,7 +40,7 @@ fetch("model/model.json?v=20261011g")
 const probOf = (id) => { const r = ranked.find((x) => x.id === id); return r ? r.p : 0; };
 
 /* ---------- ghost text, on every keystroke ---------- */
-let hintIdx = 0, anim = null, lastText = "";
+let hintIdx = 0, anim = null, lastText = "", lastTarget = "";
 function update() {
   const text = input.value;
   if (anim) return;
@@ -48,12 +48,13 @@ function update() {
   current = text ? suggest(text, probOf) : { text: HINTS[hintIdx], ghost: HINTS[hintIdx], intent: null };
   typedEl.textContent = text;
   const ghost = current ? current.ghost : "";
-  if (ghost && ghost !== restEl.textContent && !(restEl.textContent && restEl.textContent.startsWith(ghost))) {
-    restEl.classList.remove("is-new"); void restEl.offsetWidth; restEl.classList.add("is-new");   // a new guess fades in
-  }
+  // a new guess fades in; the same guess getting shorter as you type it does not
+  const target = current && current.ghost ? current.text.toLowerCase() : "";
+  if (target && target !== lastTarget) { restEl.classList.remove("is-new"); void restEl.offsetWidth; restEl.classList.add("is-new"); }
+  lastTarget = target;
   restEl.textContent = ghost;
   restEl.classList.toggle("is-hint", !text);
-  tabBtn.hidden = !current;
+  tabBtn.classList.toggle("is-off", !current || (!current.ghost && !current.chip && !!input.value));
   syncScroll();
 
   // no ghost text: offer the model's best guess as a chip instead
@@ -63,7 +64,7 @@ function update() {
     const it = intentById[top.id];
     chips.append(chip(`<span class="k">tab</span> ${esc(it.title)}`, () => accept({ text: it.suggest[0], intent: it.id })));
     current = { text: it.suggest[0], ghost: "", intent: it.id, chip: true };
-    tabBtn.hidden = false;
+    tabBtn.classList.remove("is-off");
   }
   engraving && engraving.tilt(Math.min(text.length, 40) * 0.004);
   announce();
@@ -203,8 +204,6 @@ input.addEventListener("input", () => {
   }
   lastText = text;
   update();
-  // each keystroke taps the water just under the caret
-  if (engraving) { const r = typedEl.getBoundingClientRect(), b = bar.getBoundingClientRect(); engraving.ripple(Math.min(r.right, b.right - 120), b.bottom + 6, 0.7); }
 });
 input.addEventListener("scroll", syncScroll);
 input.addEventListener("keydown", (e) => {
@@ -245,7 +244,7 @@ const forwards = (t) => Array.from({ length: t.length + 1 }, (_, i) => t.slice(0
 function untype(text) {
   if (reduceMotion || text.length < 2) { update(); return; }
   input.classList.add("is-untyping"); typedEl.classList.add("is-untyping");
-  restEl.textContent = ""; tabBtn.hidden = true; chips.innerHTML = "";
+  restEl.textContent = ""; tabBtn.classList.add("is-off"); chips.innerHTML = "";
   play(typedEl, backwards(text), Math.max(9, Math.min(28, 420 / text.length)), () => {
     input.classList.remove("is-untyping"); typedEl.classList.remove("is-untyping");
     typedEl.textContent = "";
