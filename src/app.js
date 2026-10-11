@@ -32,7 +32,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261011h")
+fetch("model/model.json?v=20261011i")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -40,7 +40,7 @@ fetch("model/model.json?v=20261011h")
 const probOf = (id) => { const r = ranked.find((x) => x.id === id); return r ? r.p : 0; };
 
 /* ---------- ghost text, on every keystroke ---------- */
-let hintIdx = 0, anim = null, lastText = "", lastTarget = "";
+let hintIdx = 0, anim = null, lastText = "", lastTarget = "", guessId = null;
 function update() {
   const text = input.value;
   if (anim) return;
@@ -54,18 +54,23 @@ function update() {
   lastTarget = target;
   restEl.textContent = ghost;
   restEl.classList.toggle("is-hint", !text);
-  tabBtn.classList.toggle("is-off", !current || (!current.ghost && !current.chip && !!input.value));
   syncScroll();
 
-  // no ghost text: offer the model's best guess as a chip instead
-  chips.innerHTML = "";
+  // no ghost text: offer the model's best guess as a chip instead. The chip is only rebuilt when the
+  // guess changes, so it sits still while you type instead of popping in again on every key.
   const top = ranked[0];
-  if (text.trim().length >= 3 && !current && top && top.p >= GUESS_AT) {
-    const it = intentById[top.id];
-    chips.append(chip(`<span class="k">tab</span> ${esc(it.title)}`, () => accept({ text: it.suggest[0], intent: it.id })));
-    current = { text: it.suggest[0], ghost: "", intent: it.id, chip: true };
-    tabBtn.classList.remove("is-off");
+  const guess = text.trim().length >= 3 && !current && top && top.p >= GUESS_AT ? top.id : null;
+  if (guess !== guessId || !guess) {
+    if (guessId || chips.querySelector(".is-guess")) chips.innerHTML = "";
+    guessId = guess;
+    if (guess) {
+      const it = intentById[guess];
+      const c = chip(`<span class="k">tab</span> ${esc(it.title)}`, () => accept({ text: it.suggest[0], intent: it.id }));
+      c.classList.add("is-guess");
+      chips.append(c);
+    }
   }
+  if (guess) { const it = intentById[guess]; current = { text: it.suggest[0], ghost: "", intent: it.id, chip: true }; }
   engraving && engraving.tilt(Math.min(text.length, 40) * 0.004);
   announce();
 }
@@ -112,7 +117,7 @@ function decide() {
   const top = ranked[0];
   if (top && top.p >= OPEN_AT) { open(top.id, text); return; }
   // not sure: three likeliest, plus everything
-  chips.innerHTML = "";
+  chips.innerHTML = ""; guessId = null;
   chips.append(Object.assign(document.createElement("span"), { className: "chips-label", textContent: "did you mean" }));
   for (const r of ranked.slice(0, 3)) chips.append(chip(esc(intentById[r.id].title), () => open(r.id, text)));
   chips.append(chip("everything", () => open("browse")));
@@ -151,7 +156,7 @@ function open(intentId, q = "") {
   results.classList.toggle("is-single", intent.ids.length === 1);
   document.body.classList.add("has-results");
   engraving && engraving.show(intent.engrave, true);
-  chips.innerHTML = "";
+  chips.innerHTML = ""; guessId = null;
   history.replaceState(null, "", "#" + intent.id);
   requestAnimationFrame(() => results.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" }));
 }
@@ -244,7 +249,7 @@ const forwards = (t) => Array.from({ length: t.length + 1 }, (_, i) => t.slice(0
 function untype(text) {
   if (reduceMotion || text.length < 2) { update(); return; }
   input.classList.add("is-untyping"); typedEl.classList.add("is-untyping");
-  restEl.textContent = ""; tabBtn.classList.add("is-off"); chips.innerHTML = "";
+  restEl.textContent = ""; chips.innerHTML = ""; guessId = null;
   play(typedEl, backwards(text), Math.max(9, Math.min(28, 420 / text.length)), () => {
     input.classList.remove("is-untyping"); typedEl.classList.remove("is-untyping");
     typedEl.textContent = "";

@@ -19,8 +19,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-    <link rel="preload" href="model/model.json?v=20261011h" as="fetch" crossorigin />
-    <link rel="stylesheet" href="styles.css?v=20261011h" />
+    <link rel="preload" href="model/model.json?v=20261011i" as="fetch" crossorigin />
+    <link rel="stylesheet" href="styles.css?v=20261011i" />
   </head>
   <body>
     <canvas class="engraving" data-engraving aria-hidden="true"></canvas>
@@ -36,12 +36,11 @@
     <main class="main">
       <h1 class="sr-only">Henry Brewer — portfolio</h1>
       <form class="ask" data-ask role="search" autocomplete="off">
-        <p class="kicker"><span class="dot"></span>henry · 14 · austin, tx · proud vibecoder</p>
         <label class="sr-only" for="q">Ask about anything Henry has built</label>
         <div class="bar">
           <div class="ghost" aria-hidden="true"><span class="typed" data-typed></span><span class="rest" data-rest></span></div>
           <input id="q" name="q" type="text" data-q spellcheck="false" autocapitalize="off" autocorrect="off" aria-describedby="hint" />
-          <button type="button" class="key is-off" data-tab aria-label="Complete the suggestion">tab ↹</button>
+          <button type="button" class="key" data-tab aria-label="Complete the suggestion">tab ↹</button>
           <button type="submit" class="key" aria-label="Open">enter ↵</button>
         </div>
         <p class="hint" id="hint" data-hint><span class="opt">type anything · </span><span class="k">tab</span> to complete · <span class="k">enter</span> to open</p>
@@ -89,6 +88,6 @@
       </noscript>
     </main>
 
-    <script type="module" src="src/app.js?v=20261011h"></script>
+    <script type="module" src="src/app.js?v=20261011i"></script>
   </body>
 </html>
