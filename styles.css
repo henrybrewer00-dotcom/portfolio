@@ -77,6 +77,19 @@ body.has-results .main { padding-top: 6.5rem; }
 .chip .k { margin-right: 0.35em; background: var(--card); }
 @keyframes pop { from { opacity: 0; transform: scale(0.9) translateY(6px); } }
 
+/* ---------- pinned ---------- */
+.pinned { margin-top: 1.6rem; }
+body.has-results .pinned { display: none; }
+.pinned-label { display: inline-block; font: 500 0.7rem var(--sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); background: var(--paper); border-radius: 999px; padding: 0.2rem 0.7rem; margin: 0 0 0.5rem 0.8rem; }
+.pins { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+.pin { position: relative; display: grid; gap: 0.15rem; text-align: left; padding: 0.85rem 1rem 0.9rem; background: var(--card); border: 1px solid var(--border); border-radius: 18px; animation: pop 0.5s var(--spring) both; animation-delay: calc(0.6s + var(--i) * 80ms); transition: transform 0.3s var(--spring), box-shadow 0.3s var(--ease), border-color 0.2s; }
+.pin:hover, .pin:focus-visible { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(20, 20, 18, 0.08); border-color: #c9c6bc; outline: 0; }
+.pin::before { content: ""; position: absolute; top: 0.9rem; right: 0.95rem; width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--pink); }
+.pin-kicker { font: 500 0.66rem var(--sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.pin-title { font: 600 1.05rem/1.2 var(--sans); letter-spacing: -0.015em; }
+.pin-go { position: absolute; right: 0.95rem; bottom: 0.8rem; font-size: 0.9rem; color: var(--muted); transition: transform 0.25s var(--spring), color 0.2s; }
+.pin:hover .pin-go { transform: translateX(3px); color: var(--ink); }
+
 /* ---------- results ---------- */
 .results { margin-top: 2.4rem; scroll-margin-top: 5rem; }
 .results-head .act.is-soft { background: var(--paper); }
@@ -129,6 +142,7 @@ a:focus-visible, button:focus-visible, .act:focus-visible { outline: 2px solid v
   .card { padding: 1.25rem 1.2rem; border-radius: 18px; }
   .card[data-current]::before { top: 1.25rem; right: 1.2rem; width: 2rem; height: 2rem; }
   .hint .opt { display: none; }
+  .pins { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

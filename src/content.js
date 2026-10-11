@@ -17,15 +17,16 @@ export const MAIL = "mailto:henrybrewer00@gmail.com?subject=" + encodeURICompone
  * @typedef {{
  *   id: string, kind: "about"|"job"|"project"|"hardware"|"oss"|"win"|"fact"|"contact",
  *   kicker: string, title: string, body?: string, list?: string[], tags?: string[],
- *   current?: boolean, image?: { src: string, alt: string, cap: string }, links?: Link[]
+ *   current?: boolean, pinned?: boolean, image?: { src: string, alt: string, cap: string }, links?: Link[]
  * }} Item
  */
 
 /** @type {Item[]} */
 export const ITEMS = [
   { id: "me", kind: "about", kicker: "the maker", title: "I'm Henry.", body: "Fourteen, from Austin, and a proud vibecoder. I build voice AI, robots, a submarine, and a company. Right now I work at Crawft, and I founded SiteLight.", tags: ["14", "Austin, TX", "Proud vibecoder"], links: [{ label: "GitHub ↗", href: GH }, { label: "Email →", href: MAIL }] },
-  { id: "crawft", kind: "job", current: true, kicker: "current job", title: "Crawft", body: "Where I work right now.", tags: ["Current"] },
-  { id: "sitelight", kind: "job", kicker: "founder", title: "SiteLight", body: "A personal challenge: go from nothing to revenue in under two weeks. I made it in 10 days. It checks whether AI assistants recommend your business when someone asks, then hands you the to-do list to become the answer.", tags: ["Founder", "AI visibility", "10 days"], image: { src: "assets/sitelight-stripe.jpg", alt: "Stripe email: Congratulations, SiteLight! You've just received your first payment through Stripe. $2.00.", cap: "the first $2 · via stripe" }, links: [{ label: "sitelight.xyz ↗", href: "https://sitelight.xyz" }] },
+  { id: "crawft", kind: "job", current: true, pinned: true, kicker: "current job", title: "Crawft", body: "Where I work right now. Crawft turns workdays into a written, evidence-linked record for company-managed computers, so you can see the work you're paying for.", tags: ["Current"], links: [{ label: "crawft.ai ↗", href: "https://crawft.ai" }] },
+  { id: "vurn", kind: "project", pinned: true, kicker: "cybersecurity", title: "Vurn AI", body: "A fully autonomous AI pentesting tool. 24 hours after I built it, it found a major vulnerability in a top-200 GitHub repo that gave access to over 40,000 Shopify accounts.", tags: ["Security", "Pentesting", "AI agents"] },
+  { id: "sitelight", kind: "job", pinned: true, kicker: "founder", title: "SiteLight", body: "A personal challenge: go from nothing to revenue in under two weeks. I made it in 10 days. It checks whether AI assistants recommend your business when someone asks, then hands you the to-do list to become the answer.", tags: ["Founder", "AI visibility", "10 days"], image: { src: "assets/sitelight-stripe.jpg", alt: "Stripe email: Congratulations, SiteLight! You've just received your first payment through Stripe. $2.00.", cap: "the first $2 · via stripe" }, links: [{ label: "sitelight.xyz ↗", href: "https://sitelight.xyz" }] },
   { id: "lily", kind: "project", kicker: "voice AI", title: "Lily", body: "Calls my grandma every morning, has an actual conversation, then texts the family how she sounded.", tags: ["ElevenLabs", "Twilio", "InsForge"], image: { src: "assets/lily-demo-poster.jpg", alt: "Lily's demo screen", cap: "lily · demo" }, links: [{ label: "Live ↗", href: "https://lily.insforge.site" }, { label: "Repo ↗", href: GH + "/lily" }] },
   { id: "wins", kind: "win", kicker: "hackathons", title: "Some hackathon wins", list: ["InsForge", "Frontier Tower", "a16z × Cursor"] },
   { id: "glasscast", kind: "oss", kicker: "open source", title: "Glasscast", body: "Screen Studio costs money, so I made a free one. Cinematic zooms, auto-captions, a webcam bubble, bring your own AI keys.", tags: ["Electron", "TypeScript", "macOS"], links: [{ label: "Repo ↗", href: GH + "/Glasscast" }] },
@@ -56,6 +57,10 @@ export const INTENTS = [
     suggest: ["show me Henry's current job", "Henry's current job", "where does Henry work", "Crawft"],
     subjects: ["current job", "job", "work", "crawft", "craft", "where he works", "what he does for work", "employer", "career", "role", "position", "occupation", "day job", "current role", "workplace"],
     questions: ["where does henry work", "does henry have a job", "what does henry do for work", "is he working anywhere", "who does henry work for", "what's his job right now", "his day job", "what's he doing now", "where is he employed", "what is crawft"] },
+  { id: "vurn", title: "Vurn AI", engrave: "Vurn AI", ids: ["vurn"],
+    suggest: ["show me Henry's cyber work", "Henry's cybersecurity work", "Vurn AI"],
+    subjects: ["cyber work", "cyber", "cybersecurity", "cyber security", "security", "security work", "hacking", "pentesting", "pen testing", "penetration testing", "vulnerability", "vulnerabilities", "bug bounty", "exploit", "vurn", "vurn ai", "infosec", "white hat", "security research", "shopify bug", "ai pentester", "red team"],
+    questions: ["does henry do cyber", "is henry a hacker", "has he found any bugs", "what did he hack", "does he know security", "what security stuff has he built", "did he find a vulnerability", "what is vurn", "what's the shopify thing", "has henry done any pentesting"] },
   { id: "sitelight", title: "SiteLight", engrave: "SiteLight", ids: ["sitelight"],
     suggest: ["show me Henry's company", "what's Henry's company", "SiteLight"],
     subjects: ["company", "startup", "business", "sitelight", "site light", "his company", "the company he founded", "ai visibility tool", "first revenue", "first $2", "stripe payment", "founder"],
@@ -124,7 +129,7 @@ export const INTENTS = [
     suggest: ["show me Henry's open source work", "open source stuff"],
     subjects: ["open source", "open source work", "open source projects", "public repos", "free tools he made", "oss"],
     questions: ["is his code open source", "what has he open sourced", "any public repos"] },
-  { id: "ai", title: "AI projects", engrave: "AI", ids: ["sitelight", "lily", "drivethru", "elevenmile", "pawbot"],
+  { id: "ai", title: "AI projects", engrave: "AI", ids: ["vurn", "sitelight", "lily", "drivethru", "elevenmile", "pawbot"],
     suggest: ["show me Henry's AI projects", "AI stuff"],
     subjects: ["ai projects", "ai stuff", "ai apps", "machine learning", "llm projects", "claude projects", "things with ai", "artificial intelligence"],
     questions: ["what ai has he built", "does he use ai", "has he made ai apps", "anything with claude"] },
@@ -134,7 +139,10 @@ export const INTENTS = [
     questions: ["what has henry built", "what has he made", "show me his projects", "what can he do", "what are his projects", "list everything", "show all", "what have you made", "what does he make"] },
 ];
 
-export const HINTS = ["show me Henry's current job", "what's Henry's company", "show me Henry's voice AI projects", "is he really building a submarine", "show me everything Henry has built", "how do I contact Henry"];
+export const HINTS = ["show me Henry's current job", "show me Henry's cyber work", "what's Henry's company", "show me Henry's voice AI projects", "is he really building a submarine", "show me everything Henry has built", "how do I contact Henry"];
 
 export const itemById = Object.fromEntries(ITEMS.map((i) => [i.id, i]));
 export const intentById = Object.fromEntries(INTENTS.map((i) => [i.id, i]));
+
+/** The pinned row on the home screen. */
+export const PINNED = ["vurn", "crawft", "sitelight"].map((id) => itemById[id]);

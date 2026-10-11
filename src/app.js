@@ -4,7 +4,7 @@
    screen is generated: every word comes from content.js.
    ========================================================================= */
 
-import { INTENTS, HINTS, itemById, intentById } from "./content.js";
+import { INTENTS, HINTS, PINNED, itemById, intentById } from "./content.js";
 import { createModel } from "./model.js";
 import { createSuggester } from "./suggest.js";
 import { createEngraving } from "./shader.js";
@@ -32,7 +32,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261011c")
+fetch("model/model.json?v=20261011d")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -153,6 +153,20 @@ function card(it, i = 0) {
   </article>`;
 }
 
+/* ---------- pinned: the three things Henry wants seen first ---------- */
+$("[data-pins]").innerHTML = PINNED.map((it, i) => `<button type="button" class="pin" data-pin="${esc(it.id)}" style="--i:${i}">
+  <span class="pin-kicker">${esc(it.kicker)}</span><span class="pin-title">${esc(it.title)}</span><span class="pin-go" aria-hidden="true">→</span></button>`).join("");
+$("[data-pins]").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-pin]");
+  if (!b) return;
+  // the matching intent has the same id; type its first suggestion in, then open it
+  const intent = intentById[b.dataset.pin];
+  if (!intent) return;
+  stopAnim();
+  input.value = intent.suggest[0]; lastText = input.value; update();
+  stamp(); open(intent.id);
+});
+
 /* ---------- wiring ---------- */
 input.addEventListener("input", () => {
   const text = input.value;
@@ -174,6 +188,8 @@ input.addEventListener("keydown", (e) => {
     if (!results.hidden) close(); else if (input.value) { const was = input.value; input.value = ""; lastText = ""; untype(was); }
   }
 });
+// Esc closes the answer from anywhere on the page, not just the bar
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && e.target !== input && !results.hidden) close(); });
 tabBtn.addEventListener("click", () => current && accept(current));
 $("[data-ask]").addEventListener("submit", (e) => { e.preventDefault(); decide(); });
 $("[data-close]").addEventListener("click", close);

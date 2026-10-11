@@ -13,6 +13,7 @@ const { suggest } = createSuggester(INTENTS);
 const HELD_OUT = [
   ["show me henrys current job", "crawft"], ["wheres henry working", "crawft"], ["what's his business", "sitelight"],
   ["what's his job", "crawft"], ["henry's startup", "sitelight"], ["where's he employed", "crawft"], ["the ai visibility thing", "sitelight"],
+  ["show me henrys cyber work", "vurn"], ["is he into hacking", "vurn"], ["the pentest tool", "vurn"],
   ["who's henry", "about"], ["how old are you", "about"], ["where are you from", "about"],
   ["the grandma ai", "lily"], ["what calls grandma", "lily"], ["lily app", "lily"],
   ["the drivethru", "drivethru"], ["voice food ordering", "drivethru"],
