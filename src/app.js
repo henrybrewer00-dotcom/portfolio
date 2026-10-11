@@ -32,7 +32,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261011e")
+fetch("model/model.json?v=20261011f")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -105,21 +105,45 @@ function decide() {
   if (!input.value.trim()) { if (!current) return; accept(current); }
   const text = input.value.trim();
   // the ghost text is what they were looking at, so Enter takes it
-  if (current && current.ghost) { open(current.intent); input.value = current.text; lastText = current.text; update(); return; }
-  if (current && current.chip) { open(current.intent); return; }
+  if (current && current.ghost) { open(current.intent, current.text); input.value = current.text; lastText = current.text; update(); return; }
+  if (current && current.chip) { open(current.intent, text); return; }
   if (!ranked.length && model) ranked = model.predict(text);
   const top = ranked[0];
-  if (top && top.p >= OPEN_AT) { open(top.id); return; }
+  if (top && top.p >= OPEN_AT) { open(top.id, text); return; }
   // not sure: three likeliest, plus everything
   chips.innerHTML = "";
   chips.append(Object.assign(document.createElement("span"), { className: "chips-label", textContent: "did you mean" }));
-  for (const r of ranked.slice(0, 3)) chips.append(chip(esc(intentById[r.id].title), () => open(r.id)));
+  for (const r of ranked.slice(0, 3)) chips.append(chip(esc(intentById[r.id].title), () => open(r.id, text)));
   chips.append(chip("everything", () => open("browse")));
 }
 
-function open(intentId) {
+/* ---------- the spoken answer: one or two sentences from Claude Haiku 5.5 (api/ask.js) ---------- */
+const answerEl = $("[data-answer]");
+let asking = null;
+async function ask(q, intentId) {
+  if (asking) asking.abort();
+  answerEl.hidden = true; answerEl.textContent = ""; answerEl.classList.remove("is-done");
+  if (!q || location.protocol === "file:") return;
+  const ctl = (asking = new AbortController());
+  try {
+    const r = await fetch("api/ask", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ q, intent: intentId }), signal: ctl.signal });
+    if (!r.ok || !r.body) return;   // no key, rate limited, or offline: the cards stand on their own
+    answerEl.hidden = false;
+    const reader = r.body.getReader(), dec = new TextDecoder();
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      answerEl.textContent += dec.decode(value, { stream: true });
+    }
+    answerEl.classList.add("is-done");
+    if (!answerEl.textContent.trim()) answerEl.hidden = true;
+  } catch (e) { /* aborted or failed: leave the cards */ }
+}
+
+function open(intentId, q = "") {
   const intent = intentById[intentId];
   if (!intent) return;
+  ask(q, intentId);
   $("[data-results-title]").innerHTML = [...intent.title].map((c, i) => `<span class="ch" style="--i:${i}">${esc(c)}</span>`).join("");
   cards.innerHTML = intent.ids.map((id, i) => card(itemById[id], i)).join("");
   results.hidden = false;
@@ -132,6 +156,7 @@ function open(intentId) {
 }
 
 function close(focus = true) {
+  if (asking) { asking.abort(); asking = null; }
   results.hidden = true;
   document.body.classList.remove("has-results");
   engraving && engraving.show("henry.", false);
@@ -164,7 +189,7 @@ $("[data-pins]").addEventListener("click", (e) => {
   if (!intent) return;
   stopAnim();
   input.value = intent.suggest[0]; lastText = input.value; update();
-  stamp(); open(intent.id);
+  stamp(); open(intent.id, input.value);
 });
 
 /* ---------- wiring ---------- */

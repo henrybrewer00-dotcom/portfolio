@@ -99,6 +99,11 @@ body.has-results .pinned { display: none; }
 @keyframes letter { from { opacity: 0; transform: translateY(0.45em); filter: blur(3px); } }
 .results.is-single .results-head { justify-content: flex-end; }
 .results.is-single .results-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.answer { margin: 0 0 1rem; padding: 1rem 1.3rem 1rem 3.1rem; position: relative; font: 400 1.05rem/1.5 var(--sans); color: var(--ink); background: var(--card); border: 1px solid var(--border); border-radius: 20px; animation: pop 0.4s var(--spring) both; }
+.answer::before { content: ""; position: absolute; left: 1.2rem; top: 1.25rem; width: 0.9rem; height: 0.9rem; border-radius: 50%; background: var(--pink); animation: think 0.9s ease-in-out infinite; }
+.answer.is-done::before { animation: none; }
+.answer:not(.is-done)::after { content: ""; display: inline-block; width: 2px; height: 1.05em; margin-left: 2px; background: var(--ink); vertical-align: -0.15em; animation: caret 0.8s steps(1) infinite; }
+@keyframes think { 50% { transform: scale(0.7); opacity: 0.6; } }
 .cards { display: grid; gap: 1rem; }
 .card { position: relative; padding: 1.5rem 1.6rem; background: var(--card); border: 1px solid var(--border); border-radius: 22px; animation: deal 0.7s var(--ease) both; animation-delay: calc(0.1s + var(--i, 0) * 60ms); transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease); }
 .card:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(20, 20, 18, 0.07); }
