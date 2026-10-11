@@ -33,7 +33,7 @@ No build step on deploy: `model/model.json` is committed.
 | File | Purpose |
 |---|---|
 | `index.html` | The page: ask bar, results, no-JS list |
-| `styles.css` | Warm paper, black ink, pink accent; bar, ghost text, cards, mobile |
+| `styles.css` | kargul palette: paper #efede8, ink #141412, pink #f2a9b8; bar, ghost text, cards, mobile |
 | `src/content.js` | Every card and every intent |
 | `src/model.js` | Text features + the classifier (shared by training and the browser) |
 | `src/suggest.js` | Ghost-text matching |

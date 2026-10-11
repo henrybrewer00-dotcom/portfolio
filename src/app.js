@@ -32,7 +32,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261011b")
+fetch("model/model.json?v=20261011c")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -40,9 +40,10 @@ fetch("model/model.json?v=20261011b")
 const probOf = (id) => { const r = ranked.find((x) => x.id === id); return r ? r.p : 0; };
 
 /* ---------- ghost text, on every keystroke ---------- */
-let hintIdx = 0;
+let hintIdx = 0, anim = null, lastText = "";
 function update() {
   const text = input.value;
+  if (anim) return;
   ranked = model && text.trim() ? model.predict(text) : [];
   current = text ? suggest(text, probOf) : { text: HINTS[hintIdx], ghost: HINTS[hintIdx], intent: null };
   typedEl.textContent = text;
@@ -75,7 +76,8 @@ function announce() {
 function syncScroll() { $(".ghost").scrollLeft = input.scrollLeft; }
 
 function accept(s) {
-  input.value = s.text;
+  stopAnim();
+  input.value = s.text; lastText = s.text;
   input.setSelectionRange(s.text.length, s.text.length);
   input.classList.remove("is-accepted"); void input.offsetWidth; input.classList.add("is-accepted");
   update();
@@ -103,7 +105,7 @@ function decide() {
   if (!input.value.trim()) { if (!current) return; accept(current); }
   const text = input.value.trim();
   // the ghost text is what they were looking at, so Enter takes it
-  if (current && current.ghost) { open(current.intent); input.value = current.text; update(); return; }
+  if (current && current.ghost) { open(current.intent); input.value = current.text; lastText = current.text; update(); return; }
   if (current && current.chip) { open(current.intent); return; }
   if (!ranked.length && model) ranked = model.predict(text);
   const top = ranked[0];
@@ -129,12 +131,12 @@ function open(intentId) {
   requestAnimationFrame(() => results.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" }));
 }
 
-function close() {
+function close(focus = true) {
   results.hidden = true;
   document.body.classList.remove("has-results");
   engraving && engraving.show("henry.", false);
   history.replaceState(null, "", location.pathname);
-  input.focus();
+  if (focus) input.focus();
 }
 
 function card(it, i = 0) {
@@ -152,27 +154,83 @@ function card(it, i = 0) {
 }
 
 /* ---------- wiring ---------- */
-input.addEventListener("input", update);
+input.addEventListener("input", () => {
+  const text = input.value;
+  stopAnim();
+  if (!text && lastText) {
+    // the prompt was removed: take the answer away too, and untype what was there
+    if (!results.hidden) close(false);
+    if (lastText.length > 1) { const was = lastText; lastText = ""; untype(was); return; }
+  }
+  lastText = text;
+  update();
+});
 input.addEventListener("scroll", syncScroll);
 input.addEventListener("keydown", (e) => {
   const atEnd = input.selectionStart === input.value.length;
   if ((e.key === "Tab" && !e.shiftKey) || (e.key === "ArrowRight" && atEnd)) {
     if (current && (current.ghost || current.chip)) { e.preventDefault(); accept(current); }
   } else if (e.key === "Escape") {
-    if (!results.hidden) close(); else { input.value = ""; update(); }
+    if (!results.hidden) close(); else if (input.value) { const was = input.value; input.value = ""; lastText = ""; untype(was); }
   }
 });
 tabBtn.addEventListener("click", () => current && accept(current));
 $("[data-ask]").addEventListener("submit", (e) => { e.preventDefault(); decide(); });
 $("[data-close]").addEventListener("click", close);
 $("[data-browse]").addEventListener("click", () => open("browse"));
-$("[data-home]").addEventListener("click", (e) => { e.preventDefault(); input.value = ""; update(); close(); });
+$("[data-home]").addEventListener("click", (e) => { e.preventDefault(); const was = input.value; input.value = ""; lastText = ""; close(); untype(was); });
 
-// rotate the example in the empty bar
-setInterval(() => { if (!input.value) { hintIdx = (hintIdx + 1) % HINTS.length; update(); } }, 3600);
+/* ---------- untyping: a cleared prompt deletes itself backwards ---------- */
+function stopAnim() { if (anim) { clearTimeout(anim.t); anim = null; } input.classList.remove("is-untyping"); typedEl.classList.remove("is-untyping"); }
+
+// runs `steps` (strings to show, in order) through one span, then calls done
+function play(el, steps, every, done) {
+  stopAnim();
+  anim = { t: 0 };
+  let i = 0;
+  const tick = () => {
+    if (!anim) return;
+    if (i >= steps.length) { anim = null; done(); return; }
+    el.textContent = steps[i++];
+    anim.t = setTimeout(tick, every);
+  };
+  tick();
+}
+const backwards = (t) => Array.from({ length: t.length + 1 }, (_, i) => t.slice(0, t.length - i));
+const forwards = (t) => Array.from({ length: t.length + 1 }, (_, i) => t.slice(0, i));
+
+function untype(text) {
+  if (reduceMotion || text.length < 2) { update(); return; }
+  input.classList.add("is-untyping"); typedEl.classList.add("is-untyping");
+  restEl.textContent = ""; tabBtn.hidden = true; chips.innerHTML = "";
+  play(typedEl, backwards(text), Math.max(9, Math.min(28, 420 / text.length)), () => {
+    input.classList.remove("is-untyping"); typedEl.classList.remove("is-untyping");
+    typedEl.textContent = "";
+    typeHint();
+  });
+}
+
+// the example in the empty bar types itself in
+function typeHint() {
+  if (input.value) { update(); return; }
+  const h = HINTS[hintIdx];
+  if (reduceMotion) { update(); return; }
+  restEl.classList.add("is-hint"); restEl.classList.remove("is-new");
+  play(restEl, forwards(h), 26, update);
+}
+
+// rotate the example: untype the old one, type the next
+setInterval(() => {
+  if (input.value || anim || document.hidden) return;
+  const old = HINTS[hintIdx];
+  hintIdx = (hintIdx + 1) % HINTS.length;
+  if (reduceMotion) { update(); return; }
+  play(restEl, backwards(old), 14, typeHint);
+}, 4200);
 
 // deep links: henry93.vercel.app/#crawft
 if (location.hash && intentById[location.hash.slice(1)]) setTimeout(() => open(location.hash.slice(1)), 50);
 
 update();
+typeHint();
 input.focus({ preventScroll: true });
