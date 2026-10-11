@@ -11,8 +11,8 @@ const { suggest } = createSuggester(INTENTS);
 
 // Written separately from the training phrases in content.js.
 const HELD_OUT = [
-  ["show me henrys current job", "sitelight"], ["whats henry working on", "sitelight"], ["what's his business", "sitelight"],
-  ["what does henry do", "sitelight"], ["henry's startup", "sitelight"], ["where's he employed", "sitelight"], ["the ai visibility thing", "sitelight"],
+  ["show me henrys current job", "crawft"], ["wheres henry working", "crawft"], ["what's his business", "sitelight"],
+  ["what's his job", "crawft"], ["henry's startup", "sitelight"], ["where's he employed", "crawft"], ["the ai visibility thing", "sitelight"],
   ["who's henry", "about"], ["how old are you", "about"], ["where are you from", "about"],
   ["the grandma ai", "lily"], ["what calls grandma", "lily"], ["lily app", "lily"],
   ["the drivethru", "drivethru"], ["voice food ordering", "drivethru"],
@@ -31,7 +31,7 @@ const HELD_OUT = [
   ["open source", "opensource"], ["public code", "opensource"],
   ["ai projects", "ai"], ["stuff with ai", "ai"],
   ["everything", "browse"], ["all his projects", "browse"], ["what has he built", "browse"], ["portfolio", "browse"],
-  ["what is his occupation right now", "sitelight"], ["is he good at school", "receipts"], ["the lily project", "lily"], ["does he use python", "stack"], ["show me robotics", "siege"], ["send henry an email", "contact"], ["the drive through bot", "drivethru"],
+  ["what is his occupation right now", "crawft"], ["is he good at school", "receipts"], ["the lily project", "lily"], ["does he use python", "stack"], ["show me robotics", "siege"], ["send henry an email", "contact"], ["the drive through bot", "drivethru"],
 ];
 
 let right = 0;

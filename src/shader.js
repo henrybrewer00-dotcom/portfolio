@@ -1,6 +1,6 @@
 /* =========================================================================
    henry. — the engraving ("money shader"). Wavy banknote lines whose
-   thickness carries the shading. The source is a word drawn to an offscreen
+   thickness carries the shading, ink on paper. The source is a word drawn to an offscreen
    canvas ("henry." at home, the card's name after an answer); the lines
    swell where the word is, so it reads as engraved. Raw WebGL2, no library.
    ========================================================================= */
@@ -11,9 +11,9 @@ in vec2 a; void main() { gl_Position = vec4(a, 0.0, 1.0); }`;
 const FRAG = `#version 300 es
 precision highp float;
 uniform sampler2D uA, uB;
-uniform float uMix, uHotA, uHotB, uTime, uTilt, uDpr;
-uniform vec2 uRes;
-uniform vec3 uBg, uBgDeep, uInk, uGold;
+uniform float uMix, uHotA, uHotB, uTime, uTilt, uDpr, uPulse;
+uniform vec2 uRes, uPulseAt;
+uniform vec3 uPaper, uPaperDeep, uInk, uPink;
 out vec4 o;
 
 float hash(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
@@ -21,46 +21,59 @@ float vnoise(vec2 p) {
   vec2 i = floor(p), f = fract(p), u = f * f * (3.0 - 2.0 * f);
   return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
 }
-float fbm(vec2 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { s += a * vnoise(p); p *= 2.03; a *= 0.5; } return s; }
+float fbm(vec2 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 3; i++) { s += a * vnoise(p); p *= 2.03; a *= 0.5; } return s; }
 
-// one family of guilloche lines; returns ink coverage 0..1
-float lines(vec2 p, float ang, float spacing, float warp, float width) {
-  vec2 dir = vec2(-sin(ang), cos(ang)), along = vec2(cos(ang), sin(ang));
-  float v = dot(p, dir) / spacing + sin(dot(p, along) * 0.011 + uTime * 0.12) * 1.4 + warp;
-  float d = min(fract(v), 1.0 - fract(v)) * 2.0;   // 0 on a line, 1 between
-  float aa = fwidth(v) * 2.4;
-  return 1.0 - smoothstep(width - aa, width + aa, d);
+// one family of engraved lines. v is the line coordinate; width 0..1 is how much of each period is ink
+float engrave(float v, float width) {
+  float d = abs(fract(v) - 0.5) * 2.0;              // 0 mid-gap, 1 on the line centre
+  float aa = fwidth(v) * 1.6;
+  return smoothstep(1.0 - width - aa, 1.0 - width + aa, d);
 }
 
 void main() {
   vec2 uv = gl_FragCoord.xy / uRes;
   vec2 tuv = vec2(uv.x, 1.0 - uv.y);
-  vec2 src = mix(texture(uA, tuv).rg, texture(uB, tuv).rg, uMix);
-  float hot = mix(uHotA, uHotB, uMix);
-  float sharp = src.r, glow = src.g;
   vec2 p = gl_FragCoord.xy / uDpr;                 // css pixels, so line spacing is the same on every screen
 
-  vec2 q = p * 0.0021;
-  float n = fbm(q + vec2(uTime * 0.018, -uTime * 0.013));
-  float n2 = fbm(q * 2.2 + vec2(-uTime * 0.025, uTime * 0.01) + n);
+  // the new word inks in with a ragged left-to-right sweep, like a plate being pulled
+  float rag = vnoise(vec2(p.y * 0.02, 3.0)) * 0.18;
+  float front = uMix * 1.5 - 0.25;
+  float m = uMix >= 1.0 ? 1.0 : 1.0 - smoothstep(front - 0.08, front + 0.08, uv.x + rag);
+  vec2 src = mix(texture(uA, tuv).rg, texture(uB, tuv).rg, m);
+  float hot = mix(uHotA, uHotB, m);
+  float sharp = src.r, glow = src.g;
 
-  // tone: how much ink this spot wants. The word is darkest, its halo next, the drifting field faintest.
-  float tone = clamp(smoothstep(0.38, 0.9, n2) * 0.32 + glow * 0.4 + sharp * 0.7, 0.0, 1.0);
-  float width = mix(0.08, 0.66, tone);
-  float warp = n2 * 2.6 + sharp * 0.5;           // lines kink where they cross a letter edge, like an emboss
-  float ink = lines(p, 0.38 + uTilt, 6.5, warp, width);
-  ink = max(ink, lines(p, 1.2 + uTilt, 6.5, warp * 0.5, 0.18) * smoothstep(0.5, 0.9, glow) * (1.0 - sharp));   // light cross-hatch in the halo only
+  // Enter: one ring of displacement rolls out from the bar
+  float pr = length(p - uPulseAt);
+  float ring = exp(-pow((pr - uPulse * 1400.0) / 70.0, 2.0)) * (1.0 - uPulse);
 
-  float word = clamp(sharp + glow * 0.5, 0.0, 1.0);
-  vec3 inkCol = mix(uInk, uGold, hot * smoothstep(0.15, 0.55, word));
-  float alpha = 0.16 + mix(0.66, 0.34, hot) * word;   // behind the cards the word steps back
+  float n = fbm(p * 0.0024 + vec2(uTime * 0.03, -uTime * 0.02));
+  // the relief: lines bow over the letters (glow is a soft height map), so the word reads as raised metal
+  float relief = glow * 2.2 + sharp * 0.35;
+  float wave = sin(p.x * 0.006 + uTime * 0.25) * 1.2 + sin(p.x * 0.0021 - uTime * 0.11) * 2.0;
+  float v = (p.y + p.x * (0.08 + uTilt)) / 5.0 + wave + n * 1.6 + relief + ring * 1.4;
 
-  float vig = smoothstep(1.2, 0.3, length((uv - 0.5) * vec2(uRes.x / uRes.y, 1.0)));
-  vec3 bg = mix(uBgDeep, uBg, vig);
-  alpha *= mix(0.35, 1.0, max(vig, word));
+  // tone: letters solid, their shoulder mid, the paper field hairline
+  float field = 0.09 + 0.05 * n;
+  float tone = clamp(field + glow * 0.28 + sharp * 0.62, 0.0, 0.92);
+  float ink = engrave(v, tone);
 
-  vec3 col = mix(bg, inkCol, ink * alpha);
-  col += (hash(gl_FragCoord.xy + fract(uTime)) - 0.5) * 0.025;   // film grain
+  // a second, finer hatch only in the letter cores, at an angle: the "money" cross-hatch
+  float v2 = (p.x - p.y * 0.55) / 3.4 + relief * 0.6;
+  ink = max(ink, engrave(v2, 0.32) * smoothstep(0.55, 0.95, sharp));
+
+  // fade the field toward the edges so the word sits in a pool of lines
+  float vig = smoothstep(1.15, 0.25, length((uv - vec2(0.5, 0.55)) * vec2(uRes.x / uRes.y, 1.0)));
+  ink *= mix(0.25, 1.0, max(vig, sharp));
+
+  float word = smoothstep(0.1, 0.6, sharp + glow * 0.3);
+  vec3 inkCol = mix(uInk, uPink, hot * word);
+  inkCol = mix(inkCol, uPink, ring * 0.8);
+  float strength = mix(0.9, 0.5, hot * (1.0 - word));        // behind the cards the field steps back
+
+  vec3 paper = mix(uPaperDeep, uPaper, smoothstep(1.4, 0.2, length(uv - 0.5)));
+  paper -= (vnoise(p * 0.9) - 0.5) * 0.025;                  // paper tooth
+  vec3 col = mix(paper, inkCol, ink * strength);
   o = vec4(col, 1.0);
 }`;
 
@@ -68,7 +81,7 @@ const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
 
 /**
  * @param {HTMLCanvasElement} canvas
- * @returns {{ show(text: string, hot: boolean): void, tilt(v: number): void } | null} null when WebGL2 is missing
+ * @returns {{ show(text: string, hot: boolean): void, pulse(x: number, y: number): void, tilt(v: number): void } | null} null when WebGL2 is missing
  */
 export function createEngraving(canvas, { reduceMotion = false } = {}) {
   const gl = canvas.getContext("webgl2", { antialias: false, alpha: false, powerPreference: "low-power" });
@@ -90,11 +103,11 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
   gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
   const U = {};
-  for (const n of ["uA", "uB", "uMix", "uHotA", "uHotB", "uTime", "uTilt", "uDpr", "uRes", "uBg", "uBgDeep", "uInk", "uGold"]) U[n] = gl.getUniformLocation(prog, n);
-  gl.uniform3fv(U.uBg, hex("#0d1024"));
-  gl.uniform3fv(U.uBgDeep, hex("#06070f"));
-  gl.uniform3fv(U.uInk, hex("#ecebe6"));
-  gl.uniform3fv(U.uGold, hex("#f6d55c"));
+  for (const n of ["uA", "uB", "uMix", "uHotA", "uHotB", "uTime", "uTilt", "uDpr", "uRes", "uPaper", "uPaperDeep", "uInk", "uPink", "uPulse", "uPulseAt"]) U[n] = gl.getUniformLocation(prog, n);
+  gl.uniform3fv(U.uPaper, hex("#f4efe4"));
+  gl.uniform3fv(U.uPaperDeep, hex("#e9e1d0"));
+  gl.uniform3fv(U.uInk, hex("#141210"));
+  gl.uniform3fv(U.uPink, hex("#ff4f9a"));
   gl.uniform1i(U.uA, 0);
   gl.uniform1i(U.uB, 1);
 
@@ -122,9 +135,9 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
       const m = x.measureText(text).width;
       if (m > w * 0.88) { size *= (w * 0.88) / m; x.font = `400 ${size}px "Instrument Serif", Georgia, serif`; }
       x.textAlign = "center"; x.textBaseline = "middle"; x.fillStyle = "#fff";
-      if (blur) { x.shadowColor = "#fff"; x.shadowBlur = size * 0.22; }
+      if (blur) { x.shadowColor = "#fff"; x.shadowBlur = size * 0.3; }
       // home: above the bar. Behind results: lower, under the cards
-      x.fillText(text, w / 2, h * (hot ? 0.6 : small ? 0.3 : 0.36));
+      x.fillText(text, w / 2, h * (hot ? 0.8 : small ? 0.3 : 0.36));
     };
     draw(sharpC, false); draw(glowC, true);
     const a = ctx2d(sharpC).getImageData(0, 0, w, h).data, b = ctx2d(glowC).getImageData(0, 0, w, h).data;
@@ -135,7 +148,8 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
   }
 
   let cur = { text: "henry.", hot: 0 }, prev = cur, mixStart = -1e9, tiltTarget = 0, tiltNow = 0, dpr = 1;
-  const FADE = 900;
+  const FADE = 1100, PULSE = 1300;
+  let pulseStart = -1e9, pulseAt = [0, 0];
 
   function resize() {
     dpr = Math.min(devicePixelRatio || 1, 1.5);
@@ -150,7 +164,10 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
     tiltNow += (tiltTarget - tiltNow) * 0.06;
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex[0]);
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, tex[1]);
-    gl.uniform1f(U.uMix, e);
+    gl.uniform1f(U.uMix, k >= 1 ? 1 : e);
+    const pk = (now - pulseStart) / PULSE;
+    gl.uniform1f(U.uPulse, pk >= 0 && pk < 1 ? pk : 1);
+    gl.uniform2f(U.uPulseAt, pulseAt[0], pulseAt[1]);
     gl.uniform1f(U.uHotA, prev.hot); gl.uniform1f(U.uHotB, cur.hot);
     gl.uniform1f(U.uTime, reduceMotion ? 12 : now / 1000);
     gl.uniform1f(U.uTilt, tiltNow);
@@ -170,7 +187,7 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
   start();
 
   return {
-    /** Cross-fade the engraving to a new word; `hot` turns its lines gold. */
+    /** Cross-fade the engraving to a new word; `hot` turns its letters pink. */
     show(text, hot) {
       if (text === cur.text) return;
       prev = cur; cur = { text, hot: hot ? 1 : 0 };
@@ -179,6 +196,8 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
       mixStart = reduceMotion ? -1e9 : performance.now();
       if (reduceMotion) frame(performance.now());
     },
+    /** Enter: a ring rolls through the lines from (x, y), in css pixels from the top left. */
+    pulse(x, y) { if (reduceMotion) return; pulseAt = [x, innerHeight - y]; pulseStart = performance.now(); },
     /** Typing nudges the line angle a little. */
     tilt(v) { tiltTarget = v; },
   };

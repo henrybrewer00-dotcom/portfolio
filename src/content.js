@@ -23,8 +23,9 @@ export const MAIL = "mailto:henrybrewer00@gmail.com?subject=" + encodeURICompone
 
 /** @type {Item[]} */
 export const ITEMS = [
-  { id: "me", kind: "about", kicker: "the maker", title: "I'm Henry.", body: "Fourteen, from Austin, and a proud vibecoder. I build voice AI, robots, a submarine, and a company. Founder of SiteLight.", tags: ["14", "Austin, TX", "Proud vibecoder"], links: [{ label: "GitHub ↗", href: GH }, { label: "Email →", href: MAIL }] },
-  { id: "sitelight", kind: "job", current: true, kicker: "founder · current", title: "SiteLight", body: "A personal challenge: go from nothing to revenue in under two weeks. I made it in 10 days. It checks whether AI assistants recommend your business when someone asks, then hands you the to-do list to become the answer.", tags: ["Founder", "AI visibility", "10 days"], image: { src: "assets/sitelight-stripe.jpg", alt: "Stripe email: Congratulations, SiteLight! You've just received your first payment through Stripe. $2.00.", cap: "the first $2 · via stripe" }, links: [{ label: "sitelight.xyz ↗", href: "https://sitelight.xyz" }] },
+  { id: "me", kind: "about", kicker: "the maker", title: "I'm Henry.", body: "Fourteen, from Austin, and a proud vibecoder. I build voice AI, robots, a submarine, and a company. Right now I work at Crawft, and I founded SiteLight.", tags: ["14", "Austin, TX", "Proud vibecoder"], links: [{ label: "GitHub ↗", href: GH }, { label: "Email →", href: MAIL }] },
+  { id: "crawft", kind: "job", current: true, kicker: "current job", title: "Crawft", body: "Where I work right now.", tags: ["Current"] },
+  { id: "sitelight", kind: "job", kicker: "founder", title: "SiteLight", body: "A personal challenge: go from nothing to revenue in under two weeks. I made it in 10 days. It checks whether AI assistants recommend your business when someone asks, then hands you the to-do list to become the answer.", tags: ["Founder", "AI visibility", "10 days"], image: { src: "assets/sitelight-stripe.jpg", alt: "Stripe email: Congratulations, SiteLight! You've just received your first payment through Stripe. $2.00.", cap: "the first $2 · via stripe" }, links: [{ label: "sitelight.xyz ↗", href: "https://sitelight.xyz" }] },
   { id: "lily", kind: "project", kicker: "voice AI", title: "Lily", body: "Calls my grandma every morning, has an actual conversation, then texts the family how she sounded.", tags: ["ElevenLabs", "Twilio", "InsForge"], image: { src: "assets/lily-demo-poster.jpg", alt: "Lily's demo screen", cap: "lily · demo" }, links: [{ label: "Live ↗", href: "https://lily.insforge.site" }, { label: "Repo ↗", href: GH + "/lily" }] },
   { id: "wins", kind: "win", kicker: "hackathons", title: "Some hackathon wins", list: ["InsForge", "Frontier Tower", "a16z × Cursor"] },
   { id: "glasscast", kind: "oss", kicker: "open source", title: "Glasscast", body: "Screen Studio costs money, so I made a free one. Cinematic zooms, auto-captions, a webcam bubble, bring your own AI keys.", tags: ["Electron", "TypeScript", "macOS"], links: [{ label: "Repo ↗", href: GH + "/Glasscast" }] },
@@ -51,10 +52,14 @@ export const ITEMS = [
 
 /** @type {Intent[]} */
 export const INTENTS = [
+  { id: "crawft", title: "Crawft", engrave: "Crawft", ids: ["crawft"],
+    suggest: ["show me Henry's current job", "Henry's current job", "where does Henry work", "Crawft"],
+    subjects: ["current job", "job", "work", "crawft", "craft", "where he works", "what he does for work", "employer", "career", "role", "position", "occupation", "day job", "current role", "workplace"],
+    questions: ["where does henry work", "does henry have a job", "what does henry do for work", "is he working anywhere", "who does henry work for", "what's his job right now", "his day job", "what's he doing now", "where is he employed", "what is crawft"] },
   { id: "sitelight", title: "SiteLight", engrave: "SiteLight", ids: ["sitelight"],
-    suggest: ["show me Henry's current job", "Henry's current job", "what's Henry's company", "SiteLight"],
-    subjects: ["current job", "job", "work", "company", "startup", "business", "sitelight", "site light", "what he does for work", "his company", "the company he founded", "ai visibility tool", "first revenue", "first $2", "stripe payment", "employer", "career", "role", "position", "occupation"],
-    questions: ["where does henry work", "does henry have a job", "what does henry do for work", "is he working on anything", "what is his company", "what company did henry found", "what is henry founder of", "how did he make money", "what's his startup", "is henry a founder", "what does sitelight do", "how did he get revenue in 10 days", "what is he building right now", "his day job", "what's he doing now"] },
+    suggest: ["show me Henry's company", "what's Henry's company", "SiteLight"],
+    subjects: ["company", "startup", "business", "sitelight", "site light", "his company", "the company he founded", "ai visibility tool", "first revenue", "first $2", "stripe payment", "founder"],
+    questions: ["what is his company", "what company did henry found", "what is henry founder of", "how did he make money", "what's his startup", "is henry a founder", "what does sitelight do", "how did he get revenue in 10 days"] },
   { id: "about", title: "About Henry", engrave: "Henry", ids: ["me"],
     suggest: ["who is Henry", "tell me about Henry", "about Henry"],
     subjects: ["about", "bio", "intro", "henry", "himself", "who he is", "age", "where he lives", "background"],
@@ -129,7 +134,7 @@ export const INTENTS = [
     questions: ["what has henry built", "what has he made", "show me his projects", "what can he do", "what are his projects", "list everything", "show all", "what have you made", "what does he make"] },
 ];
 
-export const HINTS = ["show me Henry's current job", "show me Henry's voice AI projects", "is he really building a submarine", "show me everything Henry has built", "how do I contact Henry"];
+export const HINTS = ["show me Henry's current job", "what's Henry's company", "show me Henry's voice AI projects", "is he really building a submarine", "show me everything Henry has built", "how do I contact Henry"];
 
 export const itemById = Object.fromEntries(ITEMS.map((i) => [i.id, i]));
 export const intentById = Object.fromEntries(INTENTS.map((i) => [i.id, i]));

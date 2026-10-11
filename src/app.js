@@ -15,7 +15,7 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&
 const OPEN_AT = 0.3;   // below this, Enter offers choices instead of guessing
 const GUESS_AT = 0.35; // the best-guess chip shows above this when there's no ghost text
 
-const input = $("[data-q]"), typedEl = $("[data-typed]"), restEl = $("[data-rest]"), tabBtn = $("[data-tab]");
+const bar = $(".bar"), input = $("[data-q]"), typedEl = $("[data-typed]"), restEl = $("[data-rest]"), tabBtn = $("[data-tab]");
 const chips = $("[data-chips]"), say = $("[data-say]"), results = $("[data-results]"), cards = $("[data-cards]");
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -32,7 +32,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261011a")
+fetch("model/model.json?v=20261011b")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -46,7 +46,11 @@ function update() {
   ranked = model && text.trim() ? model.predict(text) : [];
   current = text ? suggest(text, probOf) : { text: HINTS[hintIdx], ghost: HINTS[hintIdx], intent: null };
   typedEl.textContent = text;
-  restEl.textContent = current ? current.ghost : "";
+  const ghost = current ? current.ghost : "";
+  if (ghost && ghost !== restEl.textContent && !(restEl.textContent && restEl.textContent.startsWith(ghost))) {
+    restEl.classList.remove("is-new"); void restEl.offsetWidth; restEl.classList.add("is-new");   // a new guess fades in
+  }
+  restEl.textContent = ghost;
   restEl.classList.toggle("is-hint", !text);
   tabBtn.hidden = !current;
   syncScroll();
@@ -73,6 +77,7 @@ function syncScroll() { $(".ghost").scrollLeft = input.scrollLeft; }
 function accept(s) {
   input.value = s.text;
   input.setSelectionRange(s.text.length, s.text.length);
+  input.classList.remove("is-accepted"); void input.offsetWidth; input.classList.add("is-accepted");
   update();
   input.focus();
 }
@@ -85,7 +90,15 @@ function chip(html, onClick) {
 }
 
 /* ---------- Enter: decide, then open ---------- */
+// Enter: the bar stamps down and a ring rolls out through the engraving
+function stamp() {
+  bar.classList.remove("is-stamp"); void bar.offsetWidth; bar.classList.add("is-stamp");
+  const b = bar.getBoundingClientRect();
+  engraving && engraving.pulse(b.left + b.width / 2, b.top + b.height / 2);
+}
+
 function decide() {
+  stamp();
   // empty bar: Enter takes the example it's showing
   if (!input.value.trim()) { if (!current) return; accept(current); }
   const text = input.value.trim();
@@ -105,8 +118,8 @@ function decide() {
 function open(intentId) {
   const intent = intentById[intentId];
   if (!intent) return;
-  $("[data-results-title]").textContent = intent.title;
-  cards.innerHTML = intent.ids.map((id) => card(itemById[id])).join("");
+  $("[data-results-title]").innerHTML = [...intent.title].map((c, i) => `<span class="ch" style="--i:${i}">${esc(c)}</span>`).join("");
+  cards.innerHTML = intent.ids.map((id, i) => card(itemById[id], i)).join("");
   results.hidden = false;
   results.classList.toggle("is-single", intent.ids.length === 1);
   document.body.classList.add("has-results");
@@ -124,14 +137,15 @@ function close() {
   input.focus();
 }
 
-function card(it) {
+function card(it, i = 0) {
   const links = (it.links || []).map((l) => `<a class="act" href="${esc(l.href)}"${l.href.startsWith("http") ? ' target="_blank" rel="noreferrer"' : ""}>${esc(l.label)}</a>`).join("");
-  return `<article class="card">
+  const tilt = [-2, 1.5, -1, 2][i % 4];
+  return `<article class="card" style="--i:${i};--r:${tilt}deg"${it.current ? " data-current" : ""}>
     <p class="kicker">${esc(it.kicker)}</p>
     <h3>${esc(it.title)}</h3>
     ${it.body ? `<p>${esc(it.body)}</p>` : ""}
     ${it.list ? `<ul class="list">${it.list.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
-    ${it.tags ? `<p class="tags">${it.tags.map(esc).join(" · ")}</p>` : ""}
+    ${it.tags ? `<p class="tags">${it.tags.map((t) => `<span>${esc(t)}</span>`).join("")}</p>` : ""}
     ${it.image ? `<figure class="fig"><img src="${esc(it.image.src)}" alt="${esc(it.image.alt)}" loading="lazy" /><figcaption>${esc(it.image.cap)}</figcaption></figure>` : ""}
     ${links ? `<div class="acts">${links}</div>` : ""}
   </article>`;
@@ -157,7 +171,7 @@ $("[data-home]").addEventListener("click", (e) => { e.preventDefault(); input.va
 // rotate the example in the empty bar
 setInterval(() => { if (!input.value) { hintIdx = (hintIdx + 1) % HINTS.length; update(); } }, 3600);
 
-// deep links: henry93.vercel.app/#sitelight
+// deep links: henry93.vercel.app/#crawft
 if (location.hash && intentById[location.hash.slice(1)]) setTimeout(() => open(location.hash.slice(1)), 50);
 
 update();
