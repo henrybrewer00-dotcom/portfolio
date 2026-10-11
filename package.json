@@ -1,0 +1,9 @@
+{
+  "name": "henry-portfolio",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "model": "node tools/train.mjs",
+    "test": "node tools/test.mjs"
+  }
+}
