@@ -32,7 +32,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261011k")
+fetch("model/model.json?v=20261011l")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -174,7 +174,9 @@ function open(intentId, q = "") {
   engraving && engraving.show(intent.engrave, true);
   chips.innerHTML = ""; guessId = null;
   history.replaceState(null, "", "#" + intent.id);
-  requestAnimationFrame(() => results.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" }));
+  // the bar already rises to the top as the page's top padding collapses, so just go back to the top;
+  // scrolling to the results as well raced that collapse and flung the answer off the screen
+  scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
 }
 
 function close(focus = true) {
