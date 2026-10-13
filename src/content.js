@@ -17,6 +17,7 @@ export const MAIL = "mailto:henrybrewer00@gmail.com?subject=" + encodeURICompone
  * @typedef {{
  *   id: string, kind: "about"|"job"|"project"|"hardware"|"oss"|"win"|"fact"|"contact",
  *   kicker: string, title: string, body?: string, list?: string[], tags?: string[],
+ *   facts?: string[],   // extra facts for the typed answers only, never shown on the card
  *   current?: boolean, pinned?: boolean, image?: { src: string, alt: string, cap: string }, links?: Link[]
  * }} Item
  */
@@ -24,7 +25,15 @@ export const MAIL = "mailto:henrybrewer00@gmail.com?subject=" + encodeURICompone
 /** @type {Item[]} */
 export const ITEMS = [
   { id: "me", kind: "about", kicker: "the maker", title: "I'm Henry.", body: "Fourteen, from Austin, and a proud vibecoder. I build voice AI, robots, a submarine, and a company. Right now I work at Crawft, and I founded SiteLight.", tags: ["14", "Austin, TX", "Proud vibecoder"], links: [{ label: "GitHub ↗", href: GH }, { label: "Email →", href: MAIL }] },
-  { id: "crawft", tease: "Where I work now, since mid-August.", kind: "job", current: true, pinned: true, kicker: "current job", title: "Crawft", body: "Where I work right now, since mid-August 2026. Crawft is an AI-powered monitoring tool for schools and managers: it turns activity data into answers backed by evidence, and sends smart nudges that steer people off bad websites.", tags: ["Current", "AI monitoring", "Schools"], links: [{ label: "crawft.ai ↗", href: "https://crawft.ai" }] },
+  { id: "crawft", tease: "Where I work now, since mid-August.", kind: "job", current: true, pinned: true, kicker: "current job", title: "Crawft", body: "Where I work right now, since mid-August 2026. Crawft is an AI-powered monitoring tool for schools and managers: it turns activity data into answers backed by evidence, and sends smart nudges that steer people off bad websites.", tags: ["Current", "AI monitoring", "Schools"], links: [{ label: "crawft.ai ↗", href: "https://crawft.ai" }],
+    // answer-only facts (not shown on the card), from crawft.ai as of 2026-10-13
+    facts: ["Crawft's site (crawft.ai) says: its headline is \"See the work you're paying for.\"",
+      "It turns each person's activity on a company-managed computer into a written daily report, with every line linked to evidence, so a manager can see what happened without chasing updates.",
+      "It runs natively on company-managed Macs, and Windows support is in progress.",
+      "It can record screenshots, screen text, typed text, apps, windows, web addresses and file names. It never records audio, camera video or location.",
+      "AI providers write the activity descriptions from the captured text; screenshot images are not sent to them.",
+      "Data is hosted on Amazon Web Services in the US and encrypted in transit and at rest. Crawft doesn't give productivity scores or make employment decisions.",
+      "Pricing isn't public; teams contact sales."] },
   { id: "vurn", tease: "Found a hole in 40,000 Shopify accounts.", kind: "project", pinned: true, kicker: "cybersecurity", title: "Vurn AI", body: "A fully autonomous AI pentesting tool. 24 hours after I built it, it found a major vulnerability in a top-200 GitHub repo that gave access to over 40,000 Shopify accounts.", tags: ["Security", "Pentesting", "AI agents"] },
   { id: "sitelight", tease: "Nothing to revenue in 10 days.", kind: "job", pinned: true, kicker: "founder", title: "SiteLight", body: "A personal challenge: go from nothing to revenue in under two weeks. I made it in 10 days. It checks whether AI assistants recommend your business when someone asks, then hands you the to-do list to become the answer.", tags: ["Founder", "Marketing", "AI visibility", "10 days"], image: { src: "assets/sitelight-stripe.jpg", alt: "Stripe email: Congratulations, SiteLight! You've just received your first payment through Stripe. $2.00.", cap: "the first $2 · via stripe" }, links: [{ label: "sitelight.xyz ↗", href: "https://sitelight.xyz" }] },
   { id: "lily", tease: "Calls my grandma every morning.", kind: "project", kicker: "voice AI", title: "Lily", body: "Calls my grandma every morning, has an actual conversation, then texts the family how she sounded.", tags: ["ElevenLabs", "Twilio", "InsForge"], image: { src: "assets/lily-demo-poster.jpg", alt: "Lily's demo screen", cap: "lily · demo" }, links: [{ label: "Live ↗", href: "https://lily.insforge.site" }, { label: "Repo ↗", href: GH + "/lily" }] },
