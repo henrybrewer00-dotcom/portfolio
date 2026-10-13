@@ -11,6 +11,7 @@ import * as dither from "./dither.js";
 import { fillButtons } from "./fill.js";
 import { createTrail } from "./trail.js";
 import { boot } from "./boot.js";
+import { ditherTiles } from "./tiledither.js";
 import { createModel } from "./model.js";
 import { createSuggester } from "./suggest.js";
 import { createEngraving } from "./shader.js";
@@ -432,6 +433,7 @@ setInterval(() => {
 if (location.hash && intentById[location.hash.slice(1)]) setTimeout(() => open(location.hash.slice(1)), 50);
 
 createTrail($("[data-trail]"));
+ditherTiles($("[data-pins]"));
 fillButtons(document.querySelectorAll(".key.fill"));
 renderPins();
 loadCrowd();

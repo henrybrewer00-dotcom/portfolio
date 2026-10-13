@@ -294,3 +294,16 @@ html[data-tiles="serif"] .pin-kicker { font: 400 0.72rem var(--sans); letter-spa
 html[data-tiles="serif"] .pin-title { font: italic 400 1.9rem/1.05 var(--serif); letter-spacing: -0.005em; }
 html[data-tiles="serif"] .pin-sub { color: #b4b0a4; padding: 0; }
 html[data-tiles="serif"] .pin:hover, html[data-tiles="serif"] .pin:focus-visible { border-color: var(--accent); outline: 0; }
+
+/* E/F/G · dither (src/tiledither.js draws the dots on a canvas behind the text) */
+html[data-tiles="fade"] .pin, html[data-tiles="edge"] .pin, html[data-tiles="frame"] .pin { background: var(--paper); border: 0; isolation: isolate; outline: 0; }
+.pin-dots { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; image-rendering: pixelated; }
+html[data-tiles="fade"] .pin-kicker, html[data-tiles="edge"] .pin-kicker, html[data-tiles="frame"] .pin-kicker { font: 500 0.66rem "Geist Mono", monospace; letter-spacing: 0.08em; color: var(--muted); }
+html[data-tiles="fade"] .pin-sub, html[data-tiles="edge"] .pin-sub, html[data-tiles="frame"] .pin-sub { color: #a8a498; padding: 0; }
+html[data-tiles="fade"] .pin { border-radius: 0; box-shadow: 0 0 0 8px var(--paper); padding: 1rem 1.1rem 3.2rem; }
+html[data-tiles="fade"] .pin-title { font: 400 2rem/1 var(--serif); letter-spacing: -0.01em; }
+html[data-tiles="edge"] .pins { gap: 2rem; }
+html[data-tiles="edge"] .pin { border-radius: 0; box-shadow: 0 0 0 10px var(--paper); padding: 0.2rem 0 1.5rem; gap: 0.2rem; }
+html[data-tiles="edge"] .pin-title { font: 400 2.1rem/1 var(--serif); letter-spacing: -0.01em; }
+html[data-tiles="frame"] .pin { border-radius: 0; box-shadow: 0 0 0 8px var(--paper); padding: 1.15rem 1.3rem 1.2rem; }
+html[data-tiles="frame"] .pin-title { font: italic 400 1.9rem/1.05 var(--serif); letter-spacing: -0.005em; }
