@@ -18,7 +18,7 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&
 const OPEN_AT = 0.3;   // below this, Enter offers choices instead of guessing
 const GUESS_AT = 0.35; // the best-guess chip shows above this when there's no ghost text
 
-const bar = $(".bar"), input = $("[data-q]"), typedEl = $("[data-typed]"), restEl = $("[data-rest]"), tabBtn = $("[data-tab]");
+const bar = $(".bar"), input = $("[data-q]"), typedEl = $("[data-typed]"), restEl = $("[data-rest]");
 const chips = $("[data-chips]"), say = $("[data-say]"), results = $("[data-results]"), cards = $("[data-cards]");
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -36,7 +36,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261013b")
+fetch("model/model.json?v=20261013c")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -158,16 +158,16 @@ async function ask(q, intentId, followUp = false) {
   try {
     const r = await fetch("api/ask", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ q, intent: askIntent, history: turns, who: persona }), signal: ctl.signal });
     if (!r.ok || !r.body) { if (followUp) { a.textContent = "Couldn't answer that one right now."; a.classList.add("is-done"); turnsEl.append(turn); } return; }
-    turnsEl.append(turn);
-    answerEl.hidden = false;
+    // the box only appears once there are words to show, so an empty answer never flashes up and vanishes
     const reader = r.body.getReader(), dec = new TextDecoder();
     for (;;) {
       const { value, done } = await reader.read();
       if (done) break;
       a.textContent += dec.decode(value, { stream: true });
+      if (!turn.isConnected && a.textContent.trim()) { turnsEl.append(turn); answerEl.hidden = false; }
     }
     a.classList.add("is-done");
-    if (!a.textContent.trim()) { turn.remove(); if (!turns.length) answerEl.hidden = true; return; }
+    if (!a.textContent.trim()) { if (followUp) { a.textContent = "Couldn't answer that one right now."; turnsEl.append(turn); } return; }
     turns.push({ q, a: a.textContent.trim() });
     turns = turns.slice(-6);
   } catch (e) { /* aborted or failed: leave the cards */ }
@@ -289,7 +289,7 @@ async function loadCrowd() {
   $("[data-posts]").innerHTML = posts.slice(0, 12).map((p) => `<li class="post${mine.some((m) => m.text === p.text) ? " is-you" : ""}"><span class="post-role">${esc((personaById[p.role] || personaById.curious).label)}</span><span class="post-text">${esc(p.text)}</span><span class="post-t">${ago(p.t)}</span></li>`).join("");
   if (crowdSeen) drawCrowd();   // charts are built once; a reload only refreshes the wall
 }
-let drawn = false, crowdSeen = false, chart = null, repaint = [];
+let drawn = false, crowdSeen = false, chart = null, repaint = [], regrow = [];
 const dayName = (t) => new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 function drawCrowd() {
   if (drawn || !crowd) return;
@@ -299,7 +299,8 @@ function drawCrowd() {
   const rows = PERSONAS.map((p) => ({ p, n: crowd.roles[p.id] || 0 })).sort((a, b) => b.n - a.n), max = Math.max(...rows.map((r) => r.n), 1);
   const el = $("[data-roles]");
   el.innerHTML = rows.map(({ p, n }) => `<div class="row${p.id === persona ? " is-you" : ""}" tabindex="0" data-n="${n}"><span class="row-label">${esc(p.label)}${p.id === persona ? " <em>you</em>" : ""}</span><canvas class="row-bar"></canvas><span class="row-n" data-plain="${n}" data-pct="${Math.round((n / total) * 100)}%">${n}</span></div>`).join("");
-  repaint = [...el.querySelectorAll("canvas")].map((c, i) => dither.bar(c, rows[i].n / max, rows[i].p.id === persona, reduceMotion));
+  const bars = [...el.querySelectorAll("canvas")].map((c, i) => dither.bar(c, rows[i].n / max, rows[i].p.id === persona, reduceMotion));
+  repaint = bars.map((b) => b.paint); regrow = bars.map((b) => b.grow);
   const light = (row, on) => { const i = [...el.children].indexOf(row), c = row.querySelector("canvas"), nEl = row.querySelector(".row-n");
     c.dataset.lit = on ? "1" : ""; nEl.textContent = on ? nEl.dataset.pct : nEl.dataset.plain; row.classList.toggle("is-lit", on); repaint[i](); };
   el.addEventListener("pointerover", (e) => { const r = e.target.closest(".row"); if (r) light(r, true); });
@@ -314,7 +315,12 @@ function drawCrowd() {
     onPan: (a, b) => { $("[data-days-from]").textContent = dayName(days[a].t); $("[data-days-to]").textContent = b === days.length - 1 ? "today" : dayName(days[b].t); },
   });
 }
-new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { crowdSeen = true; drawCrowd(); } }, { threshold: 0.2 }).observe($("[data-crowd]"));
+// the charts grow in every time they scroll into view, not just the first time
+new IntersectionObserver((es) => {
+  if (!es.some((e) => e.isIntersecting)) return;
+  if (!crowdSeen) { crowdSeen = true; drawCrowd(); return; }
+  if (chart) chart.replay(); regrow.forEach((f) => f());
+}, { threshold: 0.25 }).observe($("[data-crowd]"));
 addEventListener("resize", () => { if (chart) chart.resize(); repaint.forEach((f) => f()); });
 
 const wallForm = $("[data-wall-form]"), wallNote = $("[data-wall-note]");
@@ -323,7 +329,8 @@ wallForm.addEventListener("submit", async (e) => {
   const m = moderate(wallForm.elements.text.value);
   if (!m.ok) { wallNote.textContent = m.why; return; }
   wallNote.textContent = "posting…";
-  const role = persona || "curious";
+  // file the post under what it says ("I work in VC" is a founder/investor), not only the intro answer
+  const said = personaFor(m.text), role = said !== "curious" ? said : persona || "curious";
   try {
     const r = await fetch("api/crowd", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "post", role, text: m.text }) });
     if (r.status === 422 || r.status === 429) { wallNote.textContent = (await r.json()).why; return; }
@@ -359,7 +366,6 @@ input.addEventListener("keydown", (e) => {
 });
 // Esc closes the answer from anywhere on the page, not just the bar
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && e.target !== input && !results.hidden) close(); });
-tabBtn.addEventListener("click", () => current && accept(current));
 $("[data-ask]").addEventListener("submit", (e) => { e.preventDefault(); decide(); });
 $("[data-close]").addEventListener("click", close);
 $("[data-browse]").addEventListener("click", () => open("browse"));

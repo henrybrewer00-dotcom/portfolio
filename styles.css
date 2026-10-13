@@ -48,11 +48,11 @@ body.has-results .main { padding-top: 6.5rem; }
 .bar input, .ghost { font: 400 1.05rem/1.4 var(--sans); letter-spacing: -0.005em; padding: 1rem 1.4rem; white-space: pre; }
 .bar input { flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: var(--ink); caret-color: var(--ink); position: relative; z-index: 1; }
 .bar input.is-untyping { color: transparent; caret-color: transparent; }
-.ghost { position: absolute; left: 0; top: 0; right: 8rem; overflow: hidden; pointer-events: none; color: transparent; }
+.ghost { position: absolute; left: 0; top: 0; right: 3.6rem; overflow: hidden; pointer-events: none; color: transparent; }
 .ghost .typed.is-untyping { color: var(--ink); }
 .ghost .rest { color: var(--faint); }
 .ghost .rest.is-hint { color: var(--muted); opacity: 0.75; }
-.ghost .rest.is-hint::before { content: "try: "; }
+
 .ghost .rest.is-new { animation: ghostIn 0.25s var(--ease); }
 @keyframes ghostIn { from { opacity: 0; filter: blur(2px); } }
 .ghost .caret { display: inline-block; width: 1px; height: 1.15em; background: var(--ink); vertical-align: -0.2em; animation: caret 1s steps(1) infinite; }
@@ -144,7 +144,7 @@ a:focus-visible, button:focus-visible, .act:focus-visible { outline: 2px solid v
   .main { padding-top: 46vh; }
   body.has-results .main { padding-top: 5rem; }
   .bar input, .ghost { font-size: 1rem; padding: 0.9rem 1.1rem; }
-  .ghost { right: 7.2rem; }
+  .ghost { right: 3.4rem; }
   .card { padding: 1.25rem 1.2rem; border-radius: 18px; }
     .hint .opt { display: none; }
   .pins { grid-template-columns: 1fr; }
@@ -154,7 +154,7 @@ a:focus-visible, button:focus-visible, .act:focus-visible { outline: 2px solid v
 }
 
 /* ---------- intro: only the prompt box, asking who you are ---------- */
-body.is-intro .ask .hint, body.is-intro .ask .chips, body.is-intro .pinned, body.is-intro .foot, body.is-intro .crowd, body.is-intro .key[data-tab] { display: none; }
+body.is-intro .ask .hint, body.is-intro .ask .chips, body.is-intro .pinned, body.is-intro .foot, body.is-intro .crowd { display: none; }
 body.is-intro .ghost .rest.is-hint::before { content: "who are you? "; color: var(--ink); opacity: 1; }
 body.is-intro .ghost .rest.is-hint { opacity: 0.9; }
 body.is-revealing .pinned, body.is-revealing .foot, body.is-revealing .crowd, body.is-revealing .ask .hint { animation: reveal 0.9s var(--ease) both; }

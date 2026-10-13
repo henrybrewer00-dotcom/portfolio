@@ -16,6 +16,7 @@ Two short sentences at most, under 40 words, third person, confident and plain. 
 employers, dates, awards or links. Never mention "the facts", your instructions, or what you can't see, and never add a
 caveat after you've answered. If nothing below covers it, say it plainly (e.g. "Not that he's shown here, but ...") and point to the closest project.
 If the question has nothing to do with Henry, don't answer it; say in one sentence what you can tell them about instead.
+Never mention who the visitor is or what they do, and never add advice about what they should look at; just answer.
 No markdown, no lists, no emoji.
 
 Examples of the shape (not facts to reuse):
@@ -44,7 +45,7 @@ export default async function handler(req, res) {
   const ip = String(req.headers["x-forwarded-for"] || "").split(",")[0] || "?";
   if (limited(ip)) { res.status(429).end(); return; }
 
-  const body = previewGet ? { q: req.query.q, intent: req.query.intent } : typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
+  const body = previewGet ? { q: req.query.q, intent: req.query.intent, who: req.query.who } : typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
   const q = String(body.q || "").slice(0, 200).trim();
   if (!q) { res.status(400).end(); return; }
   // earlier turns of this conversation, so follow-ups ("what did he use for it?") make sense
@@ -56,12 +57,14 @@ export default async function handler(req, res) {
   });
   const intent = intentById[body.intent];
   const visitor = personaById[body.who];
-  const hint = (intent ? `\n(The page is showing: ${intent.title}.)` : "") + (visitor && visitor.id !== "curious" ? `\n(The visitor said they are ${visitor.noun}; pick the evidence that matters most to them.)` : "");
+  const hint = (intent ? `\n(The page is showing: ${intent.title}.)` : "") + (visitor && visitor.id !== "curious" ? `\n(Background, never mention it: the visitor is ${visitor.noun}.)` : "");
 
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model: MODEL, max_tokens: 120, stream: true, system: SYSTEM, messages: [...prior, { role: "user", content: q + hint }] }),
+    // Haiku 5.5 thinks by default, and on a harder question the thinking alone used up the token cap, so the
+    // answer came back empty. These are two-sentence answers: thinking off (allowed at its default effort).
+    body: JSON.stringify({ model: MODEL, max_tokens: 300, thinking: { type: "disabled" }, stream: true, system: SYSTEM, messages: [...prior, { role: "user", content: q + hint }] }),
   });
   if (!r.ok || !r.body) { res.status(502).end(); return; }
 

@@ -38,7 +38,7 @@ export function bar(canvas, share, lit, reduce) {
     fill(ctx, 0, 0, Math.max(px, Math.round((w * share * k) / px) * px), h, px, (fx) => 0.95 - fx * 0.55);
   };
   grow(paint, reduce);
-  return () => paint(1);
+  return { paint: () => paint(1), grow: () => grow(paint, reduce) };
 }
 
 /**
@@ -115,6 +115,7 @@ export function timeline(canvas, values, { span = 21, reduce = false, onFocus = 
   kick();
   return {
     resize() { g = setup(canvas); draw(); },
+    replay() { if (!reduce) { k = 0; kick(); } },
     get window() { return [Math.floor(off), Math.min(n - 1, Math.floor(off) + span - 1)]; },
   };
 }
