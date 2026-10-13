@@ -19,8 +19,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-    <link rel="preload" href="model/model.json?v=20261013d" as="fetch" crossorigin />
-    <link rel="stylesheet" href="styles.css?v=20261013d" />
+    <link rel="preload" href="model/model.json?v=20261013e" as="fetch" crossorigin />
+    <link rel="stylesheet" href="styles.css?v=20261013e" />
   </head>
   <body>
     <canvas class="engraving" data-engraving aria-hidden="true"></canvas>
@@ -40,7 +40,7 @@
         <div class="bar">
           <div class="ghost" aria-hidden="true"><span class="typed" data-typed></span><span class="rest" data-rest></span></div>
           <input id="q" name="q" type="text" data-q spellcheck="false" autocapitalize="off" autocorrect="off" />
-          <button type="submit" class="key roll" aria-label="Go"><span class="roll-box" aria-hidden="true"><span class="roll-face">↵</span><span class="roll-face roll-back">enter</span></span></button>
+          <button type="submit" class="key fill" aria-label="Go"><canvas class="fill-dots" aria-hidden="true"></canvas><span class="fill-label" aria-hidden="true"><span class="fill-front">↵</span><span class="fill-back">enter</span></span></button>
         </div>
         <div class="chips" data-chips></div>
         <section class="pinned" aria-label="Pinned">
@@ -58,7 +58,7 @@
         </div>
         <div class="answer" data-answer hidden>
           <div class="turns" data-turns></div>
-          <form class="follow" data-follow autocomplete="off"><input name="q" maxlength="200" placeholder="Ask a follow-up" aria-label="Ask a follow-up"><button class="key roll" aria-label="Send"><span class="roll-box" aria-hidden="true"><span class="roll-face">↵</span><span class="roll-face roll-back">ask</span></span></button></form>
+          <form class="follow" data-follow autocomplete="off"><input name="q" maxlength="200" placeholder="Ask a follow-up" aria-label="Ask a follow-up"><button class="key fill" aria-label="Send"><canvas class="fill-dots" aria-hidden="true"></canvas><span class="fill-label" aria-hidden="true"><span class="fill-front">↵</span><span class="fill-back">ask</span></span></button></form>
         </div>
         <div class="cards" data-cards></div>
       </section>
@@ -83,7 +83,7 @@
         <div class="wall">
           <form class="wall-form" data-wall-form autocomplete="off">
             <label class="wall-q" for="wall-text">and you? what do you do?</label>
-            <div class="wall-bar"><input id="wall-text" name="text" maxlength="80" placeholder="I build robots for farms" /><button class="key roll roll-wide" type="submit" aria-label="Post"><span class="roll-box" aria-hidden="true"><span class="roll-face">post</span><span class="roll-face roll-back">post it</span></span></button></div>
+            <div class="wall-bar"><input id="wall-text" name="text" maxlength="80" placeholder="I build robots for farms" /><button type="submit" class="key fill fill-wide" aria-label="Post"><canvas class="fill-dots" aria-hidden="true"></canvas><span class="fill-label" aria-hidden="true"><span class="fill-front">post</span><span class="fill-back">post it</span></span></button></div>
             <p class="wall-note" data-wall-note aria-live="polite"></p>
           </form>
           <ul class="posts" data-posts></ul>
@@ -115,7 +115,8 @@
       </noscript>
     </main>
 
+    <canvas class="trail" data-trail aria-hidden="true"></canvas>
     <div class="cursor" data-cursor aria-hidden="true"><span class="cursor-label" data-cursor-label></span></div>
-    <script type="module" src="src/app.js?v=20261013d"></script>
+    <script type="module" src="src/app.js?v=20261013e"></script>
   </body>
 </html>

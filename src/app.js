@@ -9,6 +9,8 @@ import { moderate, MAX_POST } from "./moderate.js";
 import { sampleCrowd } from "./crowd-sample.js";
 import * as dither from "./dither.js";
 import { createCursor } from "./cursor.js";
+import { fillButtons } from "./fill.js";
+import { createTrail } from "./trail.js";
 import { createModel } from "./model.js";
 import { createSuggester } from "./suggest.js";
 import { createEngraving } from "./shader.js";
@@ -37,7 +39,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261013d")
+fetch("model/model.json?v=20261013e")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -424,6 +426,8 @@ setInterval(() => {
 if (location.hash && intentById[location.hash.slice(1)]) setTimeout(() => open(location.hash.slice(1)), 50);
 
 createCursor($("[data-cursor]"));
+createTrail($("[data-trail]"));
+fillButtons(document.querySelectorAll(".key.fill"));
 renderPins();
 loadCrowd();
 if (!persona && location.hash) { persona = "curious"; renderPins(); }   // deep links skip the intro
