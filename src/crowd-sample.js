@@ -6,7 +6,10 @@ export function sampleCrowd(now = Date.now()) {
   const weights = { hiring: 9, founder: 14, engineer: 22, security: 7, designer: 11, student: 18, curious: 26 };
   const roles = Object.fromEntries(PERSONAS.map((p) => [p.id, weights[p.id] || 5]));
   const day = 864e5, today = Math.floor(now / day) * day;
-  const days = Array.from({ length: 14 }, (_, i) => ({ t: today - (13 - i) * day, n: 4 + ((i * 7 + 3) % 9) + (i > 9 ? 6 : 0) }));
+  // four months of days: a slow climb, weekly rhythm, and a couple of spikes (a post that got shared)
+  const N = 120;
+  const days = Array.from({ length: N }, (_, i) => ({ t: today - (N - 1 - i) * day,
+    n: Math.round(3 + i * 0.09 + 3 * Math.sin(i * 0.9) ** 2 + ((i * 37) % 11) * 0.5 + (i === 71 ? 26 : i === 72 ? 14 : 0) + (i > 110 ? 7 : 0)) }));
   const posts = [
     ["engineer", "I write the firmware for coffee machines", 3],
     ["student", "Junior in high school, building a rocket club", 7],

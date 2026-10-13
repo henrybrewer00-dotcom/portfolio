@@ -1,12 +1,12 @@
 /* =========================================================================
-   henry. — the engraving ("money shader"), ink on paper. Wavy banknote lines
-   whose thickness carries the shading; the word is drawn to an offscreen mask
-   and the lines swell where it is.
+   henry. — the dither field. Light dots on near-black, placed by an 8×8 Bayer
+   matrix; the word is drawn to an offscreen mask and the dots crowd where it
+   is, with slow clouds of sparse dots drifting behind.
 
    Kept calm on purpose: letters near the cursor rise a little, lean toward it
-   and blush pink, easing back when it leaves; a new word flips in, and
+   and warm to orange, easing back when it leaves; a new word flips in, and
    Enter drops one soft ripple (a small wave-equation grid on the CPU) that
-   the lines ride. Raw WebGL2, no library.
+   the dots ride. Raw WebGL2, no library.
    ========================================================================= */
 
 const VERT = `#version 300 es
@@ -27,25 +27,27 @@ float vnoise(vec2 p) {
 }
 float fbm(vec2 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 3; i++) { s += a * vnoise(p); p *= 2.03; a *= 0.5; } return s; }
 
-// one family of engraved lines. v is the line coordinate; width 0..1 is how much of each period is ink
-float engrave(float v, float width) {
-  float d = abs(fract(v) - 0.5) * 2.0;
-  float aa = fwidth(v) * 1.6;
-  return smoothstep(1.0 - width - aa, 1.0 - width + aa, d);
-}
 float water(vec2 t) { return (texture(uW, t).r - 0.5) * 4.0; }
 
+// ordered dither thresholds, 8×8 Bayer
+float bayer2(vec2 a) { a = floor(a); return fract(a.x / 2.0 + a.y * a.y * 0.75); }
+float bayer4(vec2 a) { return bayer2(0.5 * a) * 0.25 + bayer2(a); }
+float bayer8(vec2 a) { return bayer4(0.5 * a) * 0.25 + bayer2(a); }
+
 void main() {
-  vec2 uv = gl_FragCoord.xy / uRes;
+  // everything is decided per dither cell (3 css px), so the dots stay crisp squares
+  float CELL = 3.0;
+  vec2 cell = floor(gl_FragCoord.xy / uDpr / CELL);
+  vec2 p = (cell + 0.5) * CELL;                   // css pixels at the cell's centre
+  vec2 uv = p * uDpr / uRes;
   vec2 tuv = vec2(uv.x, 1.0 - uv.y);
-  vec2 p = gl_FragCoord.xy / uDpr;                 // css pixels, so line spacing is the same on every screen
 
   // the water: height and slope
   float h = water(tuv);
   vec2 g = vec2(water(tuv + vec2(uWTexel.x, 0.0)) - water(tuv - vec2(uWTexel.x, 0.0)),
                 water(tuv + vec2(0.0, uWTexel.y)) - water(tuv - vec2(0.0, uWTexel.y)));
 
-  // the new word inks in with a ragged left-to-right sweep, like a plate being pulled
+  // the new word dithers in with a ragged left-to-right sweep
   float rag = vnoise(vec2(p.y * 0.02, 3.0)) * 0.18;
   float front = uMix * 1.5 - 0.25;
   float m = uMix >= 1.0 ? 1.0 : 1.0 - smoothstep(front - 0.08, front + 0.08, uv.x + rag);
@@ -54,34 +56,20 @@ void main() {
   float hot = mix(uHotA, uHotB, m);
   float sharp = src.r, glow = src.g, blush = src.b;
 
-  float n = fbm(p * 0.0024 + vec2(uTime * 0.03, -uTime * 0.02));
-  float relief = glow * 2.2 + sharp * 0.35;        // lines bow over the letters, so the word reads as raised metal
-  float wave = sin(p.x * 0.006 + uTime * 0.25) * 1.2 + sin(p.x * 0.0021 - uTime * 0.11) * 2.0;
-  float v = (p.y + p.x * (0.08 + uTilt)) / 5.0 + wave + n * 1.6 + relief + h * 2.4;
-
-  // light from the top left: slopes facing away from it get heavier lines, slopes facing it get lighter
+  // slow clouds of dots drift behind the word; the tilt leans them as you type
+  float n = fbm((p + vec2(p.y * uTilt * 4.0, 0.0)) * 0.0028 + vec2(uTime * 0.025, -uTime * 0.018));
   float shade = clamp((g.x - g.y) * 1.6, -1.0, 1.0);
-  float field = 0.06 + 0.04 * n;
-  float tone = clamp(field + max(shade, 0.0) * 0.4 + glow * 0.26 + sharp * mix(0.62, 0.3, max(hot, blush)), 0.0, 0.92);
-  tone *= 1.0 - max(-shade, 0.0) * 0.6;
-  float ink = engrave(v, tone);
+  float field = 0.015 + smoothstep(0.42, 0.8, n) * 0.2;
+  float vig = smoothstep(1.2, 0.2, length((uv - vec2(0.5, 0.55)) * vec2(uRes.x / uRes.y, 1.0)));
+  float tone = field * mix(0.35, 1.0, vig) + glow * 0.16 + sharp * 0.86 + max(shade, 0.0) * 0.35 + abs(h) * 0.12;
+  tone *= 1.0 - max(-shade, 0.0) * 0.5;
+  float on = step(bayer8(cell) + 0.001, clamp(tone, 0.0, 0.97));
 
-  // the "money" cross-hatch, only in the letter cores
-  float v2 = (p.x - p.y * 0.55) / 3.4 + relief * 0.6;
-  ink = max(ink, engrave(v2, 0.32) * smoothstep(0.55, 0.95, sharp) * (1.0 - max(hot, blush)));
-
-  float vig = smoothstep(1.15, 0.25, length((uv - vec2(0.5, 0.55)) * vec2(uRes.x / uRes.y, 1.0)));
-  ink *= mix(0.25, 1.0, max(max(vig, sharp), min(abs(h) * 2.0, 1.0)));   // ripples show even out at the edges
-
-  float word = smoothstep(0.1, 0.6, sharp + glow * 0.3);
-  float strength = mix(0.88, 0.55, hot * (1.0 - word));
-
+  // the accent is the dot colour, never a fill: the answer's word, letters you hover, a big splash
+  float warm = clamp(hot * smoothstep(0.35, 0.8, sharp) + blush * 0.9 + smoothstep(0.6, 1.6, h) * 0.5, 0.0, 1.0);
+  vec3 ink = mix(uInk, uPink, warm);
   vec3 paper = mix(uPaperDeep, uPaper, smoothstep(1.4, 0.2, length(uv - 0.5)));
-  paper -= (vnoise(p * 0.9) - 0.5) * 0.02;
-  paper += max(-shade, 0.0) * 0.035;                // a glint on the lit side of a wave
-  // pink is a fill, never a line: the answer's letters, and the crest of a big splash
-  paper = mix(paper, uPink, clamp(hot * smoothstep(0.35, 0.8, sharp) + blush * 0.75 + smoothstep(0.6, 1.6, h) * 0.45, 0.0, 1.0));
-  o = vec4(mix(paper, uInk, ink * strength), 1.0);
+  o = vec4(mix(paper, ink, on * mix(0.55, 1.0, max(sharp, warm))), 1.0);
 }`;
 
 const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
@@ -112,10 +100,10 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
 
   const U = {};
   for (const n of ["uA", "uB", "uW", "uMix", "uHotA", "uHotB", "uTime", "uTilt", "uDpr", "uRes", "uWTexel", "uPaper", "uPaperDeep", "uInk", "uPink"]) U[n] = gl.getUniformLocation(prog, n);
-  gl.uniform3fv(U.uPaper, hex("#efede8"));
-  gl.uniform3fv(U.uPaperDeep, hex("#e4e2da"));
-  gl.uniform3fv(U.uInk, hex("#141412"));
-  gl.uniform3fv(U.uPink, hex("#f2a9b8"));
+  gl.uniform3fv(U.uPaper, hex("#121210"));
+  gl.uniform3fv(U.uPaperDeep, hex("#0a0a09"));
+  gl.uniform3fv(U.uInk, hex("#ece8de"));
+  gl.uniform3fv(U.uPink, hex("#ff6a2b"));
   gl.uniform1i(U.uA, 0); gl.uniform1i(U.uB, 1); gl.uniform1i(U.uW, 2);
 
   const newTex = () => {

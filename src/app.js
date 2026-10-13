@@ -36,7 +36,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261013a")
+fetch("model/model.json?v=20261013b")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -45,11 +45,19 @@ const probOf = (id) => { const r = ranked.find((x) => x.id === id); return r ? r
 
 /* ---------- ghost text, on every keystroke ---------- */
 let hintIdx = 0, anim = null, lastText = "", lastTarget = "", guessId = null;
+const INTRO_HINTS = ["I run a startup", "I'm hiring engineers", "I write code", "I work in security", "I design things", "I'm a student", "just looking around"];
+const hints = () => (persona ? HINTS : INTRO_HINTS);
 function update() {
   const text = input.value;
   if (anim) return;
+  if (!persona) {   // the intro: the box only asks who you are, so no suggestions or chips yet
+    current = text ? null : { text: INTRO_HINTS[hintIdx % INTRO_HINTS.length], ghost: INTRO_HINTS[hintIdx % INTRO_HINTS.length], intent: null };
+    typedEl.textContent = text; restEl.textContent = current ? current.ghost : ""; restEl.classList.toggle("is-hint", !text);
+    chips.innerHTML = ""; guessId = null; syncScroll();
+    return;
+  }
   ranked = model && text.trim() ? model.predict(text) : [];
-  current = text ? suggest(text, probOf) : { text: HINTS[hintIdx], ghost: HINTS[hintIdx], intent: null };
+  current = text ? suggest(text, probOf) : { text: HINTS[hintIdx % HINTS.length], ghost: HINTS[hintIdx % HINTS.length], intent: null };
   typedEl.textContent = text;
   const ghost = current ? current.ghost : "";
   // a new guess fades in; the same guess getting shorter as you type it does not
@@ -110,6 +118,13 @@ function stamp() {
 }
 
 function decide() {
+  if (!persona) {   // the intro's answer: who you are picks your three projects
+    const said = input.value.trim() || (current && current.text) || "";
+    if (!said) return;
+    input.value = ""; lastText = "";
+    choose(personaFor(said), said);
+    return;
+  }
   stamp();
   // empty bar: Enter takes the example it's showing
   if (!input.value.trim()) { if (!current) return; accept(current); }
@@ -233,21 +248,24 @@ $("[data-pins]").addEventListener("click", (e) => {
 });
 
 /* ---------- the intro: "first, who are you?" ---------- */
-const who = $("[data-who]"), whoForm = $("[data-who-type]");
-$("[data-who-chips]").innerHTML = PERSONAS.map((p, i) => `<button type="button" class="chip who-chip" data-persona="${p.id}" style="--i:${i}">${esc(p.label)}</button>`).join("");
 function intro() {
   persona = null;
   document.body.classList.add("is-intro");
-  who.hidden = false;
   renderPins();
   if (!results.hidden) close(false);
   engraving && engraving.show("hello.", false);
+  input.setAttribute("aria-label", "Who are you?");
+  stopAnim(); input.value = ""; lastText = ""; hintIdx = 0; typeHint();
+  input.focus({ preventScroll: true });
 }
 function choose(id, said = "") {
   persona = id;
   store.set("henry.who", id);
-  who.classList.add("is-leaving");
-  setTimeout(() => { who.hidden = true; who.classList.remove("is-leaving"); document.body.classList.remove("is-intro"); renderPins(); input.focus({ preventScroll: true }); typeHint(); }, reduceMotion ? 0 : 320);
+  document.body.classList.remove("is-intro");
+  document.body.classList.add("is-revealing");
+  setTimeout(() => document.body.classList.remove("is-revealing"), 1600);
+  input.setAttribute("aria-label", "Ask about anything Henry has built");
+  renderPins(); hintIdx = 0; typeHint(); input.focus({ preventScroll: true });
   engraving && engraving.show("henry.", false);
   stamp();
   // one visit per browser, counted under what they said they do
@@ -256,8 +274,6 @@ function choose(id, said = "") {
   const wall = $("#wall-text");
   if (said && !wall.value) wall.value = said.slice(0, MAX_POST);
 }
-$("[data-who-chips]").addEventListener("click", (e) => { const b = e.target.closest("[data-persona]"); if (b) choose(b.dataset.persona); });
-whoForm.addEventListener("submit", (e) => { e.preventDefault(); const t = whoForm.elements.who.value.trim(); if (t) choose(personaFor(t), t); });
 $("[data-change]").addEventListener("click", intro);
 
 /* ---------- who's been here: dithered charts and the "what do you do?" wall ---------- */
@@ -271,21 +287,35 @@ async function loadCrowd() {
   const tease = $("[data-tease]");
   tease.textContent = `${crowd.total} people have been here. See who ↓`; tease.hidden = false;
   $("[data-posts]").innerHTML = posts.slice(0, 12).map((p) => `<li class="post${mine.some((m) => m.text === p.text) ? " is-you" : ""}"><span class="post-role">${esc((personaById[p.role] || personaById.curious).label)}</span><span class="post-text">${esc(p.text)}</span><span class="post-t">${ago(p.t)}</span></li>`).join("");
-  drawn = false; if (crowdSeen) drawCrowd();
+  if (crowdSeen) drawCrowd();   // charts are built once; a reload only refreshes the wall
 }
-let drawn = false, crowdSeen = false;
+let drawn = false, crowdSeen = false, chart = null, repaint = [];
+const dayName = (t) => new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 function drawCrowd() {
   if (drawn || !crowd) return;
   drawn = true;
+  // what they do: holding (or hovering) a row lights its dots and shows its share
+  const total = Object.values(crowd.roles).reduce((a, b) => a + b, 0) || 1;
   const rows = PERSONAS.map((p) => ({ p, n: crowd.roles[p.id] || 0 })).sort((a, b) => b.n - a.n), max = Math.max(...rows.map((r) => r.n), 1);
   const el = $("[data-roles]");
-  el.innerHTML = rows.map(({ p, n }) => `<div class="row${p.id === persona ? " is-you" : ""}"><span class="row-label">${esc(p.label)}</span><canvas class="row-bar"></canvas><span class="row-n">${n}</span></div>`).join("");
-  el.querySelectorAll("canvas").forEach((c, i) => dither.bar(c, rows[i].n / max, rows[i].p.id === persona, reduceMotion));
-  dither.columns($("[data-days]"), crowd.days.map((d) => d.n), reduceMotion);
-  $("[data-days-from]").textContent = new Date(crowd.days[0].t).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  el.innerHTML = rows.map(({ p, n }) => `<div class="row${p.id === persona ? " is-you" : ""}" tabindex="0" data-n="${n}"><span class="row-label">${esc(p.label)}${p.id === persona ? " <em>you</em>" : ""}</span><canvas class="row-bar"></canvas><span class="row-n" data-plain="${n}" data-pct="${Math.round((n / total) * 100)}%">${n}</span></div>`).join("");
+  repaint = [...el.querySelectorAll("canvas")].map((c, i) => dither.bar(c, rows[i].n / max, rows[i].p.id === persona, reduceMotion));
+  const light = (row, on) => { const i = [...el.children].indexOf(row), c = row.querySelector("canvas"), nEl = row.querySelector(".row-n");
+    c.dataset.lit = on ? "1" : ""; nEl.textContent = on ? nEl.dataset.pct : nEl.dataset.plain; row.classList.toggle("is-lit", on); repaint[i](); };
+  el.addEventListener("pointerover", (e) => { const r = e.target.closest(".row"); if (r) light(r, true); });
+  el.addEventListener("pointerout", (e) => { const r = e.target.closest(".row"); if (r && !r.contains(e.relatedTarget)) light(r, false); });
+  el.addEventListener("focusin", (e) => light(e.target, true)); el.addEventListener("focusout", (e) => light(e.target, false));
+
+  // visits per day: drag through time
+  const days = crowd.days;
+  chart = dither.timeline($("[data-days]"), days.map((d) => d.n), {
+    span: innerWidth < 700 ? 14 : 28, reduce: reduceMotion,
+    onFocus: (i) => { $("[data-readout-n]").textContent = `${days[i].n} ${days[i].n === 1 ? "visit" : "visits"}`; $("[data-readout-d]").textContent = i === days.length - 1 ? "today" : dayName(days[i].t); },
+    onPan: (a, b) => { $("[data-days-from]").textContent = dayName(days[a].t); $("[data-days-to]").textContent = b === days.length - 1 ? "today" : dayName(days[b].t); },
+  });
 }
 new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { crowdSeen = true; drawCrowd(); } }, { threshold: 0.2 }).observe($("[data-crowd]"));
-addEventListener("resize", () => { if (crowdSeen) { drawn = false; drawCrowd(); } });
+addEventListener("resize", () => { if (chart) chart.resize(); repaint.forEach((f) => f()); });
 
 const wallForm = $("[data-wall-form]"), wallNote = $("[data-wall-note]");
 wallForm.addEventListener("submit", async (e) => {
@@ -368,7 +398,7 @@ function untype(text) {
 // the example in the empty bar types itself in
 function typeHint() {
   if (input.value) { update(); return; }
-  const h = HINTS[hintIdx];
+  const h = hints()[hintIdx % hints().length];
   if (reduceMotion) { update(); return; }
   restEl.classList.add("is-hint"); restEl.classList.remove("is-new");
   play(restEl, forwards(h), 26, update);
@@ -377,8 +407,8 @@ function typeHint() {
 // rotate the example: untype the old one, type the next
 setInterval(() => {
   if (input.value || anim || document.hidden) return;
-  const old = HINTS[hintIdx];
-  hintIdx = (hintIdx + 1) % HINTS.length;
+  const old = hints()[hintIdx % hints().length];
+  hintIdx = (hintIdx + 1) % hints().length;
   if (reduceMotion) { update(); return; }
   play(restEl, backwards(old), 14, typeHint);
 }, 4200);
@@ -388,6 +418,6 @@ if (location.hash && intentById[location.hash.slice(1)]) setTimeout(() => open(l
 
 renderPins();
 loadCrowd();
-if (!persona && !location.hash) intro();
-update();
-if (persona) { typeHint(); input.focus({ preventScroll: true }); }
+if (!persona && location.hash) { persona = "curious"; renderPins(); }   // deep links skip the intro
+if (!persona) intro();
+else { update(); typeHint(); input.focus({ preventScroll: true }); }

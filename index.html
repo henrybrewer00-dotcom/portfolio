@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>henry. — proud vibecoder, 14, Austin</title>
     <meta name="description" content="I'm Henry. Fourteen, from Austin, and a proud vibecoder. Ask for anything I've built: voice AI, robots, a submarine, and a company called SiteLight. Currently at Crawft." />
-    <meta name="theme-color" content="#f4efe4" />
+    <meta name="theme-color" content="#0e0e0c" />
     <meta property="og:title" content="henry. — proud vibecoder, 14, Austin" />
     <meta property="og:description" content="I make way too much stuff. Type what you want to see." />
     <meta property="og:type" content="website" />
@@ -19,8 +19,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-    <link rel="preload" href="model/model.json?v=20261013a" as="fetch" crossorigin />
-    <link rel="stylesheet" href="styles.css?v=20261013a" />
+    <link rel="preload" href="model/model.json?v=20261013b" as="fetch" crossorigin />
+    <link rel="stylesheet" href="styles.css?v=20261013b" />
   </head>
   <body>
     <canvas class="engraving" data-engraving aria-hidden="true"></canvas>
@@ -35,11 +35,6 @@
 
     <main class="main">
       <h1 class="sr-only">Henry Brewer — portfolio</h1>
-      <section class="who" data-who aria-labelledby="who-q" hidden>
-        <p class="who-q" id="who-q">first, who are you?</p>
-        <div class="who-chips" data-who-chips></div>
-        <form class="who-type" data-who-type autocomplete="off"><input name="who" maxlength="80" placeholder="or say what you do" aria-label="What do you do?"><button class="key" aria-label="Go">↵</button></form>
-      </section>
       <form class="ask" data-ask role="search" autocomplete="off">
         <label class="sr-only" for="q">Ask about anything Henry has built</label>
         <div class="bar">
@@ -77,17 +72,16 @@
           <h2 class="crowd-title" id="crowd-title">who's been here</h2>
           <span class="sample" data-sample hidden>sample data, real counts soon</span>
         </div>
-        <div class="crowd-grid">
-          <figure class="chart">
-            <figcaption>what they do</figcaption>
-            <div class="rows" data-roles></div>
-          </figure>
-          <figure class="chart">
-            <figcaption>visits, last two weeks</figcaption>
-            <canvas class="cols" data-days aria-label="Visits per day"></canvas>
-            <p class="cols-axis"><span data-days-from></span><span>today</span></p>
-          </figure>
-        </div>
+        <figure class="chart chart-visits">
+          <figcaption><span>visits per day</span><span class="drag-hint">hold and drag ←→</span></figcaption>
+          <p class="readout" data-readout aria-live="polite"><b data-readout-n></b> <span data-readout-d></span></p>
+          <canvas class="cols" data-days tabindex="0" aria-label="Visits per day. Drag, or use the arrow keys, to move through time."></canvas>
+          <p class="cols-axis"><span data-days-from></span><span data-days-to></span></p>
+        </figure>
+        <figure class="chart chart-roles">
+          <figcaption><span>what they do</span><span class="drag-hint">hold a row</span></figcaption>
+          <div class="rows" data-roles></div>
+        </figure>
         <div class="wall">
           <form class="wall-form" data-wall-form autocomplete="off">
             <label class="wall-q" for="wall-text">and you? what do you do?</label>
@@ -123,6 +117,6 @@
       </noscript>
     </main>
 
-    <script type="module" src="src/app.js?v=20261013a"></script>
+    <script type="module" src="src/app.js?v=20261013b"></script>
   </body>
 </html>
