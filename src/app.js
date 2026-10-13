@@ -39,7 +39,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261013j")
+fetch("model/model.json?v=20261013k")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -235,9 +235,9 @@ function renderPins() {
   $("[data-change]").hidden = !p;
   $("[data-pins]").innerHTML = items.map((it, i) => `<button type="button" class="pin" data-pin="${esc(it.id)}" style="--i:${i}">
   <span class="pin-kicker">${esc(it.kicker)}</span><span class="pin-title">${esc(it.title)}</span>
-  <span class="pin-sub">${esc(firstSentence(it))}</span><span class="pin-go" aria-hidden="true">→</span></button>`).join("");
+  <span class="pin-sub">${esc(it.tease || firstSentence(it))}</span><span class="pin-go" aria-hidden="true">→</span></button>`).join("");
 }
-// the pin's teaser: the first sentence of the card, or the first two when the first is only a few words
+// the pin's teaser: its own one-liner (tease) when it has one, else the first sentence of the card, or the first two when the first is only a few words
 const firstSentence = (it) => { const s = (it.body || (it.list || []).join(", ")).split(/(?<=[.!?])\s/); return s[0].length < 40 && s[1] ? s[1] : s[0]; };
 $("[data-pins]").addEventListener("click", (e) => {
   const b = e.target.closest("[data-pin]");
