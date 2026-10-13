@@ -10,6 +10,7 @@ import { sampleCrowd } from "./crowd-sample.js";
 import * as dither from "./dither.js";
 import { fillButtons } from "./fill.js";
 import { createTrail } from "./trail.js";
+import { boot } from "./boot.js";
 import { createModel } from "./model.js";
 import { createSuggester } from "./suggest.js";
 import { createEngraving } from "./shader.js";
@@ -38,7 +39,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261013g")
+fetch("model/model.json?v=20261013h")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -437,3 +438,5 @@ loadCrowd();
 if (!persona && location.hash) { persona = "curious"; renderPins(); }   // deep links skip the intro
 if (!persona) intro();
 else { update(); typeHint(); input.focus({ preventScroll: true }); }
+// the opening plays over all of that, once per browser; when it clears, the prompt is ready to type into
+boot({ skip: !!location.hash }).then(() => input.focus({ preventScroll: true }));
