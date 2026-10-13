@@ -156,25 +156,33 @@ export const PERSONAS = [
     match: ["hire", "hiring", "recruit", "recruiter", "talent", "hr", "manager", "team lead", "cto", "ceo", "job"] },
   { id: "founder", label: "I'm building a startup", noun: "a founder", picks: ["sitelight", "crawft", "vurn"],
     match: ["founder", "startup", "company", "business", "investor", "vc", "invest", "entrepreneur", "own", "run a", "cofounder"] },
-  { id: "engineer", label: "I write code", noun: "an engineer", picks: ["vurn", "glasscast", "oss"],
-    match: ["engineer", "developer", "dev", "code", "coder", "programmer", "software", "swe", "backend", "frontend", "full stack", "build"] },
   { id: "security", label: "I work in security", noun: "a security person", picks: ["vurn", "crawft", "oss"],
     match: ["security", "cyber", "pentest", "hacker", "hacking", "infosec", "red team", "bug bounty", "appsec", "ctf"] },
+  { id: "engineer", label: "I write code", noun: "an engineer", picks: ["vurn", "glasscast", "oss"],
+    match: ["engineer", "engineering", "developer", "dev", "code", "coder", "coding", "programmer", "programming", "software", "swe", "sde", "backend", "frontend", "full stack", "fullstack", "build",
+      "ml", "ai", "data scientist", "data", "researcher", "research", "scientist", "tech", "devops", "sre", "infra", "web dev", "app dev", "intern", "internship"],
+    // working at a tech company says more than any job title they might leave out
+    companies: ["google", "alphabet", "deepmind", "meta", "facebook", "instagram", "apple", "microsoft", "amazon", "aws", "netflix", "nvidia", "openai", "anthropic", "xai", "tesla", "spacex",
+      "stripe", "shopify", "uber", "airbnb", "salesforce", "oracle", "ibm", "intel", "amd", "adobe", "linkedin", "github", "vercel", "cloudflare", "databricks", "palantir", "snowflake",
+      "tiktok", "bytedance", "twitter", "snap", "spotify", "dropbox", "figma", "notion", "slack", "atlassian", "coinbase", "robinhood", "doordash", "lyft", "pinterest", "reddit", "discord"] },
   { id: "designer", label: "I design things", noun: "a designer", picks: ["glasscast", "lily", "pawbot"],
-    match: ["design", "designer", "ux", "ui", "product", "art", "creative", "brand", "figma"] },
+    match: ["design", "designer", "ux", "ui", "product", "pm", "product manager", "art", "creative", "brand", "figma"] },
   { id: "student", label: "I'm a student", noun: "a student", picks: ["wins", "siege", "sub"],
     match: ["student", "school", "college", "university", "high school", "learning", "kid", "teen", "teacher", "parent"] },
   { id: "curious", label: "just looking around", noun: "a curious visitor", picks: ["vurn", "lily", "siege"], match: [] },
 ];
 export const personaById = Object.fromEntries(PERSONAS.map((p) => [p.id, p]));
 
-/** Typed answer → persona id (curious when nothing matches). */
+/** Typed answer → persona id (curious when nothing matches). "I work for Google" counts as an engineer. */
 export function personaFor(text) {
-  const t = ` ${String(text).toLowerCase().replace(/[^a-z ]/g, " ")} `;
+  const t = ` ${String(text).toLowerCase().replace(/[^a-z ]/g, " ").replace(/\s+/g, " ")} `;
+  const has = (w) => t.includes(` ${w} `) || t.includes(` ${w}s `);
   let best = "curious", score = 0;
   for (const p of PERSONAS) {
-    const s = p.match.reduce((n, w) => n + (t.includes(` ${w} `) || t.includes(` ${w}s `) ? w.length : 0), 0);
+    const s = p.match.reduce((n, w) => n + (has(w) ? w.length : 0), 0);
     if (s > score) { best = p.id; score = s; }
   }
+  // no role named, but a tech employer is: they're almost certainly in engineering
+  if (best === "curious") for (const p of PERSONAS) if ((p.companies || []).some(has)) return p.id;
   return best;
 }

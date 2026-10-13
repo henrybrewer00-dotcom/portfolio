@@ -38,7 +38,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261013f")
+fetch("model/model.json?v=20261013g")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -268,6 +268,7 @@ function choose(id, said = "") {
   setTimeout(() => document.body.classList.remove("is-revealing"), 1600);
   input.setAttribute("aria-label", "Ask about anything Henry has built");
   renderPins(); hintIdx = 0; typeHint(); input.focus({ preventScroll: true });
+  if (drawn) drawRoles();
   engraving && engraving.show("henry.", false);
   stamp();
   // one visit per browser, counted under what they said they do
@@ -296,13 +297,9 @@ const dayName = (t) => new Date(t).toLocaleDateString(undefined, { month: "short
 function drawCrowd() {
   if (drawn || !crowd) return;
   drawn = true;
+  drawRoles();
   // what they do: holding (or hovering) a row lights its dots and shows its share
-  const total = Object.values(crowd.roles).reduce((a, b) => a + b, 0) || 1;
-  const rows = PERSONAS.map((p) => ({ p, n: crowd.roles[p.id] || 0 })).sort((a, b) => b.n - a.n), max = Math.max(...rows.map((r) => r.n), 1);
   const el = $("[data-roles]");
-  el.innerHTML = rows.map(({ p, n }) => `<div class="row${p.id === persona ? " is-you" : ""}" tabindex="0" data-n="${n}"><span class="row-label">${esc(p.label)}${p.id === persona ? " <em>you</em>" : ""}</span><canvas class="row-bar"></canvas><span class="row-n" data-plain="${n}" data-pct="${Math.round((n / total) * 100)}%">${n}</span></div>`).join("");
-  const bars = [...el.querySelectorAll("canvas")].map((c, i) => dither.bar(c, rows[i].n / max, rows[i].p.id === persona, reduceMotion));
-  repaint = bars.map((b) => b.paint); regrow = bars.map((b) => b.grow);
   const light = (row, on) => { const i = [...el.children].indexOf(row), c = row.querySelector("canvas"), nEl = row.querySelector(".row-n");
     c.dataset.lit = on ? "1" : ""; nEl.textContent = on ? nEl.dataset.pct : nEl.dataset.plain; row.classList.toggle("is-lit", on); repaint[i](); };
   el.addEventListener("pointerover", (e) => { const r = e.target.closest(".row"); if (r) light(r, true); });
@@ -316,6 +313,15 @@ function drawCrowd() {
     onFocus: (i) => { $("[data-readout-n]").textContent = `${days[i].n} ${days[i].n === 1 ? "visit" : "visits"}`; $("[data-readout-d]").textContent = i === days.length - 1 ? "today" : dayName(days[i].t); },
     onPan: (a, b) => { $("[data-days-from]").textContent = dayName(days[a].t); $("[data-days-to]").textContent = b === days.length - 1 ? "today" : dayName(days[b].t); },
   });
+}
+// the "what they do" rows, with "you" on your row; redrawn when you change who you are
+function drawRoles() {
+  const total = Object.values(crowd.roles).reduce((a, b) => a + b, 0) || 1;
+  const rows = PERSONAS.map((p) => ({ p, n: crowd.roles[p.id] || 0 })).sort((a, b) => b.n - a.n), max = Math.max(...rows.map((r) => r.n), 1);
+  const el = $("[data-roles]");
+  el.innerHTML = rows.map(({ p, n }) => `<div class="row${p.id === persona ? " is-you" : ""}" tabindex="0" data-n="${n}"><span class="row-label">${esc(p.label)}${p.id === persona ? " <em>you</em>" : ""}</span><canvas class="row-bar"></canvas><span class="row-n" data-plain="${n}" data-pct="${Math.round((n / total) * 100)}%">${n}</span></div>`).join("");
+  const bars = [...el.querySelectorAll("canvas")].map((c, i) => dither.bar(c, rows[i].n / max, rows[i].p.id === persona, reduceMotion));
+  repaint = bars.map((b) => b.paint); regrow = bars.map((b) => b.grow);
 }
 // the charts grow in every time they scroll into view, not just the first time
 new IntersectionObserver((es) => {

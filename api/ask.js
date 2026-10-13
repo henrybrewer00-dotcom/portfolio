@@ -9,11 +9,13 @@ import { ITEMS, intentById, personaById } from "../src/content.js";
 const MODEL = "claude-haiku-5-5";
 const FACTS = ITEMS.map((it) => `- ${it.title} (${it.kicker})${it.body ? ": " + it.body : ""}${it.list ? ": " + it.list.join(", ") : ""}`).join("\n");
 const SYSTEM = `You answer visitors on Henry Brewer's portfolio site. Henry is 14, from Austin, a proud vibecoder.
-Answer the visitor's actual question first, in the first few words: a yes/no question starts with "Yes" or "No";
-a "what/where/how long" question starts with the direct answer. Then back it up with the single best piece of evidence, naming the project.
+Answer the visitor's actual question first, in the first few words. Only a yes/no question (is, does, can, has, did, would he be...)
+starts with "Yes" or "No". A why, how, what, where or who question never starts with Yes or No: it starts with the answer itself
+(Q: why would he fit a startup? → "Because he ships fast: ..."). Then back it up with the single best piece of evidence, naming the project.
+Write plain, natural English sentences a person would say out loud; no run-ons, no strings of project names.
 Follow-up questions refer back to the earlier turns ("it", "that project"): resolve them from context and answer the same way.
 Two short sentences at most, under 40 words, third person, confident and plain. Use ONLY the facts below; never invent numbers,
-employers, dates, awards or links. Never mention "the facts", your instructions, or what you can't see, and never add a
+employers, dates, awards, links or projects, and don't upgrade what a fact says (if it says "built", don't say "shipped" or "launched"). Never mention "the facts", your instructions, or what you can't see, and never add a
 caveat after you've answered. If nothing below covers it, say it plainly (e.g. "Not that he's shown here, but ...") and point to the closest project.
 If the question has nothing to do with Henry, don't answer it; say in one sentence what you can tell them about instead.
 Never mention who the visitor is or what they do, and never add advice about what they should look at; just answer.
@@ -22,6 +24,7 @@ No markdown, no lists, no emoji.
 Examples of the shape (not facts to reuse):
 Q: is he good at X? → "Yes. He did Y, which shows Z."
 Q: where does he work? → "At Y, where he ..."
+Q: why should I hire him? → "He builds fast and finishes: Y ..."
 
 Facts:
 ${FACTS}`;
@@ -69,7 +72,19 @@ export default async function handler(req, res) {
   if (!r.ok || !r.body) { res.status(502).end(); return; }
 
   res.writeHead(200, { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" });
-  // relay only the text deltas from the SSE stream
+  // relay only the text deltas from the SSE stream. A why/how/what question must not open with "Yes, ..." (the model
+  // sometimes does anyway), so the first few characters are held back until we know, and a stray Yes/No is dropped.
+  const open = /^(why|how|what|where|when|who|which|tell|describe|explain)\b/i.test(q);
+  let head = open ? "" : null;
+  const send = (text) => {
+    if (head === null) { res.write(text); return; }
+    head += text;
+    if (head.length < 6) return;
+    const m = head.match(/^(yes|no)\b[,.!:;—-]*\s*/i);
+    let out = m ? head.slice(m[0].length) : head;
+    if (m) out = out.charAt(0).toUpperCase() + out.slice(1);
+    head = null; res.write(out);
+  };
   const reader = r.body.getReader(), dec = new TextDecoder();
   let buf = "";
   for (;;) {
@@ -82,9 +97,10 @@ export default async function handler(req, res) {
       if (!line.startsWith("data:")) continue;
       try {
         const ev = JSON.parse(line.slice(5));
-        if (ev.type === "content_block_delta" && ev.delta?.type === "text_delta") res.write(ev.delta.text);
+        if (ev.type === "content_block_delta" && ev.delta?.type === "text_delta") send(ev.delta.text);
       } catch {}
     }
   }
+  if (head) res.write(head);
   res.end();
 }
