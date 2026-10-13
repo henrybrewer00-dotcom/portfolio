@@ -239,7 +239,7 @@ input, textarea { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 @media (prefers-reduced-motion: reduce) { .fill-front, .fill-back { transition: none; } }
 
 /* ---------- the opening sequence (src/boot.js) ---------- */
-.boot { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 200; background: var(--paper); transition: opacity 0.5s var(--ease); }
+.boot { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 200; pointer-events: none; image-rendering: pixelated; transition: opacity 0.5s var(--ease); }
 .boot.is-gone { opacity: 0; pointer-events: none; }
-html.is-booting body { overflow: hidden; }
+html.is-booting body { overflow: hidden; background: var(--paper); }
 html.is-booting body > :not(.boot) { visibility: hidden; }   /* set before first paint, so the page never flashes under it */
