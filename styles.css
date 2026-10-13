@@ -79,14 +79,13 @@ body.has-results .main { padding-top: 6.5rem; }
 body.has-results .pinned { display: none; }
 .pinned-label { display: inline-block; font: 500 0.7rem var(--sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); background: var(--paper); border-radius: 999px; padding: 0.2rem 0.7rem; margin: 0 0 0.5rem 0.8rem; }
 .pins { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; }
-.pin { position: relative; display: grid; gap: 0.15rem; text-align: left; padding: 0.9rem 1.05rem 0.95rem; border-radius: 18px;
-  /* a warm surface a step up from the page, a clean hairline, and a ring of page colour so the background dots keep their distance */
-  background: linear-gradient(180deg, #24221e, #1d1c19); border: 1px solid #36342d; box-shadow: inset 0 1px 0 rgba(236, 232, 222, 0.06), 0 0 0 8px var(--paper); animation: pop 0.5s var(--spring) both; animation-delay: calc(0.6s + var(--i) * 80ms); transition: transform 0.3s var(--spring), box-shadow 0.3s var(--ease), border-color 0.2s; }
-.pin:hover, .pin:focus-visible { transform: translateY(-3px); box-shadow: inset 0 1px 0 rgba(236, 232, 222, 0.08), 0 0 0 8px var(--paper), 0 14px 30px rgba(0, 0, 0, 0.45); border-color: #4c4940; outline: 0; }
-.pin-kicker { font: 500 0.66rem var(--sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-.pin-title { font: 600 1.05rem/1.2 var(--sans); letter-spacing: -0.015em; }
-.pin-go { position: absolute; right: 0.95rem; bottom: 0.8rem; font-size: 0.9rem; color: var(--muted); transition: transform 0.25s var(--spring), color 0.2s; }
-.pin:hover .pin-go { transform: translateX(3px); color: var(--ink); }
+/* a soft dithered frame that fades inward, drawn by src/tiledither.js on a canvas behind the text; hover thickens it and turns it orange */
+.pin { position: relative; display: grid; align-content: start; gap: 0.15rem; text-align: left; padding: 1.15rem 1.3rem 1.2rem; isolation: isolate;
+  background: var(--paper); box-shadow: 0 0 0 8px var(--paper); animation: reveal 0.6s var(--ease) both; animation-delay: calc(0.4s + var(--i) * 70ms); }
+.pin:focus-visible { outline: 0; }
+.pin-dots { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; image-rendering: pixelated; }
+.pin-kicker { font: 500 0.66rem "Geist Mono", monospace; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.pin-title { font: italic 400 1.9rem/1.05 var(--serif); letter-spacing: -0.005em; }
 
 /* ---------- results ---------- */
 .results { margin-top: 2.4rem; scroll-margin-top: 5rem; }
@@ -163,7 +162,7 @@ body.is-revealing .pinned, body.is-revealing .foot, body.is-revealing .crowd, bo
 body.is-revealing .foot { animation-delay: 0.25s; } body.is-revealing .crowd { animation-delay: 0.35s; }
 @keyframes reveal { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } }
 .change { margin-left: 0.5rem; font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
-.pin-sub { font: 400 0.8rem/1.35 var(--sans); color: #a8a498; margin-top: 0.25rem; padding-right: 1.2rem; text-wrap: balance; }
+.pin-sub { font: 400 0.8rem/1.35 var(--sans); color: #a8a498; margin-top: 0.25rem; text-wrap: balance; }
 .tease { display: table; margin: 1rem auto 0; padding: 0.3rem 0.9rem; border-radius: 999px; background: var(--paper); font: 500 0.82rem var(--sans); color: var(--soft-ink); transition: background 0.2s, transform 0.25s var(--spring); }
 .tease:hover { background: var(--accent); color: var(--paper); transform: translateY(2px); }
 
@@ -245,65 +244,3 @@ input, textarea { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 .boot.is-gone { opacity: 0; pointer-events: none; }
 html.is-booting body { overflow: hidden; background: var(--paper); }
 html.is-booting body > :not(.boot) { visibility: hidden; }   /* set before first paint, so the page never flashes under it */
-
-/* ---------- pick tile experiments: ?tiles=dots | card | mono | serif (Henry picks one, the rest get deleted) ---------- */
-/* shared reset for every experiment: no box, no spring, no lift */
-html[data-tiles] .pin { align-content: start; animation: reveal 0.6s var(--ease) both; animation-delay: calc(0.4s + var(--i) * 70ms); transform: none !important; }
-html[data-tiles] .pin-go { display: none; }
-
-/* A · dots: no box at all. Big serif title, a row of dots underneath that lights up orange left to right on hover */
-html[data-tiles="dots"] .pins { gap: 2rem; }
-html[data-tiles="dots"] .pin { background: var(--paper); border: 0; border-radius: 0; box-shadow: 0 0 0 10px var(--paper); padding: 0.2rem 0 0.9rem; gap: 0.2rem; }
-html[data-tiles="dots"] .pin-kicker { font: 500 0.66rem "Geist Mono", monospace; letter-spacing: 0.08em; color: var(--muted); }
-html[data-tiles="dots"] .pin-title { font: 400 2.1rem/1 var(--serif); letter-spacing: -0.01em; }
-html[data-tiles="dots"] .pin-sub { color: var(--muted); padding: 0; }
-html[data-tiles="dots"] .pin::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px;
-  background: radial-gradient(circle, var(--soft-ink) 1.4px, transparent 1.6px) 0 50% / 8px 4px repeat-x; opacity: 0.45; }
-html[data-tiles="dots"] .pin::before { content: ""; position: absolute; left: 0; bottom: 0; height: 4px; width: 100%;
-  background: radial-gradient(circle, var(--accent) 1.6px, transparent 1.8px) 0 50% / 8px 4px repeat-x; z-index: 1;
-  clip-path: inset(0 100% 0 0); transition: clip-path 0.7s steps(28, end); }
-html[data-tiles="dots"] .pin:hover::before, html[data-tiles="dots"] .pin:focus-visible::before { clip-path: inset(0 0 0 0); }
-html[data-tiles="dots"] .pin:hover .pin-title { color: var(--ink); }
-html[data-tiles="dots"] .pin:focus-visible { outline: 0; }
-
-/* B · card: bone paper cards with dark ink, like index cards on a desk. Hover warms the paper, nothing moves */
-html[data-tiles="card"] .pin { background: #e9e4d8; color: #161512; border: 0; border-radius: 6px; box-shadow: 0 0 0 8px var(--paper); padding: 1rem 1.1rem 1.05rem; transition: background 0.35s var(--ease); }
-html[data-tiles="card"] .pin-kicker { font: 500 0.62rem "Geist Mono", monospace; letter-spacing: 0.06em; color: #7a7466; }
-html[data-tiles="card"] .pin-title { font: 600 1.25rem/1.15 "Space Grotesk", var(--sans); letter-spacing: -0.02em; color: #161512; }
-html[data-tiles="card"] .pin-sub { color: #4e4a40; padding: 0; }
-html[data-tiles="card"] .pin:hover, html[data-tiles="card"] .pin:focus-visible { background: #f4e2cf; outline: 0; }
-html[data-tiles="card"] .pin:hover .pin-title { color: #c2410c; }
-
-/* C · mono: a terminal listing. Mono type, a dotted border, an arrow that types in on hover */
-html[data-tiles="mono"] .pin { background: var(--paper); border: 1px dashed #4a4840; border-radius: 4px; box-shadow: 0 0 0 8px var(--paper); padding: 0.9rem 1rem; transition: border-color 0.25s, background 0.25s; }
-html[data-tiles="mono"] .pin-kicker { font: 400 0.68rem "Geist Mono", monospace; color: var(--muted); text-transform: lowercase; letter-spacing: 0; }
-html[data-tiles="mono"] .pin-kicker::before { content: "// "; }
-html[data-tiles="mono"] .pin-title { font: 500 1rem/1.3 "Geist Mono", monospace; letter-spacing: -0.02em; }
-html[data-tiles="mono"] .pin-title::before { content: "> "; color: var(--muted); transition: color 0.2s; }
-html[data-tiles="mono"] .pin-sub { font: 400 0.76rem/1.45 "Geist Mono", monospace; color: #a8a498; padding: 0; }
-html[data-tiles="mono"] .pin:hover, html[data-tiles="mono"] .pin:focus-visible { border-color: var(--accent); border-style: solid; background: #14130f; outline: 0; }
-html[data-tiles="mono"] .pin:hover .pin-title::before { color: var(--accent); }
-html[data-tiles="mono"] .pin:hover .pin-title::after { content: "_"; color: var(--accent); animation: caret 0.8s steps(1) infinite; }
-
-/* D · serif: a quiet hairline frame, italic serif titles, and an orange dot-dither wash that fills in on hover */
-html[data-tiles="serif"] .pin { background: var(--paper); border: 1px solid #3a3830; border-radius: 14px; box-shadow: 0 0 0 8px var(--paper); padding: 1rem 1.15rem 1.1rem; overflow: hidden; isolation: isolate; transition: border-color 0.3s; }
-html[data-tiles="serif"] .pin::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(circle, rgba(255, 106, 43, 0.28) 1px, transparent 1.3px) 0 0 / 5px 5px;
-  -webkit-mask: linear-gradient(90deg, #000 40%, transparent 60%) 100% 0 / 260% 100% no-repeat; mask: linear-gradient(90deg, #000 40%, transparent 60%) 100% 0 / 260% 100% no-repeat; transition: -webkit-mask-position 0.8s var(--ease), mask-position 0.8s var(--ease); }
-html[data-tiles="serif"] .pin:hover::before, html[data-tiles="serif"] .pin:focus-visible::before { -webkit-mask-position: 0 0; mask-position: 0 0; }
-html[data-tiles="serif"] .pin-kicker { font: 400 0.72rem var(--sans); letter-spacing: 0.02em; text-transform: none; color: var(--muted); }
-html[data-tiles="serif"] .pin-title { font: italic 400 1.9rem/1.05 var(--serif); letter-spacing: -0.005em; }
-html[data-tiles="serif"] .pin-sub { color: #b4b0a4; padding: 0; }
-html[data-tiles="serif"] .pin:hover, html[data-tiles="serif"] .pin:focus-visible { border-color: var(--accent); outline: 0; }
-
-/* E/F/G · dither (src/tiledither.js draws the dots on a canvas behind the text) */
-html[data-tiles="fade"] .pin, html[data-tiles="edge"] .pin, html[data-tiles="frame"] .pin { background: var(--paper); border: 0; isolation: isolate; outline: 0; }
-.pin-dots { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; image-rendering: pixelated; }
-html[data-tiles="fade"] .pin-kicker, html[data-tiles="edge"] .pin-kicker, html[data-tiles="frame"] .pin-kicker { font: 500 0.66rem "Geist Mono", monospace; letter-spacing: 0.08em; color: var(--muted); }
-html[data-tiles="fade"] .pin-sub, html[data-tiles="edge"] .pin-sub, html[data-tiles="frame"] .pin-sub { color: #a8a498; padding: 0; }
-html[data-tiles="fade"] .pin { border-radius: 0; box-shadow: 0 0 0 8px var(--paper); padding: 1rem 1.1rem 3.2rem; }
-html[data-tiles="fade"] .pin-title { font: 400 2rem/1 var(--serif); letter-spacing: -0.01em; }
-html[data-tiles="edge"] .pins { gap: 2rem; }
-html[data-tiles="edge"] .pin { border-radius: 0; box-shadow: 0 0 0 10px var(--paper); padding: 0.2rem 0 1.5rem; gap: 0.2rem; }
-html[data-tiles="edge"] .pin-title { font: 400 2.1rem/1 var(--serif); letter-spacing: -0.01em; }
-html[data-tiles="frame"] .pin { border-radius: 0; box-shadow: 0 0 0 8px var(--paper); padding: 1.15rem 1.3rem 1.2rem; }
-html[data-tiles="frame"] .pin-title { font: italic 400 1.9rem/1.05 var(--serif); letter-spacing: -0.005em; }
