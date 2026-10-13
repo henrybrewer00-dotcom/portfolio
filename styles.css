@@ -211,3 +211,43 @@ body.has-results .crowd { margin-top: 3rem; }
   .post { grid-template-columns: 1fr auto; } .post-role { grid-column: 1 / -1; }
 }
 @media (prefers-reduced-motion: reduce) { body.is-revealing * , .post { animation: none !important; } }
+
+/* ---------- the enter button: a little drum that rolls to its label on hover (after 21st.dev Text Roll / Letter Swap) ---------- */
+.key.roll { --h: 2.1rem; width: 3.4rem; height: var(--h); padding: 0; background: none !important; perspective: 260px; cursor: pointer; }
+.key.roll-wide { width: 4.6rem; }
+.roll-box { position: absolute; inset: 0; display: block; transform-style: preserve-3d; transform-origin: 50% 50% calc(var(--h) / -2); transition: transform 0.6s var(--ease); }
+.roll-face { position: absolute; inset: 0; display: grid; place-items: center; border-radius: 999px; backface-visibility: hidden; transform-origin: 50% 50% calc(var(--h) / -2);
+  background: var(--ink); color: var(--paper); font: 500 0.78rem var(--sans); letter-spacing: 0.01em; }
+.roll-face:first-child { font-size: 0.95rem; }
+.roll-wide .roll-face:first-child { font-size: 0.78rem; }
+.roll-back { transform: rotateX(-90deg); background: var(--accent); color: var(--paper); }
+.key.roll:hover .roll-box, .key.roll:focus-visible .roll-box { transform: rotateX(90deg); }
+.key.roll:active .roll-box { transform: rotateX(90deg) scale(0.94); transition-duration: 0.12s; }
+.bar.is-stamp .key.roll .roll-box { animation: drum 0.7s var(--ease); }
+@keyframes drum { 40% { transform: rotateX(90deg); } }
+@media (max-width: 700px) { .key.roll { --h: 2.3rem; width: 3.6rem; } }
+
+/* ---------- the cursor: a dithered square that becomes brackets over things you can press ---------- */
+@media (hover: hover) and (pointer: fine) {
+  html.has-cursor, html.has-cursor * { cursor: none !important; }
+}
+.cursor { position: fixed; left: 0; top: 0; z-index: 100; pointer-events: none; width: 0; height: 0; opacity: 0; transition: opacity 0.2s; }
+html.has-cursor .cursor.is-on { opacity: 1; }
+.cursor::before { content: ""; position: absolute; left: 50%; top: 50%; width: var(--s, 12px); height: var(--s, 12px); transform: translate(-50%, -50%) rotate(var(--r, 0deg));
+  background: conic-gradient(var(--ink) 25%, transparent 0 50%, var(--ink) 0 75%, transparent 0) 0 0 / 4px 4px; mix-blend-mode: difference;
+  transition: width 0.25s var(--ease), height 0.25s var(--ease), transform 0.35s var(--ease), border-radius 0.25s, background 0.2s; }
+/* over anything pressable: the square opens into corner brackets */
+.cursor.is-press::before { --s: 44px; background:
+  linear-gradient(var(--ink), var(--ink)) 0 0 / 8px 2px no-repeat, linear-gradient(var(--ink), var(--ink)) 0 0 / 2px 8px no-repeat,
+  linear-gradient(var(--ink), var(--ink)) 100% 0 / 8px 2px no-repeat, linear-gradient(var(--ink), var(--ink)) 100% 0 / 2px 8px no-repeat,
+  linear-gradient(var(--ink), var(--ink)) 0 100% / 8px 2px no-repeat, linear-gradient(var(--ink), var(--ink)) 0 100% / 2px 8px no-repeat,
+  linear-gradient(var(--ink), var(--ink)) 100% 100% / 8px 2px no-repeat, linear-gradient(var(--ink), var(--ink)) 100% 100% / 2px 8px no-repeat; mix-blend-mode: normal; }
+/* in a text box: a tall caret-like bar */
+.cursor.is-text::before { --s: 2px; height: 22px; background: var(--accent); mix-blend-mode: normal; }
+/* on the chart: a grip with arrows */
+.cursor.is-drag::before { --s: 26px; border-radius: 999px; background: var(--accent); mix-blend-mode: normal; }
+.cursor.is-down::before { --r: 45deg; }
+.cursor.is-press.is-down::before { --s: 34px; }
+.cursor-label { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); font: 600 0.7rem var(--sans); color: var(--paper); white-space: nowrap; opacity: 0; transition: opacity 0.2s; }
+.cursor.is-drag .cursor-label { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .roll-box, .cursor::before { transition: none; } }
