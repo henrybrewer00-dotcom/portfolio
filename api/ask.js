@@ -49,6 +49,7 @@ export default async function handler(req, res) {
   const ip = String(req.headers["x-forwarded-for"] || "").split(",")[0] || "?";
   if (limited(ip)) { res.status(429).end(); return; }
 
+  const debug = previewGet && req.query.debug === "1";   // preview only: append the token usage, to check the cache
   const body = previewGet ? { q: req.query.q, intent: req.query.intent, who: req.query.who } : typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
   const q = String(body.q || "").slice(0, 200).trim();
   if (!q) { res.status(400).end(); return; }
@@ -68,7 +69,11 @@ export default async function handler(req, res) {
     headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
     // Haiku 5.5 thinks by default, and on a harder question the thinking alone used up the token cap, so the
     // answer came back empty. These are two-sentence answers: thinking off (allowed at its default effort).
-    body: JSON.stringify({ model: MODEL, max_tokens: 300, thinking: { type: "disabled" }, stream: true, system: SYSTEM, messages: [...prior, { role: "user", content: q + hint }] }),
+    // The system prompt (rules + every fact on the site) is identical on every call, so it is cached: repeat visitors within
+    // 5 minutes read it at a tenth of the price. Haiku 5.5 caches prompts of 512+ tokens; this one is well over that.
+    body: JSON.stringify({ model: MODEL, max_tokens: 300, thinking: { type: "disabled" }, stream: true,
+      system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
+      messages: [...prior, { role: "user", content: q + hint }] }),
   });
   if (!r.ok || !r.body) { res.status(502).end(); return; }
 
@@ -86,6 +91,7 @@ export default async function handler(req, res) {
     if (m) out = out.charAt(0).toUpperCase() + out.slice(1);
     head = null; res.write(out);
   };
+  let usage = {};
   const reader = r.body.getReader(), dec = new TextDecoder();
   let buf = "";
   for (;;) {
@@ -99,9 +105,12 @@ export default async function handler(req, res) {
       try {
         const ev = JSON.parse(line.slice(5));
         if (ev.type === "content_block_delta" && ev.delta?.type === "text_delta") send(ev.delta.text);
+        else if (ev.type === "message_start") usage = ev.message?.usage || {};
       } catch {}
     }
   }
   if (head) res.write(head);
+  console.log("ask usage", JSON.stringify({ in: usage.input_tokens, cache_write: usage.cache_creation_input_tokens, cache_read: usage.cache_read_input_tokens }));
+  if (debug) res.write(`\n[usage ${JSON.stringify(usage)}]`);
   res.end();
 }
