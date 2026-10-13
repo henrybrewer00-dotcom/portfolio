@@ -39,7 +39,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261013i")
+fetch("model/model.json?v=20261013j")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -439,4 +439,4 @@ if (!persona && location.hash) { persona = "curious"; renderPins(); }   // deep 
 if (!persona) intro();
 else { update(); typeHint(); input.focus({ preventScroll: true }); }
 // the opening plays over all of that, once per browser; when it clears, the prompt is ready to type into
-boot({ skip: !!location.hash }).then(() => input.focus({ preventScroll: true }));
+boot({ skip: !!location.hash, word: persona ? "henry." : "hello." }).then(() => input.focus({ preventScroll: true }));

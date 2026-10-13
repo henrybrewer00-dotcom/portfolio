@@ -2,7 +2,8 @@
    which then re-dithers into "hello." in exactly the spot, size and face where the page draws its own "hello.".
    Then the dark cover dissolves dot by dot around the letters, so the page's dotted background comes through,
    and the intro's letters fade into the page's identical ones underneath: no cut, the last frame is the page.
-   Plays once per browser; any click, tap or key skips it; off for reduced motion and deep links. */
+   Plays on every visit (Henry asked for that); any click, tap or key skips it; off for reduced motion and deep links.
+   A returning visitor's page already says "henry.", so for them the word just stays put. */
 
 const BAYER = [0, 32, 8, 40, 2, 34, 10, 42, 48, 16, 56, 24, 50, 18, 58, 26, 12, 44, 4, 36, 14, 46, 6, 38, 60, 28, 52, 20, 62, 30, 54, 22,
   3, 35, 11, 43, 1, 33, 9, 41, 51, 19, 59, 27, 49, 17, 57, 25, 15, 47, 7, 39, 13, 45, 5, 37, 63, 31, 55, 23, 61, 29, 53, 21].map((v) => (v + 0.5) / 64);
@@ -12,12 +13,9 @@ const CELL = 3;   // css px per dot: the same grain as the page's background, so
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const hash = (i, j, s) => { let h = (i * 374761393 + j * 668265263 + s * 2147483647) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
 
-export function boot({ key = "henry.booted", skip = false, onReveal = () => {} } = {}) {
+export function boot({ skip = false, word = "hello.", onReveal = () => {} } = {}) {
   const root = document.documentElement;
-  let seen = false;
-  try { seen = localStorage.getItem(key) === "1"; } catch (e) {}
-  if (skip || seen || matchMedia("(prefers-reduced-motion: reduce)").matches) { root.classList.remove("is-booting"); return Promise.resolve(); }
-  try { localStorage.setItem(key, "1"); } catch (e) {}
+  if (skip || matchMedia("(prefers-reduced-motion: reduce)").matches) { root.classList.remove("is-booting"); return Promise.resolve(); }
 
   const cv = document.createElement("canvas");
   cv.className = "boot"; cv.setAttribute("aria-hidden", "true");
@@ -64,7 +62,7 @@ export function boot({ key = "henry.booted", skip = false, onReveal = () => {} }
     cv.width = W; cv.height = H;
     cols = Math.ceil(W / CELL); rows = Math.ceil(H / CELL);
     img = ctx.createImageData(W, H); px = new Uint32Array(img.data.buffer);
-    const a = wordMask("henry."), b = wordMask("hello.");
+    const a = wordMask("henry."), b = word === "henry." ? a : wordMask(word);
     from = a.on; dot = a.last; to = b.on;
   };
   cv.width = innerWidth; cv.height = innerHeight; ctx.fillStyle = paper; ctx.fillRect(0, 0, cv.width, cv.height);
