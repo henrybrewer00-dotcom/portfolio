@@ -8,7 +8,6 @@ import { INTENTS, HINTS, PINNED, PERSONAS, personaById, personaFor, itemById, in
 import { moderate, MAX_POST } from "./moderate.js";
 import { sampleCrowd } from "./crowd-sample.js";
 import * as dither from "./dither.js";
-import { createCursor } from "./cursor.js";
 import { fillButtons } from "./fill.js";
 import { createTrail } from "./trail.js";
 import { createModel } from "./model.js";
@@ -39,7 +38,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261013e")
+fetch("model/model.json?v=20261013f")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -425,7 +424,6 @@ setInterval(() => {
 // deep links: henry93.vercel.app/#crawft
 if (location.hash && intentById[location.hash.slice(1)]) setTimeout(() => open(location.hash.slice(1)), 50);
 
-createCursor($("[data-cursor]"));
 createTrail($("[data-trail]"));
 fillButtons(document.querySelectorAll(".key.fill"));
 renderPins();
