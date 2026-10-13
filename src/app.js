@@ -11,6 +11,7 @@ import * as dither from "./dither.js";
 import { fillButtons } from "./fill.js";
 import { createTrail } from "./trail.js";
 import { boot } from "./boot.js";
+import { ditherTiles } from "./tiledither.js";
 import { createModel } from "./model.js";
 import { createSuggester } from "./suggest.js";
 import { createEngraving } from "./shader.js";
@@ -39,7 +40,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261013k")
+fetch("model/model.json?v=20261013m")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -235,7 +236,7 @@ function renderPins() {
   $("[data-change]").hidden = !p;
   $("[data-pins]").innerHTML = items.map((it, i) => `<button type="button" class="pin" data-pin="${esc(it.id)}" style="--i:${i}">
   <span class="pin-kicker">${esc(it.kicker)}</span><span class="pin-title">${esc(it.title)}</span>
-  <span class="pin-sub">${esc(it.tease || firstSentence(it))}</span><span class="pin-go" aria-hidden="true">→</span></button>`).join("");
+  <span class="pin-sub">${esc(it.tease || firstSentence(it))}</span></button>`).join("");
 }
 // the pin's teaser: its own one-liner (tease) when it has one, else the first sentence of the card, or the first two when the first is only a few words
 const firstSentence = (it) => { const s = (it.body || (it.list || []).join(", ")).split(/(?<=[.!?])\s/); return s[0].length < 40 && s[1] ? s[1] : s[0]; };
@@ -432,6 +433,7 @@ setInterval(() => {
 if (location.hash && intentById[location.hash.slice(1)]) setTimeout(() => open(location.hash.slice(1)), 50);
 
 createTrail($("[data-trail]"));
+ditherTiles($("[data-pins]"));
 fillButtons(document.querySelectorAll(".key.fill"));
 renderPins();
 loadCrowd();
