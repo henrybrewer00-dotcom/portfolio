@@ -18,7 +18,7 @@ export const MAIL = "mailto:henrybrewer00@gmail.com?subject=" + encodeURICompone
  *   id: string, kind: "about"|"job"|"project"|"hardware"|"oss"|"win"|"fact"|"contact",
  *   kicker: string, title: string, body?: string, list?: string[], tags?: string[],
  *   facts?: string[],   // extra facts for the typed answers only, never shown on the card
- *   current?: boolean, pinned?: boolean, image?: { src: string, alt: string, cap: string }, links?: Link[]
+ *   current?: boolean, pinned?: boolean, image?: { src: string, alt: string, cap: string }, images?: { src: string, alt: string, cap: string }[], links?: Link[]
  * }} Item
  */
 
@@ -42,7 +42,12 @@ export const ITEMS = [
       "Henry built a benchmark of 86 real, verified vulnerabilities plus 13 clean cases across 9 real repos in 6 languages; Vurn finds 70 of the 99.",
       "One of its real finds was a Shopify OAuth bug that sent an app's client secret to an attacker-chosen host.",
       "It's built with TypeScript, Next.js and React, with InsForge for the database and auth, about 14,000 lines of code and 99 unit and stress tests."] },
-  { id: "sitelight", tease: "Nothing to revenue in 10 days.", kind: "job", pinned: true, kicker: "founder", title: "SiteLight", body: "A personal challenge: go from nothing to revenue in under two weeks. I made it in 10 days. It checks whether AI assistants recommend your business when someone asks, then hands you the to-do list to become the answer.", tags: ["Founder", "Marketing", "AI visibility", "10 days"], image: { src: "assets/sitelight-stripe.jpg", alt: "Stripe email: Congratulations, SiteLight! You've just received your first payment through Stripe. $2.00.", cap: "the first $2 · via stripe" }, links: [{ label: "sitelight.xyz ↗", href: "https://sitelight.xyz" }] ,
+  { id: "sitelight", tease: "Nothing to revenue in 10 days.", kind: "job", pinned: true, kicker: "founder", title: "SiteLight", body: "A personal challenge: go from nothing to revenue in under two weeks. I made it in 10 days. It checks whether AI assistants recommend your business when someone asks, then hands you the to-do list to become the answer.", tags: ["Founder", "Marketing", "AI visibility", "10 days"], images: [
+      { src: "assets/design/sitelight-landing.jpg", alt: "SiteLight's landing page: When AI recommends a business, is it you? with a live report card beside it.", cap: "the landing page" },
+      { src: "assets/design/sitelight-scan.jpg", alt: "SiteLight's scan screen: balloons float while it asks ChatGPT, Gemini, Grok and Claude about a plumber.", cap: "the scan, while it asks each AI" },
+      { src: "assets/design/sitelight-overview.jpg", alt: "SiteLight's dashboard: an AI visibility score of 8 out of 100, grade F, with each assistant's result.", cap: "the score dashboard · demo data" },
+      { src: "assets/design/sitelight-fixes.jpg", alt: "SiteLight's fixes page: a step-by-step plan to get named by AI.", cap: "the fix plan · demo data" },
+      { src: "assets/sitelight-stripe.jpg", alt: "Stripe email: Congratulations, SiteLight! You've just received your first payment through Stripe. $2.00.", cap: "the first $2 · via stripe" }], links: [{ label: "sitelight.xyz ↗", href: "https://sitelight.xyz" }] ,
     // answer-only facts, from Henry and the SiteLight codebase as of 2026-10-13
     facts: ["Henry is SiteLight's founder and CEO. It's live at sitelight.xyz.",
       "It's for local businesses like plumbers, coffee shops, golf courses, med spas and roofers.",
@@ -54,6 +59,13 @@ export const ITEMS = [
   { id: "lily", tease: "Calls my grandma every morning.", kind: "project", kicker: "voice AI", title: "Lily", body: "Calls my grandma every morning, has an actual conversation, then texts the family how she sounded.", tags: ["ElevenLabs", "Twilio", "InsForge"], image: { src: "assets/lily-demo-poster.jpg", alt: "Lily's demo screen", cap: "lily · demo" }, links: [{ label: "Live ↗", href: "https://lily.insforge.site" }, { label: "Repo ↗", href: GH + "/lily" }] },
   { id: "wins", tease: "InsForge, Frontier Tower, a16z × Cursor.", kind: "win", kicker: "hackathons", title: "Some hackathon wins", list: ["InsForge", "Frontier Tower", "a16z × Cursor"] },
   { id: "glasscast", tease: "A free Screen Studio, with AI built in.", kind: "oss", kicker: "open source", title: "Glasscast", body: "Screen Studio costs money, so I made a free one. Cinematic zooms, auto-captions, a webcam bubble, bring your own AI keys.", tags: ["Electron", "TypeScript", "macOS"], links: [{ label: "Repo ↗", href: GH + "/Glasscast" }] },
+  { id: "site", tease: "This portfolio, dithered from scratch.", kind: "design", kicker: "design", title: "This site", body: "My portfolio, designed from scratch. Everything is drawn in one 3px dither grain: the dot field behind the page, an intro that dithers my name in and re-dithers it into the page, a pixel-art cursor with a fading orange trail, enter buttons that fill with orange dots, and charts of who's visited. Near-black, bone white, and one orange.", tags: ["Design", "Dither", "Vanilla JS", "Canvas"],
+    images: [
+      { src: "assets/design/site-home.jpg", alt: "The portfolio home: a big dithered henry. wordmark, the ask bar and three picks in dithered frames.", cap: "the home page" },
+      { src: "assets/design/site-intro.jpg", alt: "The intro: dither static gathering into henry. with an orange dot.", cap: "the intro, mid-dither" },
+      { src: "assets/design/site-crowd.jpg", alt: "Dithered bar charts of visits per day and what visitors do.", cap: "who's been here · sample data" },
+      { src: "assets/design/site-phone.jpg", alt: "The portfolio on a phone.", cap: "on a phone" }],
+    links: [{ label: "Repo ↗", href: GH + "/portfolio" }] },
   { id: "drivethru", kind: "project", kicker: "voice AI", title: "Lily's Drive-Thru", body: "Order out loud. The AI takes it, upsells you once, reads the total back with tax, and fires a live ticket to the kitchen screen.", tags: ["ElevenLabs", "Express", "SSE"], links: [{ label: "Repo ↗", href: GH + "/voice-drive-thru" }] },
   { id: "elevenmile", kind: "project", kicker: "AI + audio", title: "Eleven Mile", body: "Pick two people and a topic and watch them rap-battle. Claude writes the bars, ElevenLabs raps them. A little dumb and I love it.", tags: ["Claude", "ElevenLabs"], links: [{ label: "Repo ↗", href: GH + "/eleven-mile" }] },
   { id: "pawbot", tease: "Walks older people through the computer.", kind: "project", kicker: "accessibility", title: "PawBot", body: "Helps older people use a computer one step at a time, like helping your grandparent figure out their email.", tags: ["Hackathon", "Assistive"], links: [{ label: "Repo ↗", href: GH + "/PawBot" }] },
@@ -105,6 +117,10 @@ export const INTENTS = [
     suggest: ["show me the rap battle app", "Eleven Mile"],
     subjects: ["eleven mile", "11 mile", "rap battle", "rap battles", "ai rap", "rapping ai", "diss track generator", "8 mile parody"],
     questions: ["can ai rap battle", "the rap battle thing", "where two people rap battle", "did he make a rap app", "what's eleven mile"] },
+  { id: "design", title: "Design work", engrave: "Design", ids: ["site", "sitelight", "glasscast"],
+    suggest: ["show me Henry's design work", "Henry's designs", "show me what Henry designed"],
+    subjects: ["design work", "design", "designs", "designer", "ui", "ux", "ui design", "ux design", "visual design", "web design", "product design", "interfaces", "his design", "screenshots", "photos of his work", "pictures of his work", "what it looks like", "this site", "this portfolio", "the portfolio", "his portfolio", "the website", "dither", "dithering", "branding", "figma"],
+    questions: ["can henry design", "is he a designer", "does henry do design", "who designed this site", "did he design this", "how was this site made", "what does his work look like", "can i see screenshots", "does he have an eye for design", "show me pictures"] },
   { id: "glasscast", title: "Glasscast", engrave: "Glasscast", ids: ["glasscast"],
     suggest: ["show me Glasscast", "the free Screen Studio"],
     subjects: ["glasscast", "glass cast", "screen recorder", "screen recording app", "free screen studio", "screen studio alternative", "mac app", "electron app", "auto captions"],
@@ -189,7 +205,7 @@ export const PERSONAS = [
     companies: ["google", "alphabet", "deepmind", "meta", "facebook", "instagram", "apple", "microsoft", "amazon", "aws", "netflix", "nvidia", "openai", "anthropic", "xai", "tesla", "spacex",
       "stripe", "shopify", "uber", "airbnb", "salesforce", "oracle", "ibm", "intel", "amd", "adobe", "linkedin", "github", "vercel", "cloudflare", "databricks", "palantir", "snowflake",
       "tiktok", "bytedance", "twitter", "snap", "spotify", "dropbox", "figma", "notion", "slack", "atlassian", "coinbase", "robinhood", "doordash", "lyft", "pinterest", "reddit", "discord"] },
-  { id: "designer", label: "I design things", noun: "a designer", picks: ["glasscast", "lily", "pawbot"],
+  { id: "designer", label: "I design things", noun: "a designer", picks: ["site", "sitelight", "glasscast"],
     match: ["design", "designer", "ux", "ui", "product", "pm", "product manager", "art", "creative", "brand", "figma"] },
   { id: "student", label: "I'm a student", noun: "a student", picks: ["wins", "siege", "sub"],
     match: ["student", "school", "college", "university", "high school", "learning", "kid", "teen", "teacher", "parent"] },

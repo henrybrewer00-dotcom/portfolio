@@ -108,7 +108,7 @@ body.has-results .pinned { display: none; }
 .follow .key { cursor: pointer; }
 .turn-a:not(.is-done)::after { content: ""; display: inline-block; width: 2px; height: 1.05em; margin-left: 2px; background: var(--ink); vertical-align: -0.15em; animation: caret 0.8s steps(1) infinite; }
 .cards { display: grid; gap: 1rem; }
-.card { position: relative; padding: 1.5rem 1.6rem; background: var(--card); border: 1px solid var(--border); border-radius: 22px; animation: deal 0.7s var(--ease) both; animation-delay: calc(0.1s + var(--i, 0) * 60ms); transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease); }
+.card { position: relative; min-width: 0; padding: 1.5rem 1.6rem; background: var(--card); border: 1px solid var(--border); border-radius: 22px; animation: deal 0.7s var(--ease) both; animation-delay: calc(0.1s + var(--i, 0) * 60ms); transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease); }
 .card:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.07); }
 @keyframes deal { from { opacity: 0; transform: translateY(26px) scale(0.98); filter: blur(4px); } }
 .card h3 { font: 600 1.75rem/1.1 var(--sans); letter-spacing: -0.025em; margin-bottom: 0.45rem; }
@@ -123,6 +123,10 @@ body.has-results .pinned { display: none; }
 .fig:hover { transform: scale(1.02); }
 .fig img { display: block; width: 100%; }
 .fig figcaption { font: 0.72rem var(--sans); color: var(--muted); padding: 0.5rem 0.75rem; border-top: 1px solid var(--border); }
+/* a row of screenshots that scrolls sideways; each opens full size in a new tab */
+.gallery { display: flex; gap: 0.75rem; margin: 1rem -1.6rem 0; padding: 0 1.6rem 0.4rem; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 1.6rem; scrollbar-width: thin; }
+.gallery .fig { flex: 0 0 min(22rem, 78%); max-width: none; margin: 0; scroll-snap-align: start; background: var(--paper); }
+.gallery .fig img { aspect-ratio: 16 / 10; object-fit: cover; object-position: top; }
 .acts { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 1.2rem; align-items: center; }
 .act { display: inline-flex; align-items: center; font: 500 0.84rem var(--sans); border-radius: 999px; padding: 0.55em 1.1em; background: var(--ink); color: var(--paper); transition: background 0.2s, color 0.2s, transform 0.2s var(--spring); }
 .act:hover { background: var(--accent); color: var(--paper); }
@@ -147,6 +151,7 @@ a:focus-visible, button:focus-visible, .act:focus-visible { outline: 2px solid v
   .bar input, .ghost { font-size: 1rem; padding: 0.9rem 1.1rem; }
   .ghost { right: 3.4rem; }
   .card { padding: 1.25rem 1.2rem; border-radius: 18px; }
+  .gallery { margin-inline: -1.2rem; padding-inline: 1.2rem; scroll-padding: 0 1.2rem; }
     .hint .opt { display: none; }
   .pins { grid-template-columns: 1fr; }
 }

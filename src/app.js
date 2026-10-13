@@ -40,7 +40,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261013m")
+fetch("model/model.json?v=20261013n")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -220,6 +220,7 @@ function card(it, i = 0) {
     ${it.body ? `<p>${esc(it.body)}</p>` : ""}
     ${it.list ? `<ul class="list">${it.list.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
     ${it.tags ? `<p class="tags">${it.tags.map((t) => `<span>${esc(t)}</span>`).join("")}</p>` : ""}
+    ${it.images ? `<div class="gallery">${it.images.map((im) => `<figure class="fig"><a href="${esc(im.src)}" target="_blank" rel="noreferrer"><img src="${esc(im.src)}" alt="${esc(im.alt)}" loading="lazy" /></a><figcaption>${esc(im.cap)}</figcaption></figure>`).join("")}</div>` : ""}
     ${it.image ? `<figure class="fig"><img src="${esc(it.image.src)}" alt="${esc(it.image.alt)}" loading="lazy" /><figcaption>${esc(it.image.cap)}</figcaption></figure>` : ""}
     ${links ? `<div class="acts">${links}</div>` : ""}
   </article>`;
