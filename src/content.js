@@ -146,3 +146,35 @@ export const intentById = Object.fromEntries(INTENTS.map((i) => [i.id, i]));
 
 /** The pinned row on the home screen. */
 export const PINNED = ["vurn", "crawft", "sitelight"].map((id) => itemById[id]);
+
+/**
+ * "Who are you?" — the intro asks, then the pinned row becomes three picks for that kind of visitor.
+ * match: words that put a typed answer ("I run a startup") into this group.
+ */
+export const PERSONAS = [
+  { id: "hiring", label: "I'm hiring", noun: "someone hiring", picks: ["crawft", "vurn", "receipts"],
+    match: ["hire", "hiring", "recruit", "recruiter", "talent", "hr", "manager", "team lead", "cto", "ceo", "job"] },
+  { id: "founder", label: "I'm building a startup", noun: "a founder", picks: ["sitelight", "crawft", "vurn"],
+    match: ["founder", "startup", "company", "business", "investor", "vc", "invest", "entrepreneur", "own", "run a", "cofounder"] },
+  { id: "engineer", label: "I write code", noun: "an engineer", picks: ["vurn", "glasscast", "oss"],
+    match: ["engineer", "developer", "dev", "code", "coder", "programmer", "software", "swe", "backend", "frontend", "full stack", "build"] },
+  { id: "security", label: "I work in security", noun: "a security person", picks: ["vurn", "crawft", "oss"],
+    match: ["security", "cyber", "pentest", "hacker", "hacking", "infosec", "red team", "bug bounty", "appsec", "ctf"] },
+  { id: "designer", label: "I design things", noun: "a designer", picks: ["glasscast", "lily", "pawbot"],
+    match: ["design", "designer", "ux", "ui", "product", "art", "creative", "brand", "figma"] },
+  { id: "student", label: "I'm a student", noun: "a student", picks: ["wins", "siege", "sub"],
+    match: ["student", "school", "college", "university", "high school", "learning", "kid", "teen", "teacher", "parent"] },
+  { id: "curious", label: "just looking around", noun: "a curious visitor", picks: ["vurn", "lily", "siege"], match: [] },
+];
+export const personaById = Object.fromEntries(PERSONAS.map((p) => [p.id, p]));
+
+/** Typed answer → persona id (curious when nothing matches). */
+export function personaFor(text) {
+  const t = ` ${String(text).toLowerCase().replace(/[^a-z ]/g, " ")} `;
+  let best = "curious", score = 0;
+  for (const p of PERSONAS) {
+    const s = p.match.reduce((n, w) => n + (t.includes(` ${w} `) || t.includes(` ${w}s `) ? w.length : 0), 0);
+    if (s > score) { best = p.id; score = s; }
+  }
+  return best;
+}

@@ -4,7 +4,7 @@
 // Needs ANTHROPIC_API_KEY in the Vercel project's environment; without it, it answers 503 and the
 // page just shows the cards.
 
-import { ITEMS, intentById } from "../src/content.js";
+import { ITEMS, intentById, personaById } from "../src/content.js";
 
 const MODEL = "claude-haiku-5-5";
 const FACTS = ITEMS.map((it) => `- ${it.title} (${it.kicker})${it.body ? ": " + it.body : ""}${it.list ? ": " + it.list.join(", ") : ""}`).join("\n");
@@ -55,7 +55,8 @@ export default async function handler(req, res) {
     return pq && pa ? [{ role: "user", content: pq }, { role: "assistant", content: pa }] : [];
   });
   const intent = intentById[body.intent];
-  const hint = intent ? `\n(The page is showing: ${intent.title}.)` : "";
+  const visitor = personaById[body.who];
+  const hint = (intent ? `\n(The page is showing: ${intent.title}.)` : "") + (visitor && visitor.id !== "curious" ? `\n(The visitor said they are ${visitor.noun}; pick the evidence that matters most to them.)` : "");
 
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",

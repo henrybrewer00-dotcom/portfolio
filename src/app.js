@@ -4,7 +4,10 @@
    screen is generated: every word comes from content.js.
    ========================================================================= */
 
-import { INTENTS, HINTS, PINNED, itemById, intentById } from "./content.js";
+import { INTENTS, HINTS, PINNED, PERSONAS, personaById, personaFor, itemById, intentById } from "./content.js";
+import { moderate, MAX_POST } from "./moderate.js";
+import { sampleCrowd } from "./crowd-sample.js";
+import * as dither from "./dither.js";
 import { createModel } from "./model.js";
 import { createSuggester } from "./suggest.js";
 import { createEngraving } from "./shader.js";
@@ -28,11 +31,12 @@ let engraving = null;
   try { await Promise.race([document.fonts.load('400 120px "Instrument Serif"'), new Promise((r) => setTimeout(r, 1500))]); } catch (e) {}
   try { engraving = createEngraving($("[data-engraving]"), { reduceMotion }); } catch (e) { console.warn(e); }
   if (!engraving) document.body.classList.add("no-gl");
+  else if (!persona) engraving.show("hello.", false);
   document.body.classList.add("is-ready");
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261011l")
+fetch("model/model.json?v=20261013a")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -137,7 +141,7 @@ async function ask(q, intentId, followUp = false) {
   const a = Object.assign(document.createElement("p"), { className: "turn-a" });
   turn.append(a);
   try {
-    const r = await fetch("api/ask", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ q, intent: askIntent, history: turns }), signal: ctl.signal });
+    const r = await fetch("api/ask", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ q, intent: askIntent, history: turns, who: persona }), signal: ctl.signal });
     if (!r.ok || !r.body) { if (followUp) { a.textContent = "Couldn't answer that one right now."; a.classList.add("is-done"); turnsEl.append(turn); } return; }
     turnsEl.append(turn);
     answerEl.hidden = false;
@@ -202,9 +206,21 @@ function card(it, i = 0) {
   </article>`;
 }
 
-/* ---------- pinned: the three things Henry wants seen first ---------- */
-$("[data-pins]").innerHTML = PINNED.map((it, i) => `<button type="button" class="pin" data-pin="${esc(it.id)}" style="--i:${i}">
-  <span class="pin-kicker">${esc(it.kicker)}</span><span class="pin-title">${esc(it.title)}</span><span class="pin-go" aria-hidden="true">→</span></button>`).join("");
+/* ---------- pinned: three things up front; once we know who you are, three picked for you ---------- */
+const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+let persona = personaById[store.get("henry.who")] ? store.get("henry.who") : null;
+
+function renderPins() {
+  const p = personaById[persona];
+  const items = p ? p.picks.map((id) => itemById[id]) : PINNED;
+  $("[data-picked-for]").textContent = p ? `picked for ${p.noun}` : "pinned";
+  $("[data-change]").hidden = !p;
+  $("[data-pins]").innerHTML = items.map((it, i) => `<button type="button" class="pin" data-pin="${esc(it.id)}" style="--i:${i}">
+  <span class="pin-kicker">${esc(it.kicker)}</span><span class="pin-title">${esc(it.title)}</span>
+  <span class="pin-sub">${esc(firstSentence(it))}</span><span class="pin-go" aria-hidden="true">→</span></button>`).join("");
+}
+// the pin's teaser: the first sentence of the card, or the first two when the first is only a few words
+const firstSentence = (it) => { const s = (it.body || (it.list || []).join(", ")).split(/(?<=[.!?])\s/); return s[0].length < 40 && s[1] ? s[1] : s[0]; };
 $("[data-pins]").addEventListener("click", (e) => {
   const b = e.target.closest("[data-pin]");
   if (!b) return;
@@ -214,6 +230,80 @@ $("[data-pins]").addEventListener("click", (e) => {
   stopAnim();
   input.value = intent.suggest[0]; lastText = input.value; update();
   stamp(); open(intent.id, input.value);
+});
+
+/* ---------- the intro: "first, who are you?" ---------- */
+const who = $("[data-who]"), whoForm = $("[data-who-type]");
+$("[data-who-chips]").innerHTML = PERSONAS.map((p, i) => `<button type="button" class="chip who-chip" data-persona="${p.id}" style="--i:${i}">${esc(p.label)}</button>`).join("");
+function intro() {
+  persona = null;
+  document.body.classList.add("is-intro");
+  who.hidden = false;
+  renderPins();
+  if (!results.hidden) close(false);
+  engraving && engraving.show("hello.", false);
+}
+function choose(id, said = "") {
+  persona = id;
+  store.set("henry.who", id);
+  who.classList.add("is-leaving");
+  setTimeout(() => { who.hidden = true; who.classList.remove("is-leaving"); document.body.classList.remove("is-intro"); renderPins(); input.focus({ preventScroll: true }); typeHint(); }, reduceMotion ? 0 : 320);
+  engraving && engraving.show("henry.", false);
+  stamp();
+  // one visit per browser, counted under what they said they do
+  if (!store.get("henry.counted")) { store.set("henry.counted", "1"); fetch("api/crowd", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "visit", role: id }) }).then(loadCrowd, () => {}); }
+  // what they typed is a ready-made post for the wall
+  const wall = $("#wall-text");
+  if (said && !wall.value) wall.value = said.slice(0, MAX_POST);
+}
+$("[data-who-chips]").addEventListener("click", (e) => { const b = e.target.closest("[data-persona]"); if (b) choose(b.dataset.persona); });
+whoForm.addEventListener("submit", (e) => { e.preventDefault(); const t = whoForm.elements.who.value.trim(); if (t) choose(personaFor(t), t); });
+$("[data-change]").addEventListener("click", intro);
+
+/* ---------- who's been here: dithered charts and the "what do you do?" wall ---------- */
+let crowd = null;
+const ago = (t) => { const m = Math.max(1, Math.round((Date.now() - t) / 6e4)); return m < 60 ? `${m}m` : m < 1440 ? `${Math.round(m / 60)}h` : `${Math.round(m / 1440)}d`; };
+async function loadCrowd() {
+  try { const r = await fetch("api/crowd"); if (!r.ok) throw 0; crowd = await r.json(); } catch (e) { crowd = crowd || sampleCrowd(); }
+  const mine = JSON.parse(store.get("henry.posts") || "[]");
+  const posts = [...mine.filter((m) => !crowd.posts.some((p) => p.text === m.text)), ...crowd.posts];
+  $("[data-sample]").hidden = !crowd.sample;
+  const tease = $("[data-tease]");
+  tease.textContent = `${crowd.total} people have been here. See who ↓`; tease.hidden = false;
+  $("[data-posts]").innerHTML = posts.slice(0, 12).map((p) => `<li class="post${mine.some((m) => m.text === p.text) ? " is-you" : ""}"><span class="post-role">${esc((personaById[p.role] || personaById.curious).label)}</span><span class="post-text">${esc(p.text)}</span><span class="post-t">${ago(p.t)}</span></li>`).join("");
+  drawn = false; if (crowdSeen) drawCrowd();
+}
+let drawn = false, crowdSeen = false;
+function drawCrowd() {
+  if (drawn || !crowd) return;
+  drawn = true;
+  const rows = PERSONAS.map((p) => ({ p, n: crowd.roles[p.id] || 0 })).sort((a, b) => b.n - a.n), max = Math.max(...rows.map((r) => r.n), 1);
+  const el = $("[data-roles]");
+  el.innerHTML = rows.map(({ p, n }) => `<div class="row${p.id === persona ? " is-you" : ""}"><span class="row-label">${esc(p.label)}</span><canvas class="row-bar"></canvas><span class="row-n">${n}</span></div>`).join("");
+  el.querySelectorAll("canvas").forEach((c, i) => dither.bar(c, rows[i].n / max, rows[i].p.id === persona, reduceMotion));
+  dither.columns($("[data-days]"), crowd.days.map((d) => d.n), reduceMotion);
+  $("[data-days-from]").textContent = new Date(crowd.days[0].t).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { crowdSeen = true; drawCrowd(); } }, { threshold: 0.2 }).observe($("[data-crowd]"));
+addEventListener("resize", () => { if (crowdSeen) { drawn = false; drawCrowd(); } });
+
+const wallForm = $("[data-wall-form]"), wallNote = $("[data-wall-note]");
+wallForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const m = moderate(wallForm.elements.text.value);
+  if (!m.ok) { wallNote.textContent = m.why; return; }
+  wallNote.textContent = "posting…";
+  const role = persona || "curious";
+  try {
+    const r = await fetch("api/crowd", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "post", role, text: m.text }) });
+    if (r.status === 422 || r.status === 429) { wallNote.textContent = (await r.json()).why; return; }
+    if (!r.ok && r.status !== 404 && r.status !== 501) { wallNote.textContent = "Couldn't post that right now. Try again in a bit."; return; }
+  } catch (e) { /* offline or local: keep it in this browser */ }
+  const mine = JSON.parse(store.get("henry.posts") || "[]");
+  mine.unshift({ role, text: m.text, t: Date.now() });
+  store.set("henry.posts", JSON.stringify(mine.slice(0, 5)));
+  wallForm.elements.text.value = ""; wallNote.textContent = "you're on the wall.";
+  loadCrowd();
 });
 
 /* ---------- wiring ---------- */
@@ -296,6 +386,8 @@ setInterval(() => {
 // deep links: henry93.vercel.app/#crawft
 if (location.hash && intentById[location.hash.slice(1)]) setTimeout(() => open(location.hash.slice(1)), 50);
 
+renderPins();
+loadCrowd();
+if (!persona && !location.hash) intro();
 update();
-typeHint();
-input.focus({ preventScroll: true });
+if (persona) { typeHint(); input.focus({ preventScroll: true }); }
