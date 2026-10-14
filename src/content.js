@@ -24,7 +24,14 @@ export const MAIL = "mailto:henrybrewer00@gmail.com?subject=" + encodeURICompone
 
 /** @type {Item[]} */
 export const ITEMS = [
-  { id: "me", kind: "about", kicker: "the maker", title: "I'm Henry.", body: "Fourteen, from Austin, and a proud vibecoder. I build voice AI, robots, a submarine, and a company. Right now I work at Crawft, and I founded SiteLight.", tags: ["14", "Austin, TX", "Proud vibecoder"], links: [{ label: "GitHub ↗", href: GH }, { label: "Email →", href: MAIL }] },
+  { id: "me", kind: "about", kicker: "the maker", title: "I'm Henry.", body: "Fourteen, from Austin, and a proud vibecoder. I build voice AI, robots, a submarine, and a company. I go to Alpha High School. Right now I work at Crawft, and I founded SiteLight.", tags: ["14", "Austin, TX", "Alpha High School", "Proud vibecoder"], links: [{ label: "GitHub ↗", href: GH }, { label: "Email →", href: MAIL }] ,
+    // answer-only facts about Henry's school, from alpha.school and alphahigh.school as of 2026-10-14
+    facts: ["Henry goes to Alpha High School, part of Alpha School, which calls itself an AI-powered private school.",
+      "Alpha's model is 2 Hour Learning: students do their academics in a short morning block with adaptive software that gives each of them 1:1 learning at their own pace, aiming for full mastery before moving on.",
+      "At Alpha, the adults are called guides, not teachers: they don't grade or write lesson plans, they coach, motivate and support students.",
+      "Afternoons at Alpha are for life-skills workshops and students' own projects; at Alpha High that includes sports, arts and entrepreneurship.",
+      "Alpha says its students learn twice as fast and rank in the top 1% nationwide; Alpha High lists a December 2024 school-wide SAT average of 1410.",
+      "Alpha has campuses across the US; Alpha High has campuses in Austin, Miami, New York City, Oklahoma City, San Francisco and Santa Barbara."] },
   { id: "crawft", tease: "Cofounder and CTO, since mid-August.", kind: "job", current: true, pinned: true, kicker: "current job", title: "Crawft", body: "I'm cofounder and CTO, since mid-August 2026. Crawft is an AI-powered monitoring tool for schools and managers: it turns activity data into answers backed by evidence, and sends smart nudges that steer people off bad websites.", tags: ["Current", "AI monitoring", "Schools"], links: [{ label: "crawft.ai ↗", href: "https://crawft.ai" }],
     // answer-only facts (not shown on the card), from Henry, crawft.ai and the Crawft codebase, as of 2026-10-13
     facts: ["Henry is Crawft's cofounder and CTO.", "Crawft is running a beta trial right now.",
@@ -103,8 +110,8 @@ export const INTENTS = [
     questions: ["can henry do marketing", "is he good at marketing", "how does he market things", "has he sold anything", "how did he get customers", "what is his company", "what company did henry found", "what is henry founder of", "how did he make money", "what's his startup", "is henry a founder", "what does sitelight do", "how did he get revenue in 10 days"] },
   { id: "about", title: "About Henry", engrave: "Henry", ids: ["me"],
     suggest: ["who is Henry", "tell me about Henry", "about Henry", "how long has Henry been building"],
-    subjects: ["about", "bio", "intro", "henry", "himself", "who he is", "age", "where he lives", "background", "experience", "his experience", "how long he's been coding", "when he started"],
-    questions: ["how long has henry been building", "how long has he been building stuff", "how long has henry been coding", "when did henry start coding", "when did he start building", "how much experience does he have", "how long has he been programming", "how many years has he coded", "is he experienced", "who is henry", "who are you", "how old is henry", "where is henry from", "where does he live", "tell me about yourself", "introduce yourself", "what is a vibecoder", "is he really 14", "who made this site", "who is this"] },
+    subjects: ["school", "his school", "where he goes to school", "alpha school", "alpha high", "alpha high school", "2 hour learning", "two hour learning", "about", "bio", "intro", "henry", "himself", "who he is", "age", "where he lives", "background", "experience", "his experience", "how long he's been coding", "when he started"],
+    questions: ["where does henry go to school", "what school does he go to", "does henry go to school", "what is alpha school", "is he homeschooled", "what grade is he in", "how long has henry been building", "how long has he been building stuff", "how long has henry been coding", "when did henry start coding", "when did he start building", "how much experience does he have", "how long has he been programming", "how many years has he coded", "is he experienced", "who is henry", "who are you", "how old is henry", "where is henry from", "where does he live", "tell me about yourself", "introduce yourself", "what is a vibecoder", "is he really 14", "who made this site", "who is this"] },
   { id: "lily", title: "Lily", engrave: "Lily", ids: ["lily"],
     suggest: ["show me Lily", "the AI that calls his grandma", "Lily, the voice AI"],
     subjects: ["lily", "grandma calling ai", "ai that calls grandma", "the grandma bot", "phone call ai", "morning call bot", "alzheimer's project", "voice companion", "lily app", "lily ai"],

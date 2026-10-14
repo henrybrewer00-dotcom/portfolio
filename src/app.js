@@ -40,7 +40,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261014a")
+fetch("model/model.json?v=20261014b")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
