@@ -17,19 +17,62 @@ export const MAIL = "mailto:henrybrewer00@gmail.com?subject=" + encodeURICompone
  * @typedef {{
  *   id: string, kind: "about"|"job"|"project"|"hardware"|"oss"|"win"|"fact"|"contact",
  *   kicker: string, title: string, body?: string, list?: string[], tags?: string[],
- *   current?: boolean, pinned?: boolean, image?: { src: string, alt: string, cap: string }, links?: Link[]
+ *   facts?: string[],   // extra facts for the typed answers only, never shown on the card
+ *   current?: boolean, pinned?: boolean, image?: { src: string, alt: string, cap: string }, images?: { src: string, alt: string, cap: string }[], links?: Link[]
  * }} Item
  */
 
 /** @type {Item[]} */
 export const ITEMS = [
-  { id: "me", kind: "about", kicker: "the maker", title: "I'm Henry.", body: "Fourteen, from Austin, and a proud vibecoder. I build voice AI, robots, a submarine, and a company. Right now I work at Crawft, and I founded SiteLight.", tags: ["14", "Austin, TX", "Proud vibecoder"], links: [{ label: "GitHub ↗", href: GH }, { label: "Email →", href: MAIL }] },
-  { id: "crawft", tease: "Where I work now, since mid-August.", kind: "job", current: true, pinned: true, kicker: "current job", title: "Crawft", body: "Where I work right now, since mid-August 2026. Crawft is an AI-powered monitoring tool for schools and managers: it turns activity data into answers backed by evidence, and sends smart nudges that steer people off bad websites.", tags: ["Current", "AI monitoring", "Schools"], links: [{ label: "crawft.ai ↗", href: "https://crawft.ai" }] },
-  { id: "vurn", tease: "Found a hole in 40,000 Shopify accounts.", kind: "project", pinned: true, kicker: "cybersecurity", title: "Vurn AI", body: "A fully autonomous AI pentesting tool. 24 hours after I built it, it found a major vulnerability in a top-200 GitHub repo that gave access to over 40,000 Shopify accounts.", tags: ["Security", "Pentesting", "AI agents"] },
-  { id: "sitelight", tease: "Nothing to revenue in 10 days.", kind: "job", pinned: true, kicker: "founder", title: "SiteLight", body: "A personal challenge: go from nothing to revenue in under two weeks. I made it in 10 days. It checks whether AI assistants recommend your business when someone asks, then hands you the to-do list to become the answer.", tags: ["Founder", "Marketing", "AI visibility", "10 days"], image: { src: "assets/sitelight-stripe.jpg", alt: "Stripe email: Congratulations, SiteLight! You've just received your first payment through Stripe. $2.00.", cap: "the first $2 · via stripe" }, links: [{ label: "sitelight.xyz ↗", href: "https://sitelight.xyz" }] },
+  { id: "me", kind: "about", kicker: "the maker", title: "I'm Henry.", body: "Fourteen, from Austin, and a proud vibecoder. I build voice AI, robots, a submarine, and a company. I go to Alpha High School. Right now I work at Crawft, and I founded SiteLight.", tags: ["14", "Austin, TX", "Alpha High School", "Proud vibecoder"], links: [{ label: "GitHub ↗", href: GH }, { label: "Email →", href: MAIL }] ,
+    // answer-only facts about Henry's school, from alpha.school and alphahigh.school as of 2026-10-14
+    facts: ["Henry goes to Alpha High School, part of Alpha School, which calls itself an AI-powered private school.",
+      "Alpha's model is 2 Hour Learning: students do their academics in a short morning block with adaptive software that gives each of them 1:1 learning at their own pace, aiming for full mastery before moving on.",
+      "At Alpha, the adults are called guides, not teachers: they don't grade or write lesson plans, they coach, motivate and support students.",
+      "Afternoons at Alpha are for life-skills workshops and students' own projects; at Alpha High that includes sports, arts and entrepreneurship.",
+      "Alpha says its students learn twice as fast and rank in the top 1% nationwide; Alpha High lists a December 2024 school-wide SAT average of 1410.",
+      "Alpha has campuses across the US; Alpha High has campuses in Austin, Miami, New York City, Oklahoma City, San Francisco and Santa Barbara."] },
+  { id: "crawft", tease: "Cofounder and CTO, since mid-August.", kind: "job", current: true, pinned: true, kicker: "current job", title: "Crawft", body: "I'm cofounder and CTO, since mid-August 2026. Crawft is an AI-powered monitoring tool for schools and managers: it turns activity data into answers backed by evidence, and sends smart nudges that steer people off bad websites.", tags: ["Current", "AI monitoring", "Schools"], links: [{ label: "crawft.ai ↗", href: "https://crawft.ai" }],
+    // answer-only facts (not shown on the card), from Henry, crawft.ai and the Crawft codebase, as of 2026-10-13
+    facts: ["Henry is Crawft's cofounder and CTO.", "Crawft is running a beta trial right now.",
+      "It has a workplace mode (people, groups, managers) and a school mode (students, classes, teachers), on organization-owned computers.",
+      "It turns each person's activity into a written daily account of their day, with every line linked to evidence, so a manager or teacher can see what happened without chasing updates.",
+      "Nudges: an AI model judges whether activity is off task and sends the person a short message to get back on track; on-task work is never nudged.",
+      "It's built from a native Mac agent in Swift, a Windows agent in Rust (in progress), a TypeScript backend on Fastify and PostgreSQL, Next.js web consoles, and infrastructure on AWS.",
+      "It never records audio, camera video or location, and screenshot images are not sent to AI providers.",
+      "Crawft's site headline is \"See the work you're paying for.\" Pricing isn't public; teams contact sales."] },
+  { id: "vurn", tease: "Found a hole in 40,000 Shopify accounts.", kind: "project", pinned: true, kicker: "cybersecurity", title: "Vurn AI", body: "A fully autonomous AI pentesting tool. 24 hours after I built it, it found a major vulnerability in a top-200 GitHub repo that gave access to over 40,000 Shopify accounts.", tags: ["Security", "Pentesting", "AI agents"],
+    // answer-only facts, from the Vurn AI codebase as of 2026-10-13
+    facts: ["Vurn AI scans the code of AI-written apps for security holes: leaked keys in the browser bundle, database tables with row-level security off, auth that only runs in the browser, IDOR and injection.",
+      "It works in two passes: a fast deterministic pass for secrets and database rules, then a reasoning pass with Claude that reviews the code through focused security lenses using a map of the repo.",
+      "Every finding from the reasoning pass is checked against the actual file, and dropped if the quoted code isn't there, so it doesn't report made-up bugs.",
+      "Henry built a benchmark of 86 real, verified vulnerabilities plus 13 clean cases across 9 real repos in 6 languages; Vurn finds 70 of the 99.",
+      "One of its real finds was a Shopify OAuth bug that sent an app's client secret to an attacker-chosen host.",
+      "It's built with TypeScript, Next.js and React, with InsForge for the database and auth, about 14,000 lines of code and 99 unit and stress tests."] },
+  { id: "sitelight", tease: "Nothing to revenue in 10 days.", kind: "job", pinned: true, kicker: "founder", title: "SiteLight", body: "A personal challenge: go from nothing to revenue in under two weeks. I made it in 10 days. It checks whether AI assistants recommend your business when someone asks, then hands you the to-do list to become the answer.", tags: ["Founder", "Marketing", "AI visibility", "10 days"], images: [
+      { src: "assets/design/sitelight-landing.jpg", alt: "SiteLight's landing page: When AI recommends a business, is it you? with a live report card beside it.", cap: "the landing page" },
+      { src: "assets/design/sitelight-scan.jpg", alt: "SiteLight's scan screen: balloons float while it asks ChatGPT, Gemini, Grok and Claude about a plumber.", cap: "the scan, while it asks each AI" },
+      { src: "assets/design/sitelight-overview.jpg", alt: "SiteLight's dashboard: an AI visibility score of 8 out of 100, grade F, with each assistant's result.", cap: "the score dashboard · demo data" },
+      { src: "assets/design/sitelight-fixes.jpg", alt: "SiteLight's fixes page: a step-by-step plan to get named by AI.", cap: "the fix plan · demo data" },
+      { src: "assets/sitelight-stripe.jpg", alt: "Stripe email: Congratulations, SiteLight! You've just received your first payment through Stripe. $2.00.", cap: "the first $2 · via stripe" }], links: [{ label: "sitelight.xyz ↗", href: "https://sitelight.xyz" }] ,
+    // answer-only facts, from Henry and the SiteLight codebase as of 2026-10-13
+    facts: ["Henry is SiteLight's founder and CEO. It's live at sitelight.xyz.",
+      "It's for local businesses like plumbers, coffee shops, golf courses, med spas and roofers.",
+      "How it works: it writes the questions a buyer would ask, like \"best coffee shop in Austin\", asks four AI assistants (ChatGPT, Gemini, Perplexity and Claude), and checks whether the business is named, where it ranks, how it's described and which competitors come up instead.",
+      "Then it gives a 0 to 100 score with a letter grade, a dashboard with a heatmap and share of voice, and ready-to-paste fixes: structured business data, an llms.txt file and FAQ blocks.",
+      "Pricing is one-time scan packs through Stripe: $2 for one scan, $5 for three, $10 for eight.",
+      "Henry sold it with cold emails that each included a real scan naming the competitors AI recommended instead; in one batch, 26 of 28 businesses he checked were invisible to AI.",
+      "It's built with TypeScript, React, Vite and Tailwind, with InsForge for the database, auth and server functions, about 30,000 lines of code."] },
   { id: "lily", tease: "Calls my grandma every morning.", kind: "project", kicker: "voice AI", title: "Lily", body: "Calls my grandma every morning, has an actual conversation, then texts the family how she sounded.", tags: ["ElevenLabs", "Twilio", "InsForge"], image: { src: "assets/lily-demo-poster.jpg", alt: "Lily's demo screen", cap: "lily · demo" }, links: [{ label: "Live ↗", href: "https://lily.insforge.site" }, { label: "Repo ↗", href: GH + "/lily" }] },
   { id: "wins", tease: "InsForge, Frontier Tower, a16z × Cursor.", kind: "win", kicker: "hackathons", title: "Some hackathon wins", list: ["InsForge", "Frontier Tower", "a16z × Cursor"] },
   { id: "glasscast", tease: "A free Screen Studio, with AI built in.", kind: "oss", kicker: "open source", title: "Glasscast", body: "Screen Studio costs money, so I made a free one. Cinematic zooms, auto-captions, a webcam bubble, bring your own AI keys.", tags: ["Electron", "TypeScript", "macOS"], links: [{ label: "Repo ↗", href: GH + "/Glasscast" }] },
+  { id: "site", tease: "This portfolio, dithered from scratch.", kind: "design", kicker: "design", title: "This site", body: "My portfolio, designed from scratch. Everything is drawn in one 3px dither grain: the dot field behind the page, an intro that dithers my name in and re-dithers it into the page, a pixel-art cursor with a fading orange trail, enter buttons that fill with orange dots, and charts of who's visited. Near-black, bone white, and one orange.", tags: ["Design", "Dither", "Vanilla JS", "Canvas"],
+    images: [
+      { src: "assets/design/site-home.jpg", alt: "The portfolio home: a big dithered henry. wordmark, the ask bar and three picks in dithered frames.", cap: "the home page" },
+      { src: "assets/design/site-intro.jpg", alt: "The intro: dither static gathering into henry. with an orange dot.", cap: "the intro, mid-dither" },
+      { src: "assets/design/site-crowd.jpg", alt: "Dithered bar charts of visits per day and what visitors do.", cap: "who's been here · sample data" },
+      { src: "assets/design/site-phone.jpg", alt: "The portfolio on a phone.", cap: "on a phone" }],
+    links: [{ label: "Repo ↗", href: GH + "/portfolio" }] },
   { id: "drivethru", kind: "project", kicker: "voice AI", title: "Lily's Drive-Thru", body: "Order out loud. The AI takes it, upsells you once, reads the total back with tax, and fires a live ticket to the kitchen screen.", tags: ["ElevenLabs", "Express", "SSE"], links: [{ label: "Repo ↗", href: GH + "/voice-drive-thru" }] },
   { id: "elevenmile", kind: "project", kicker: "AI + audio", title: "Eleven Mile", body: "Pick two people and a topic and watch them rap-battle. Claude writes the bars, ElevenLabs raps them. A little dumb and I love it.", tags: ["Claude", "ElevenLabs"], links: [{ label: "Repo ↗", href: GH + "/eleven-mile" }] },
   { id: "pawbot", tease: "Walks older people through the computer.", kind: "project", kicker: "accessibility", title: "PawBot", body: "Helps older people use a computer one step at a time, like helping your grandparent figure out their email.", tags: ["Hackathon", "Assistive"], links: [{ label: "Repo ↗", href: GH + "/PawBot" }] },
@@ -67,8 +110,8 @@ export const INTENTS = [
     questions: ["can henry do marketing", "is he good at marketing", "how does he market things", "has he sold anything", "how did he get customers", "what is his company", "what company did henry found", "what is henry founder of", "how did he make money", "what's his startup", "is henry a founder", "what does sitelight do", "how did he get revenue in 10 days"] },
   { id: "about", title: "About Henry", engrave: "Henry", ids: ["me"],
     suggest: ["who is Henry", "tell me about Henry", "about Henry", "how long has Henry been building"],
-    subjects: ["about", "bio", "intro", "henry", "himself", "who he is", "age", "where he lives", "background", "experience", "his experience", "how long he's been coding", "when he started"],
-    questions: ["how long has henry been building", "how long has he been building stuff", "how long has henry been coding", "when did henry start coding", "when did he start building", "how much experience does he have", "how long has he been programming", "how many years has he coded", "is he experienced", "who is henry", "who are you", "how old is henry", "where is henry from", "where does he live", "tell me about yourself", "introduce yourself", "what is a vibecoder", "is he really 14", "who made this site", "who is this"] },
+    subjects: ["school", "his school", "where he goes to school", "alpha school", "alpha high", "alpha high school", "2 hour learning", "two hour learning", "about", "bio", "intro", "henry", "himself", "who he is", "age", "where he lives", "background", "experience", "his experience", "how long he's been coding", "when he started"],
+    questions: ["where does henry go to school", "what school does he go to", "does henry go to school", "what is alpha school", "is he homeschooled", "what grade is he in", "how long has henry been building", "how long has he been building stuff", "how long has henry been coding", "when did henry start coding", "when did he start building", "how much experience does he have", "how long has he been programming", "how many years has he coded", "is he experienced", "who is henry", "who are you", "how old is henry", "where is henry from", "where does he live", "tell me about yourself", "introduce yourself", "what is a vibecoder", "is he really 14", "who made this site", "who is this"] },
   { id: "lily", title: "Lily", engrave: "Lily", ids: ["lily"],
     suggest: ["show me Lily", "the AI that calls his grandma", "Lily, the voice AI"],
     subjects: ["lily", "grandma calling ai", "ai that calls grandma", "the grandma bot", "phone call ai", "morning call bot", "alzheimer's project", "voice companion", "lily app", "lily ai"],
@@ -81,6 +124,10 @@ export const INTENTS = [
     suggest: ["show me the rap battle app", "Eleven Mile"],
     subjects: ["eleven mile", "11 mile", "rap battle", "rap battles", "ai rap", "rapping ai", "diss track generator", "8 mile parody"],
     questions: ["can ai rap battle", "the rap battle thing", "where two people rap battle", "did he make a rap app", "what's eleven mile"] },
+  { id: "design", title: "Design work", engrave: "Design", ids: ["site", "sitelight", "glasscast"],
+    suggest: ["show me Henry's design work", "Henry's designs", "show me what Henry designed"],
+    subjects: ["design work", "design", "designs", "designer", "ui", "ux", "ui design", "ux design", "visual design", "web design", "product design", "interfaces", "his design", "screenshots", "photos of his work", "pictures of his work", "what it looks like", "this site", "this portfolio", "the portfolio", "his portfolio", "the website", "dither", "dithering", "branding", "figma"],
+    questions: ["can henry design", "is he a designer", "does henry do design", "who designed this site", "did he design this", "how was this site made", "what does his work look like", "can i see screenshots", "does he have an eye for design", "show me pictures"] },
   { id: "glasscast", title: "Glasscast", engrave: "Glasscast", ids: ["glasscast"],
     suggest: ["show me Glasscast", "the free Screen Studio"],
     subjects: ["glasscast", "glass cast", "screen recorder", "screen recording app", "free screen studio", "screen studio alternative", "mac app", "electron app", "auto captions"],
@@ -165,10 +212,15 @@ export const PERSONAS = [
     companies: ["google", "alphabet", "deepmind", "meta", "facebook", "instagram", "apple", "microsoft", "amazon", "aws", "netflix", "nvidia", "openai", "anthropic", "xai", "tesla", "spacex",
       "stripe", "shopify", "uber", "airbnb", "salesforce", "oracle", "ibm", "intel", "amd", "adobe", "linkedin", "github", "vercel", "cloudflare", "databricks", "palantir", "snowflake",
       "tiktok", "bytedance", "twitter", "snap", "spotify", "dropbox", "figma", "notion", "slack", "atlassian", "coinbase", "robinhood", "doordash", "lyft", "pinterest", "reddit", "discord"] },
-  { id: "designer", label: "I design things", noun: "a designer", picks: ["glasscast", "lily", "pawbot"],
+  { id: "designer", label: "I design things", noun: "a designer", picks: ["site", "sitelight", "glasscast"],
     match: ["design", "designer", "ux", "ui", "product", "pm", "product manager", "art", "creative", "brand", "figma"] },
+  { id: "educator", label: "I teach", noun: "an educator", picks: ["crawft", "receipts", "pawbot"],
+    match: ["teacher", "teach", "teaching", "guide", "educator", "education", "tutor", "tutoring", "principal", "professor", "prof", "instructor", "lecturer", "coach", "mentor",
+      "faculty", "dean", "counselor", "counsellor", "librarian", "administrator", "admin", "head of school", "superintendent", "admissions", "teaching assistant", "ta", "homeschool", "school nurse", "school staff", "work at a school", "work at school", "works at a school"] },
   { id: "student", label: "I'm a student", noun: "a student", picks: ["wins", "siege", "sub"],
-    match: ["student", "school", "college", "university", "high school", "learning", "kid", "teen", "teacher", "parent"] },
+    match: ["student", "learning", "kid", "teen", "parent", "freshman", "sophomore", "high schooler", "pupil", "studying", "study"],
+    // where someone is, not what they do: worth a point, so "guide at Alpha School" reads as a guide
+    context: ["school", "college", "university", "high school", "middle school", "class", "homework"] },
   { id: "curious", label: "just looking around", noun: "a curious visitor", picks: ["vurn", "lily", "siege"], match: [] },
 ];
 export const personaById = Object.fromEntries(PERSONAS.map((p) => [p.id, p]));
@@ -179,7 +231,7 @@ export function personaFor(text) {
   const has = (w) => t.includes(` ${w} `) || t.includes(` ${w}s `);
   let best = "curious", score = 0;
   for (const p of PERSONAS) {
-    const s = p.match.reduce((n, w) => n + (has(w) ? w.length : 0), 0);
+    const s = p.match.reduce((n, w) => n + (has(w) ? w.length : 0), 0) + (p.context || []).filter(has).length;
     if (s > score) { best = p.id; score = s; }
   }
   // no role named, but a tech employer is: they're almost certainly in engineering

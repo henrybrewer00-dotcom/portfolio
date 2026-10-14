@@ -2,7 +2,7 @@
 //   node tools/test.mjs   (or: npm test)
 
 import { readFileSync } from "node:fs";
-import { INTENTS } from "../src/content.js";
+import { INTENTS, personaFor } from "../src/content.js";
 import { createModel } from "../src/model.js";
 import { createSuggester } from "../src/suggest.js";
 
@@ -59,5 +59,14 @@ for (const typed of ["henry's cu", "show me hen", "the sub", "how do i", "voice"
   const s = suggest(typed, (id) => p[id] || 0);
   console.log(`  "${typed}" → ${s ? `"${typed}[${s.ghost}]" (${s.intent})` : "no ghost"}`);
 }
+
+// who-are-you answers: a job at a school is a job, not a student
+const ROLES = [["guide at alpha school", "educator"], ["I teach high school math", "educator"], ["school principal", "educator"], ["school nurse", "educator"],
+  ["professor at stanford university", "educator"], ["student at alpha school", "student"], ["junior in high school", "student"], ["I go to school", "student"],
+  ["I work for Google", "engineer"], ["software engineer at a school", "engineer"], ["product designer", "designer"], ["just browsing", "curious"]];
+const wrongRoles = ROLES.filter(([t, want]) => personaFor(t) !== want);
+for (const [t, want] of wrongRoles) console.error(`  role: "${t}" → ${personaFor(t)}, want ${want}`);
+console.log(`roles: ${ROLES.length - wrongRoles.length}/${ROLES.length}`);
+if (wrongRoles.length) process.exit(1);
 
 if (acc < 0.9) { console.error("accuracy under 90%"); process.exit(1); }

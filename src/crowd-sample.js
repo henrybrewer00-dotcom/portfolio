@@ -3,7 +3,7 @@
 import { PERSONAS } from "./content.js";
 
 export function sampleCrowd(now = Date.now()) {
-  const weights = { hiring: 9, founder: 14, engineer: 22, security: 7, designer: 11, student: 18, curious: 26 };
+  const weights = { hiring: 9, founder: 14, engineer: 22, security: 7, designer: 11, educator: 6, student: 18, curious: 26 };
   const roles = Object.fromEntries(PERSONAS.map((p) => [p.id, weights[p.id] || 5]));
   const day = 864e5, today = Math.floor(now / day) * day;
   // four months of days: a slow climb, weekly rhythm, and a couple of spikes (a post that got shared)

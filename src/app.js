@@ -11,6 +11,7 @@ import * as dither from "./dither.js";
 import { fillButtons } from "./fill.js";
 import { createTrail } from "./trail.js";
 import { boot } from "./boot.js";
+import { ditherTiles } from "./tiledither.js";
 import { createModel } from "./model.js";
 import { createSuggester } from "./suggest.js";
 import { createEngraving } from "./shader.js";
@@ -39,7 +40,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261013k")
+fetch("model/model.json?v=20261014b")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -48,7 +49,7 @@ const probOf = (id) => { const r = ranked.find((x) => x.id === id); return r ? r
 
 /* ---------- ghost text, on every keystroke ---------- */
 let hintIdx = 0, anim = null, lastText = "", lastTarget = "", guessId = null;
-const INTRO_HINTS = ["I run a startup", "I'm hiring engineers", "I write code", "I work in security", "I design things", "I'm a student", "just looking around"];
+const INTRO_HINTS = ["I run a startup", "I'm hiring engineers", "I write code", "I work in security", "I design things", "I teach", "I'm a student", "just looking around"];
 const hints = () => (persona ? HINTS : INTRO_HINTS);
 function update() {
   const text = input.value;
@@ -219,6 +220,7 @@ function card(it, i = 0) {
     ${it.body ? `<p>${esc(it.body)}</p>` : ""}
     ${it.list ? `<ul class="list">${it.list.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
     ${it.tags ? `<p class="tags">${it.tags.map((t) => `<span>${esc(t)}</span>`).join("")}</p>` : ""}
+    ${it.images ? `<div class="gallery">${it.images.map((im) => `<figure class="fig"><a href="${esc(im.src)}" target="_blank" rel="noreferrer"><img src="${esc(im.src)}" alt="${esc(im.alt)}" loading="lazy" /></a><figcaption>${esc(im.cap)}</figcaption></figure>`).join("")}</div>` : ""}
     ${it.image ? `<figure class="fig"><img src="${esc(it.image.src)}" alt="${esc(it.image.alt)}" loading="lazy" /><figcaption>${esc(it.image.cap)}</figcaption></figure>` : ""}
     ${links ? `<div class="acts">${links}</div>` : ""}
   </article>`;
@@ -235,7 +237,7 @@ function renderPins() {
   $("[data-change]").hidden = !p;
   $("[data-pins]").innerHTML = items.map((it, i) => `<button type="button" class="pin" data-pin="${esc(it.id)}" style="--i:${i}">
   <span class="pin-kicker">${esc(it.kicker)}</span><span class="pin-title">${esc(it.title)}</span>
-  <span class="pin-sub">${esc(it.tease || firstSentence(it))}</span><span class="pin-go" aria-hidden="true">→</span></button>`).join("");
+  <span class="pin-sub">${esc(it.tease || firstSentence(it))}</span></button>`).join("");
 }
 // the pin's teaser: its own one-liner (tease) when it has one, else the first sentence of the card, or the first two when the first is only a few words
 const firstSentence = (it) => { const s = (it.body || (it.list || []).join(", ")).split(/(?<=[.!?])\s/); return s[0].length < 40 && s[1] ? s[1] : s[0]; };
@@ -432,6 +434,7 @@ setInterval(() => {
 if (location.hash && intentById[location.hash.slice(1)]) setTimeout(() => open(location.hash.slice(1)), 50);
 
 createTrail($("[data-trail]"));
+ditherTiles($("[data-pins]"));
 fillButtons(document.querySelectorAll(".key.fill"));
 renderPins();
 loadCrowd();
