@@ -40,7 +40,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261013n")
+fetch("model/model.json?v=20261014a")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -49,7 +49,7 @@ const probOf = (id) => { const r = ranked.find((x) => x.id === id); return r ? r
 
 /* ---------- ghost text, on every keystroke ---------- */
 let hintIdx = 0, anim = null, lastText = "", lastTarget = "", guessId = null;
-const INTRO_HINTS = ["I run a startup", "I'm hiring engineers", "I write code", "I work in security", "I design things", "I'm a student", "just looking around"];
+const INTRO_HINTS = ["I run a startup", "I'm hiring engineers", "I write code", "I work in security", "I design things", "I teach", "I'm a student", "just looking around"];
 const hints = () => (persona ? HINTS : INTRO_HINTS);
 function update() {
   const text = input.value;

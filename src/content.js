@@ -207,8 +207,13 @@ export const PERSONAS = [
       "tiktok", "bytedance", "twitter", "snap", "spotify", "dropbox", "figma", "notion", "slack", "atlassian", "coinbase", "robinhood", "doordash", "lyft", "pinterest", "reddit", "discord"] },
   { id: "designer", label: "I design things", noun: "a designer", picks: ["site", "sitelight", "glasscast"],
     match: ["design", "designer", "ux", "ui", "product", "pm", "product manager", "art", "creative", "brand", "figma"] },
+  { id: "educator", label: "I teach", noun: "an educator", picks: ["crawft", "receipts", "pawbot"],
+    match: ["teacher", "teach", "teaching", "guide", "educator", "education", "tutor", "tutoring", "principal", "professor", "prof", "instructor", "lecturer", "coach", "mentor",
+      "faculty", "dean", "counselor", "counsellor", "librarian", "administrator", "admin", "head of school", "superintendent", "admissions", "teaching assistant", "ta", "homeschool", "school nurse", "school staff", "work at a school", "work at school", "works at a school"] },
   { id: "student", label: "I'm a student", noun: "a student", picks: ["wins", "siege", "sub"],
-    match: ["student", "school", "college", "university", "high school", "learning", "kid", "teen", "teacher", "parent"] },
+    match: ["student", "learning", "kid", "teen", "parent", "freshman", "sophomore", "high schooler", "pupil", "studying", "study"],
+    // where someone is, not what they do: worth a point, so "guide at Alpha School" reads as a guide
+    context: ["school", "college", "university", "high school", "middle school", "class", "homework"] },
   { id: "curious", label: "just looking around", noun: "a curious visitor", picks: ["vurn", "lily", "siege"], match: [] },
 ];
 export const personaById = Object.fromEntries(PERSONAS.map((p) => [p.id, p]));
@@ -219,7 +224,7 @@ export function personaFor(text) {
   const has = (w) => t.includes(` ${w} `) || t.includes(` ${w}s `);
   let best = "curious", score = 0;
   for (const p of PERSONAS) {
-    const s = p.match.reduce((n, w) => n + (has(w) ? w.length : 0), 0);
+    const s = p.match.reduce((n, w) => n + (has(w) ? w.length : 0), 0) + (p.context || []).filter(has).length;
     if (s > score) { best = p.id; score = s; }
   }
   // no role named, but a tech employer is: they're almost certainly in engineering
