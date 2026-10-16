@@ -4,10 +4,7 @@
    screen is generated: every word comes from content.js.
    ========================================================================= */
 
-import { INTENTS, HINTS, PINNED, PERSONAS, personaById, personaFor, itemById, intentById } from "./content.js";
-import { moderate, MAX_POST } from "./moderate.js";
-import { sampleCrowd } from "./crowd-sample.js";
-import * as dither from "./dither.js";
+import { INTENTS, HINTS, PINNED, PRS, personaById, personaFor, itemById, intentById } from "./content.js";
 import { fillButtons } from "./fill.js";
 import { createTrail } from "./trail.js";
 import { boot } from "./boot.js";
@@ -40,7 +37,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261014b")
+fetch("model/model.json?v=20261016a")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -271,88 +268,18 @@ function choose(id, said = "") {
   setTimeout(() => document.body.classList.remove("is-revealing"), 1600);
   input.setAttribute("aria-label", "Ask about anything Henry has built");
   renderPins(); hintIdx = 0; typeHint(); input.focus({ preventScroll: true });
-  if (drawn) drawRoles();
   engraving && engraving.show("henry.", false);
   stamp();
   // one visit per browser, counted under what they said they do
-  if (!store.get("henry.counted")) { store.set("henry.counted", "1"); fetch("api/crowd", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "visit", role: id }) }).then(loadCrowd, () => {}); }
-  // what they typed is a ready-made post for the wall
-  const wall = $("#wall-text");
-  if (said && !wall.value) wall.value = said.slice(0, MAX_POST);
+  if (!store.get("henry.counted")) { store.set("henry.counted", "1"); fetch("api/crowd", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "visit", role: id }) }).catch(() => {}); }
 }
 $("[data-change]").addEventListener("click", intro);
 
-/* ---------- who's been here: dithered charts and the "what do you do?" wall ---------- */
-let crowd = null;
-const ago = (t) => { const m = Math.max(1, Math.round((Date.now() - t) / 6e4)); return m < 60 ? `${m}m` : m < 1440 ? `${Math.round(m / 60)}h` : `${Math.round(m / 1440)}d`; };
-async function loadCrowd() {
-  try { const r = await fetch("api/crowd"); if (!r.ok) throw 0; crowd = await r.json(); } catch (e) { crowd = crowd || sampleCrowd(); }
-  const mine = JSON.parse(store.get("henry.posts") || "[]");
-  const posts = [...mine.filter((m) => !crowd.posts.some((p) => p.text === m.text)), ...crowd.posts];
-  $("[data-sample]").hidden = !crowd.sample;
-  const tease = $("[data-tease]");
-  tease.textContent = `${crowd.total} people have been here. See who ↓`; tease.hidden = false;
-  $("[data-posts]").innerHTML = posts.slice(0, 12).map((p) => `<li class="post${mine.some((m) => m.text === p.text) ? " is-you" : ""}"><span class="post-role">${esc((personaById[p.role] || personaById.curious).label)}</span><span class="post-text">${esc(p.text)}</span><span class="post-t">${ago(p.t)}</span></li>`).join("");
-  if (crowdSeen) drawCrowd();   // charts are built once; a reload only refreshes the wall
-}
-let drawn = false, crowdSeen = false, chart = null, repaint = [], regrow = [];
-const dayName = (t) => new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" });
-function drawCrowd() {
-  if (drawn || !crowd) return;
-  drawn = true;
-  drawRoles();
-  // what they do: holding (or hovering) a row lights its dots and shows its share
-  const el = $("[data-roles]");
-  const light = (row, on) => { const i = [...el.children].indexOf(row), c = row.querySelector("canvas"), nEl = row.querySelector(".row-n");
-    c.dataset.lit = on ? "1" : ""; nEl.textContent = on ? nEl.dataset.pct : nEl.dataset.plain; row.classList.toggle("is-lit", on); repaint[i](); };
-  el.addEventListener("pointerover", (e) => { const r = e.target.closest(".row"); if (r) light(r, true); });
-  el.addEventListener("pointerout", (e) => { const r = e.target.closest(".row"); if (r && !r.contains(e.relatedTarget)) light(r, false); });
-  el.addEventListener("focusin", (e) => light(e.target, true)); el.addEventListener("focusout", (e) => light(e.target, false));
-
-  // visits per day: drag through time
-  const days = crowd.days;
-  chart = dither.timeline($("[data-days]"), days.map((d) => d.n), {
-    span: innerWidth < 700 ? 14 : 28, reduce: reduceMotion,
-    onFocus: (i) => { $("[data-readout-n]").textContent = `${days[i].n} ${days[i].n === 1 ? "visit" : "visits"}`; $("[data-readout-d]").textContent = i === days.length - 1 ? "today" : dayName(days[i].t); },
-    onPan: (a, b) => { $("[data-days-from]").textContent = dayName(days[a].t); $("[data-days-to]").textContent = b === days.length - 1 ? "today" : dayName(days[b].t); },
-  });
-}
-// the "what they do" rows, with "you" on your row; redrawn when you change who you are
-function drawRoles() {
-  const total = Object.values(crowd.roles).reduce((a, b) => a + b, 0) || 1;
-  const rows = PERSONAS.map((p) => ({ p, n: crowd.roles[p.id] || 0 })).sort((a, b) => b.n - a.n), max = Math.max(...rows.map((r) => r.n), 1);
-  const el = $("[data-roles]");
-  el.innerHTML = rows.map(({ p, n }) => `<div class="row${p.id === persona ? " is-you" : ""}" tabindex="0" data-n="${n}"><span class="row-label">${esc(p.label)}${p.id === persona ? " <em>you</em>" : ""}</span><canvas class="row-bar"></canvas><span class="row-n" data-plain="${n}" data-pct="${Math.round((n / total) * 100)}%">${n}</span></div>`).join("");
-  const bars = [...el.querySelectorAll("canvas")].map((c, i) => dither.bar(c, rows[i].n / max, rows[i].p.id === persona, reduceMotion));
-  repaint = bars.map((b) => b.paint); regrow = bars.map((b) => b.grow);
-}
-// the charts grow in every time they scroll into view, not just the first time
-new IntersectionObserver((es) => {
-  if (!es.some((e) => e.isIntersecting)) return;
-  if (!crowdSeen) { crowdSeen = true; drawCrowd(); return; }
-  if (chart) chart.replay(); regrow.forEach((f) => f());
-}, { threshold: 0.25 }).observe($("[data-crowd]"));
-addEventListener("resize", () => { if (chart) chart.resize(); repaint.forEach((f) => f()); });
-
-const wallForm = $("[data-wall-form]"), wallNote = $("[data-wall-note]");
-wallForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const m = moderate(wallForm.elements.text.value);
-  if (!m.ok) { wallNote.textContent = m.why; return; }
-  wallNote.textContent = "posting…";
-  // file the post under what it says ("I work in VC" is a founder/investor), not only the intro answer
-  const said = personaFor(m.text), role = said !== "curious" ? said : persona || "curious";
-  try {
-    const r = await fetch("api/crowd", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "post", role, text: m.text }) });
-    if (r.status === 422 || r.status === 429) { wallNote.textContent = (await r.json()).why; return; }
-    if (!r.ok && r.status !== 404 && r.status !== 501) { wallNote.textContent = "Couldn't post that right now. Try again in a bit."; return; }
-  } catch (e) { /* offline or local: keep it in this browser */ }
-  const mine = JSON.parse(store.get("henry.posts") || "[]");
-  mine.unshift({ role, text: m.text, t: Date.now() });
-  store.set("henry.posts", JSON.stringify(mine.slice(0, 5)));
-  wallForm.elements.text.value = ""; wallNote.textContent = "you're on the wall.";
-  loadCrowd();
-});
+/* ---------- merged pull requests (visits are still logged in the background, just not shown) ---------- */
+const prDate = (d) => new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", year: "numeric" });
+$("[data-prs]").innerHTML = PRS.map((pr, i) => `<a class="pin pr" style="--i:${i}" href="${pr.url}" target="_blank" rel="noopener"><span class="pin-kicker">${esc(pr.repo)} #${pr.n}</span><span class="pr-title">${esc(pr.what)}</span><code class="pr-commit">${esc(pr.title)}</code><span class="pr-meta">merged ${prDate(pr.merged)} ↗</span></a>`).join("");
+const tease = $("[data-tease]");
+tease.textContent = `${PRS.length} merged pull requests to ${new Set(PRS.map((p) => p.repo)).size} open-source projects. See them ↓`; tease.hidden = false;
 
 /* ---------- wiring ---------- */
 input.addEventListener("input", () => {
@@ -435,9 +362,9 @@ if (location.hash && intentById[location.hash.slice(1)]) setTimeout(() => open(l
 
 createTrail($("[data-trail]"));
 ditherTiles($("[data-pins]"));
+ditherTiles($("[data-prs]"));
 fillButtons(document.querySelectorAll(".key.fill"));
 renderPins();
-loadCrowd();
 if (!persona && location.hash) { persona = "curious"; renderPins(); }   // deep links skip the intro
 if (!persona) intro();
 else { update(); typeHint(); input.focus({ preventScroll: true }); }
