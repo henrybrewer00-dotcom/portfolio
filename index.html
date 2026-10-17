@@ -25,8 +25,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
     <script>try { if (!location.hash && !matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("is-booting"); } catch (e) {}</script>
-    <link rel="preload" href="model/model.json?v=20261014c" as="fetch" crossorigin />
-    <link rel="stylesheet" href="styles.css?v=20261014c" />
+    <link rel="preload" href="model/model.json?v=20261017a" as="fetch" crossorigin />
+    <link rel="stylesheet" href="styles.css?v=20261017a" />
   </head>
   <body>
     <canvas class="engraving" data-engraving aria-hidden="true"></canvas>
@@ -52,7 +52,7 @@
         <section class="pinned" aria-label="Pinned">
           <p class="pinned-label"><span data-picked-for>pinned</span><button type="button" class="change" data-change hidden>change</button></p>
           <div class="pins" data-pins></div>
-          <a class="tease" href="#crowd" data-tease hidden></a>
+          <a class="tease" href="#prs" data-tease hidden></a>
         </section>
         <p class="sr-only" aria-live="polite" data-say></p>
       </form>
@@ -71,29 +71,12 @@
 
       <p class="foot"><button type="button" class="act is-soft" data-browse>browse everything</button> · <a class="act is-soft" href="deck/">older site: card deck</a> · <a class="act is-soft" href="old/">older site: terminal</a></p>
 
-      <section class="crowd" id="crowd" data-crowd aria-labelledby="crowd-title">
+      <section class="crowd prs" id="prs" aria-labelledby="prs-title">
         <div class="crowd-head">
-          <h2 class="crowd-title" id="crowd-title">who's been here</h2>
-          <span class="sample" data-sample hidden>sample data</span>
+          <h2 class="crowd-title" id="prs-title">pull requests</h2>
+          <a class="sample" href="https://github.com/henrybrewer00-dotcom" target="_blank" rel="noopener">github ↗</a>
         </div>
-        <figure class="chart chart-visits">
-          <figcaption><span>visits per day</span></figcaption>
-          <p class="readout" data-readout aria-live="polite"><b data-readout-n></b> <span data-readout-d></span></p>
-          <canvas class="cols" data-days tabindex="0" aria-label="Visits per day. Drag, or use the arrow keys, to move through time."></canvas>
-          <p class="cols-axis"><span data-days-from></span><span data-days-to></span></p>
-        </figure>
-        <figure class="chart chart-roles">
-          <figcaption><span>what they do</span></figcaption>
-          <div class="rows" data-roles></div>
-        </figure>
-        <div class="wall">
-          <form class="wall-form" data-wall-form autocomplete="off">
-            <label class="wall-q" for="wall-text">and you? what do you do?</label>
-            <div class="wall-bar"><input id="wall-text" name="text" maxlength="80" placeholder="I build robots for farms" /><button type="submit" class="key fill fill-wide" aria-label="Post"><canvas class="fill-dots" aria-hidden="true"></canvas><span class="fill-label" aria-hidden="true"><span class="fill-front">post</span><span class="fill-back">post it</span></span></button></div>
-            <p class="wall-note" data-wall-note aria-live="polite"></p>
-          </form>
-          <ul class="posts" data-posts></ul>
-        </div>
+        <div class="pr-list" data-prs></div>
       </section>
 
       <noscript>
@@ -124,6 +107,6 @@
 
     <canvas class="robot" data-robot aria-hidden="true"></canvas>
     <canvas class="trail" data-trail aria-hidden="true"></canvas>
-    <script type="module" src="src/app.js?v=20261014c"></script>
+    <script type="module" src="src/app.js?v=20261017a"></script>
   </body>
 </html>
