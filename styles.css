@@ -242,6 +242,8 @@ body.has-results .crowd { margin-top: 3rem; }
 .key.fill:active { transform: scale(0.94); }
 @media (max-width: 700px) { .key.fill { --h: 2.3rem; width: 3.6rem; } }
 
+/* Buff, the polishing robot: over the page, under the cursor trail, never in the way */
+.robot { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 98; pointer-events: none; }
 /* the cursor's dither trail, under the cursor and over everything else */
 .trail { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 99; pointer-events: none; opacity: 0.85; }
 

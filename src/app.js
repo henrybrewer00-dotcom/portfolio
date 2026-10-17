@@ -7,6 +7,7 @@
 import { INTENTS, HINTS, PINNED, PRS, personaById, personaFor, itemById, intentById } from "./content.js";
 import { fillButtons } from "./fill.js";
 import { createTrail } from "./trail.js";
+import { createRobot } from "./robot.js";
 import { boot } from "./boot.js";
 import { ditherTiles } from "./tiledither.js";
 import { createModel } from "./model.js";
@@ -37,7 +38,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261016a")
+fetch("model/model.json?v=20261017a")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -369,4 +370,8 @@ if (!persona && location.hash) { persona = "curious"; renderPins(); }   // deep 
 if (!persona) intro();
 else { update(); typeHint(); input.focus({ preventScroll: true }); }
 // the opening plays over all of that, once per browser; when it clears, the prompt is ready to type into
-boot({ skip: !!location.hash, word: persona ? "henry." : "hello." }).then(() => input.focus({ preventScroll: true }));
+boot({ skip: !!location.hash, word: persona ? "henry." : "hello." }).then(() => {
+  input.focus({ preventScroll: true });
+  // Buff, the polishing robot, drifts in a moment after the page settles
+  setTimeout(() => createRobot($("[data-robot]"), { engraving: () => engraving, bar, avoid: () => $(".main").getBoundingClientRect() }), 1500);
+});

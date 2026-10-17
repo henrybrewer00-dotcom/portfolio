@@ -14,7 +14,7 @@ in vec2 a; void main() { gl_Position = vec4(a, 0.0, 1.0); }`;
 
 const FRAG = `#version 300 es
 precision highp float;
-uniform sampler2D uA, uB, uW;
+uniform sampler2D uA, uB, uW, uS;
 uniform float uMix, uHotA, uHotB, uTime, uTilt, uDpr;
 uniform vec2 uRes, uWTexel;
 uniform vec3 uPaper, uPaperDeep, uInk, uPink;
@@ -54,6 +54,7 @@ void main() {
   vec2 wt = tuv - g * 0.012;                       // the word refracts through the water
   vec3 src = mix(texture(uA, wt).rgb, texture(uB, wt).rgb, m);
   float hot = mix(uHotA, uHotB, m);
+  float shine = texture(uS, tuv).r;                // where the robot has buffed: brighter, a touch denser, slowly dulling
   float sharp = src.r, glow = src.g, blush = src.b;
 
   // slow clouds of dots drift behind the word; the tilt leans them as you type
@@ -63,13 +64,14 @@ void main() {
   float vig = smoothstep(1.2, 0.2, length((uv - vec2(0.5, 0.55)) * vec2(uRes.x / uRes.y, 1.0)));
   float tone = field * mix(0.35, 1.0, vig) + glow * 0.16 + sharp * 0.86 + max(shade, 0.0) * 0.35 + abs(h) * 0.12;
   tone *= 1.0 - max(-shade, 0.0) * 0.5;
+  tone += shine * (0.12 + sharp * 0.1);
   float on = step(bayer8(cell) + 0.001, clamp(tone, 0.0, 0.97));
 
   // the accent is the dot colour, never a fill: the answer's word, letters you hover, a big splash
   float warm = clamp(hot * smoothstep(0.35, 0.8, sharp) + blush * 0.9 + smoothstep(0.6, 1.6, h) * 0.5, 0.0, 1.0);
-  vec3 ink = mix(uInk, uPink, warm);
+  vec3 ink = mix(mix(uInk, vec3(1.0), shine), uPink, warm);
   vec3 paper = mix(uPaperDeep, uPaper, smoothstep(1.4, 0.2, length(uv - 0.5)));
-  o = vec4(mix(paper, ink, on * mix(0.55, 1.0, max(sharp, warm))), 1.0);
+  o = vec4(mix(paper, ink, on * mix(0.55, 1.0, max(max(sharp, warm), shine))), 1.0);
 }`;
 
 const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
@@ -99,12 +101,12 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
   gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
   const U = {};
-  for (const n of ["uA", "uB", "uW", "uMix", "uHotA", "uHotB", "uTime", "uTilt", "uDpr", "uRes", "uWTexel", "uPaper", "uPaperDeep", "uInk", "uPink"]) U[n] = gl.getUniformLocation(prog, n);
+  for (const n of ["uA", "uB", "uW", "uMix", "uHotA", "uHotB", "uTime", "uTilt", "uDpr", "uRes", "uWTexel", "uS", "uPaper", "uPaperDeep", "uInk", "uPink"]) U[n] = gl.getUniformLocation(prog, n);
   gl.uniform3fv(U.uPaper, hex("#121210"));
   gl.uniform3fv(U.uPaperDeep, hex("#0a0a09"));
   gl.uniform3fv(U.uInk, hex("#ece8de"));
   gl.uniform3fv(U.uPink, hex("#ff6a2b"));
-  gl.uniform1i(U.uA, 0); gl.uniform1i(U.uB, 1); gl.uniform1i(U.uW, 2);
+  gl.uniform1i(U.uA, 0); gl.uniform1i(U.uB, 1); gl.uniform1i(U.uW, 2); gl.uniform1i(U.uS, 3);
 
   const newTex = () => {
     const t = gl.createTexture();
@@ -115,7 +117,7 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     return t;
   };
-  const tex = [newTex(), newTex()], waterTex = newTex();
+  const tex = [newTex(), newTex()], waterTex = newTex(), shineTex = newTex();
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
   /* ---------- the water ---------- */
@@ -162,6 +164,43 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
     if (energy < 0.5) { wa.fill(0); wb.fill(0); wbytes.fill(128); calm = true; }
     gl.bindTexture(gl.TEXTURE_2D, waterTex);
     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, GW, GH, gl.RED, gl.UNSIGNED_BYTE, wbytes);
+  }
+
+  /* ---------- the shine: a coarse grid the polishing robot buffs, which dulls back over a few seconds ---------- */
+  const SCELL = 6, SHINE_LIFE = 12;                // css px per cell; seconds for a full buff to dull away
+  let SW = 2, SH = 2, shine = new Float32Array(4), sbytes = new Uint8Array(4), shiny = false, shineAt = 0;
+
+  function resizeShine() {
+    SW = Math.ceil(innerWidth / SCELL); SH = Math.ceil(innerHeight / SCELL);
+    shine = new Float32Array(SW * SH); sbytes = new Uint8Array(SW * SH); shiny = false;
+    gl.bindTexture(gl.TEXTURE_2D, shineTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, SW, SH, 0, gl.RED, gl.UNSIGNED_BYTE, sbytes);
+  }
+
+  function buff(x, y, radius, amount) {
+    const cx = x / SCELL, cy = y / SCELL, r = radius / SCELL, r2 = r * r;
+    for (let j = Math.max(0, Math.floor(cy - r)); j <= Math.min(SH - 1, Math.ceil(cy + r)); j++) {
+      for (let i = Math.max(0, Math.floor(cx - r)); i <= Math.min(SW - 1, Math.ceil(cx + r)); i++) {
+        const d2 = (i + 0.5 - cx) ** 2 + (j + 0.5 - cy) ** 2;
+        if (d2 < r2) { const c = j * SW + i; shine[c] = Math.min(1, shine[c] + amount * (1 - d2 / r2)); }
+      }
+    }
+    shiny = true;
+  }
+
+  function stepShine(now) {
+    const dt = Math.min(0.1, (now - shineAt) / 1000); shineAt = now;
+    if (!shiny) return;
+    const fade = dt / SHINE_LIFE;
+    let any = false;
+    for (let c = 0; c < shine.length; c++) {
+      let v = shine[c];
+      if (v > 0) { v = shine[c] = Math.max(0, v - fade); any = true; }
+      sbytes[c] = v * 255;
+    }
+    shiny = any;
+    gl.bindTexture(gl.TEXTURE_2D, shineTex);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, SW, SH, gl.RED, gl.UNSIGNED_BYTE, sbytes);
   }
 
   /* ---------- the word: a mask (R = letters, G = halo) and one body per letter ---------- */
@@ -255,6 +294,7 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
     cur = same ? prev : layout(cur.text, cur.hot);
     paint(tex[0], prev); paint(tex[1], cur);
     resizeWater();
+    resizeShine();
     gl.uniform2f(U.uWTexel, 1 / GW, 1 / GH);
     if (reduceMotion) frame(performance.now());
   }
@@ -264,12 +304,14 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
       const hovering = stepHover(cur);
       if (flipping || hovering) { paint(tex[1], cur, now); flipping = cur.letters.some((l) => now - l.flipAt < FLIP); }
       stepWater();
+      stepShine(now);
     }
     const k = Math.min(1, (now - mixStart) / FADE), e = k * k * (3 - 2 * k);
     tiltNow += (tiltTarget - tiltNow) * 0.06;
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex[0]);
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, tex[1]);
     gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, waterTex);
+    gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, shineTex);
     gl.uniform1f(U.uMix, k >= 1 ? 1 : e);
     gl.uniform1f(U.uHotA, prev.hot); gl.uniform1f(U.uHotB, cur.hot);
     gl.uniform1f(U.uTime, reduceMotion ? 12 : now / 1000);
@@ -307,6 +349,13 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
     },
     /** A small tap on the water, e.g. under the caret as you type. */
     ripple(x, y, amount = 0.9) { if (!reduceMotion) disturb(x, y, 26, -amount); },
+    /** The robot's buffer: brighten the dots around (x, y), css px; they dull back on their own. */
+    polish(x, y, radius = 14, amount = 0.08) { if (!reduceMotion) buff(x, y, radius, amount); },
+    /** Where the big word's letters sit right now, in css px (null while a result's word is down low). */
+    letters() {
+      if (!cur || cur.hot) return null;
+      return { size: cur.size * 2, letters: cur.letters.map((l) => ({ ch: l.ch, x: l.rx * 2, y: l.ry * 2, w: l.w * 2 })) };
+    },
     /** Typing nudges the line angle a little. */
     tilt(v) { tiltTarget = v; },
   };
