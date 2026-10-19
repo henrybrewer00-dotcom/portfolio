@@ -10,6 +10,7 @@ import { createTrail } from "./trail.js";
 import { createRobot } from "./robot.js";
 import { boot } from "./boot.js";
 import { ditherTiles } from "./tiledither.js";
+import * as dither from "./dither.js";
 import { createModel } from "./model.js";
 import { createSuggester } from "./suggest.js";
 import { createEngraving } from "./shader.js";
@@ -38,7 +39,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261017a")
+fetch("model/model.json?v=20261019a")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -277,10 +278,46 @@ function choose(id, said = "") {
 $("[data-change]").addEventListener("click", intro);
 
 /* ---------- merged pull requests (visits are still logged in the background, just not shown) ---------- */
-const prDate = (d) => new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", year: "numeric" });
-$("[data-prs]").innerHTML = PRS.map((pr, i) => `<a class="pin pr" style="--i:${i}" href="${pr.url}" target="_blank" rel="noopener"><span class="pin-kicker">${esc(pr.repo)} #${pr.n}</span><span class="pr-title">${esc(pr.what)}</span><code class="pr-commit">${esc(pr.title)}</code><span class="pr-meta">merged ${prDate(pr.merged)} ↗</span></a>`).join("");
+// the same dithered charts and list the visitor section had, filled with pull requests instead
+const prs = [...PRS].sort((x, y) => (x.merged < y.merged ? 1 : -1));   // most recent first
+const DAY = 864e5, WEEK = 7 * DAY, dayOf = (d) => new Date(d + "T12:00:00").getTime();
+const monday = (t) => { const d = new Date(t); d.setHours(12, 0, 0, 0); return d.getTime() - ((d.getDay() + 6) % 7) * DAY; };
+const weeks = [];
+for (let t = monday(dayOf("2026-03-02")), end = monday(Date.now()); t <= end; t += WEEK) weeks.push({ t, n: prs.filter((p) => monday(dayOf(p.merged)) === t).length });
+const dayName = (t) => new Date(t).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+$("[data-prs]").innerHTML = prs.map((p) => `<li class="post"><span class="post-role">${esc(p.repo)} #${p.n}</span><a class="post-text" href="${p.url}" target="_blank" rel="noopener">${esc(p.what)} ↗</a><span class="post-t">${dayName(dayOf(p.merged))}</span></li>`).join("");
 const tease = $("[data-tease]");
-tease.textContent = `${PRS.length} merged pull requests to ${new Set(PRS.map((p) => p.repo)).size} open-source projects. See them ↓`; tease.hidden = false;
+tease.textContent = `${prs.length} merged pull requests to ${new Set(prs.map((p) => p.repo)).size} open-source projects. See them ↓`; tease.hidden = false;
+
+let chart = null, repaint = [], regrow = [], seen = false;
+function drawPrs() {
+  // where they went: one dithered row per project, holding (or hovering) a row lights it and shows its share
+  const counts = {}; prs.forEach((p) => { counts[p.repo] = (counts[p.repo] || 0) + 1; });
+  const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]), max = rows[0][1];
+  const el = $("[data-roles]");
+  el.innerHTML = rows.map(([repo, n]) => `<div class="row" tabindex="0"><span class="row-label">${esc(repo)}</span><canvas class="row-bar"></canvas><span class="row-n" data-plain="${n}" data-pct="${Math.round((n / prs.length) * 100)}%">${n}</span></div>`).join("");
+  const bars = [...el.querySelectorAll("canvas")].map((c, i) => dither.bar(c, rows[i][1] / max, false, reduceMotion));
+  repaint = bars.map((b) => b.paint); regrow = bars.map((b) => b.grow);
+  const light = (row, on) => { const i = [...el.children].indexOf(row), c = row.querySelector("canvas"), nEl = row.querySelector(".row-n");
+    c.dataset.lit = on ? "1" : ""; nEl.textContent = on ? nEl.dataset.pct : nEl.dataset.plain; row.classList.toggle("is-lit", on); repaint[i](); };
+  el.addEventListener("pointerover", (e) => { const r = e.target.closest(".row"); if (r) light(r, true); });
+  el.addEventListener("pointerout", (e) => { const r = e.target.closest(".row"); if (r && !r.contains(e.relatedTarget)) light(r, false); });
+  el.addEventListener("focusin", (e) => light(e.target, true)); el.addEventListener("focusout", (e) => light(e.target, false));
+
+  // merged per week: drag through time
+  chart = dither.timeline($("[data-days]"), weeks.map((w) => w.n), {
+    span: Math.min(weeks.length, innerWidth < 700 ? 20 : 34), reduce: reduceMotion,
+    onFocus: (i) => { $("[data-readout-n]").textContent = `${weeks[i].n} ${weeks[i].n === 1 ? "pull request" : "pull requests"}`; $("[data-readout-d]").textContent = i === weeks.length - 1 ? "this week" : `week of ${dayName(weeks[i].t)}`; },
+    onPan: (a, b) => { $("[data-days-from]").textContent = dayName(weeks[a].t); $("[data-days-to]").textContent = b === weeks.length - 1 ? "this week" : dayName(weeks[b].t); },
+  });
+}
+// the charts grow in every time they scroll into view, not just the first time
+new IntersectionObserver((es) => {
+  if (!es.some((e) => e.isIntersecting)) return;
+  if (!seen) { seen = true; drawPrs(); return; }
+  if (chart) chart.replay(); regrow.forEach((f) => f());
+}, { threshold: 0.25 }).observe($("[data-crowd]"));
+addEventListener("resize", () => { if (chart) chart.resize(); repaint.forEach((f) => f()); });
 
 /* ---------- wiring ---------- */
 input.addEventListener("input", () => {
@@ -363,7 +400,6 @@ if (location.hash && intentById[location.hash.slice(1)]) setTimeout(() => open(l
 
 createTrail($("[data-trail]"));
 ditherTiles($("[data-pins]"));
-ditherTiles($("[data-prs]"));
 fillButtons(document.querySelectorAll(".key.fill"));
 renderPins();
 if (!persona && location.hash) { persona = "curious"; renderPins(); }   // deep links skip the intro
