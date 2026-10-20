@@ -167,15 +167,9 @@ body.is-revealing .pinned, body.is-revealing .foot, body.is-revealing .crowd, bo
 body.is-revealing .foot { animation-delay: 0.25s; } body.is-revealing .crowd { animation-delay: 0.35s; }
 @keyframes reveal { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } }
 .change { margin-left: 0.5rem; font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
-/* pull requests: the pick tiles' dither frame, two to a row */
-.pr-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.9rem; }
-.pr { color: inherit; text-decoration: none; padding-bottom: 1.4rem; background: var(--card); box-shadow: 0 0 0 8px var(--card); }
-.pr-title { font: italic 400 1.45rem/1.12 var(--serif); margin-top: 0.3rem; text-wrap: balance; }
-.pr-commit { font: 400 0.72rem/1.4 "Geist Mono", monospace; color: var(--muted); margin-top: 0.45rem; overflow-wrap: anywhere; }
-.pr-meta { font: 500 0.7rem var(--sans); color: var(--muted); margin-top: 0.6rem; transition: color 0.2s; }
-.pr:hover .pr-meta, .pr:focus-visible .pr-meta { color: var(--accent); }
 a.sample { color: var(--muted); text-decoration: none; } a.sample:hover { color: var(--accent); }
-@media (max-width: 700px) { .pr-list { grid-template-columns: 1fr; } }
+a.post-text { color: inherit; text-decoration: none; transition: color 0.2s; } a.post-text:hover { color: var(--accent); }
+.wall-q { margin: 0; }
 .pin-sub { font: 400 0.8rem/1.35 var(--sans); color: #a8a498; margin-top: 0.25rem; text-wrap: balance; }
 .tease { display: table; margin: 1rem auto 0; padding: 0.3rem 0.9rem; border-radius: 999px; background: var(--paper); font: 500 0.82rem var(--sans); color: var(--soft-ink); transition: background 0.2s, transform 0.25s var(--spring); }
 .tease:hover { background: var(--accent); color: var(--paper); transform: translateY(2px); }
