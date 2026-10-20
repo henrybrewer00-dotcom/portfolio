@@ -39,7 +39,7 @@ let engraving = null;
 })();
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261020a")
+fetch("model/model.json?v=20261020b")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -305,9 +305,20 @@ function drawPrs() {
   el.addEventListener("focusin", (e) => light(e.target, true)); el.addEventListener("focusout", (e) => light(e.target, false));
 
   // merged per week: drag through time
+  const days = $("[data-days]");
+  let pointing = false;
+  days.addEventListener("pointerenter", () => { pointing = true; });
+  days.addEventListener("pointerleave", () => { pointing = false; });
+  days.addEventListener("keydown", () => { pointing = true; }, true);
+  days.addEventListener("blur", () => { pointing = false; });
   chart = dither.timeline($("[data-days]"), weeks.map((w) => w.n), {
     span: Math.min(weeks.length, innerWidth < 700 ? 20 : 34), reduce: reduceMotion,
-    onFocus: (i) => { $("[data-readout-n]").textContent = `${weeks[i].n} ${weeks[i].n === 1 ? "pull request" : "pull requests"}`; $("[data-readout-d]").textContent = i === weeks.length - 1 ? "this week" : `week of ${dayName(weeks[i].t)}`; },
+    // at rest the readout shows the whole count; pointing at (or arrowing to) a week shows that week
+    onFocus: (i) => {
+      const n = pointing ? weeks[i].n : prs.length;
+      $("[data-readout-n]").textContent = `${n} ${n === 1 ? "pull request" : "pull requests"}`;
+      $("[data-readout-d]").textContent = !pointing ? `merged since ${dayName(dayOf(prs[prs.length - 1].merged))}` : i === weeks.length - 1 ? "this week" : `week of ${dayName(weeks[i].t)}`;
+    },
     onPan: (a, b) => { $("[data-days-from]").textContent = dayName(weeks[a].t); $("[data-days-to]").textContent = b === weeks.length - 1 ? "this week" : dayName(weeks[b].t); },
   });
 }
