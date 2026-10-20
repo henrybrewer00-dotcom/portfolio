@@ -71,13 +71,15 @@ function fromContent() {
 }
 
 export default async function handler(req, res) {
-  let out;
+  let out, why = process.env.GITHUB_TOKEN ? null : "no GITHUB_TOKEN";
   try { out = process.env.GITHUB_TOKEN ? await fromGraphQL(process.env.GITHUB_TOKEN) : await fromSearch(); }
   catch (e) {
     console.warn("prs: falling back", e.message);
+    why = e.message;   // just the API and its status code, never the token
     try { out = process.env.GITHUB_TOKEN ? await fromSearch() : fromContent(); } catch (e2) { out = fromContent(); }
   }
   out.prs.sort((a, b) => b.at - a.at);
+  if (why) out.fallback = why;   // says why it isn't the full GitHub picture, for checking the setup
   res.setHeader("cache-control", "public, s-maxage=3600, stale-while-revalidate=86400");
   res.status(200).json(out);
 }
