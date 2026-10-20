@@ -12,7 +12,7 @@ export function createTrail(cv) {
   if (!matchMedia("(hover: hover) and (pointer: fine)").matches) return;
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const ctx = cv.getContext("2d");
-  let cols = 0, rows = 0, heat = null, live = new Set(), raf = 0, last = 0, px = -1, py = -1, color = "#ff6a2b";
+  let cols = 0, rows = 0, heat = null, live = new Set(), raf = 0, last = 0, px = -1, py = -1, color = "#4b7bff";
   const size = () => {
     const dpr = Math.min(devicePixelRatio || 1, 2);
     cv.width = Math.round(innerWidth * dpr); cv.height = Math.round(innerHeight * dpr);

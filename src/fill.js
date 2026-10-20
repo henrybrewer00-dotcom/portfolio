@@ -1,4 +1,4 @@
-/* The enter buttons: on hover, orange dither dots fill the button from left to right, with a ragged ordered-dither
+/* The enter buttons: on hover, blue dither dots fill the button from left to right, with a ragged ordered-dither
    edge rather than a hard wipe, and the label swaps (↵ → enter). Leaving drains it back the same way. Pressing it
    (or hitting Enter in its form) fills it all the way once, as the "sent" beat. */
 
@@ -23,7 +23,7 @@ export function fillButtons(buttons) {
       ctx.clearRect(0, 0, w, h);
       btn.classList.toggle("is-filled", p > 0.55);
       if (p <= 0) return;
-      ctx.fillStyle = getComputedStyle(btn).getPropertyValue("--accent").trim() || "#ff6a2b";
+      ctx.fillStyle = getComputedStyle(btn).getPropertyValue("--accent").trim() || "#4b7bff";
       const front = ease(p) * (1 + BAND);
       for (let y = 0, j = 0; y < h; y += CELL, j++) {
         for (let x = 0, i = 0; x < w; x += CELL, i++) {

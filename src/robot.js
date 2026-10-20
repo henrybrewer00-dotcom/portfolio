@@ -3,7 +3,7 @@
    the big word, then the top edge of the ask bar. Where the pad has been, the engraving's dots come up a
    little brighter (shader.js polish()) and a few sparkles twinkle there before everything dulls back.
 
-   Calm on purpose: slow, eased drifting, small polishing loops, a rest now and then. Its orange eye looks at
+   Calm on purpose: slow, eased drifting, small polishing loops, a rest now and then. Its blue eye looks at
    your cursor. Not interactive (pointer-events: none), off for reduced motion and on touch-only screens it
    keeps to the top of the page. */
 
@@ -34,7 +34,7 @@ export function createRobot(cv, { engraving, bar, avoid } = {}) {
   const ctx = cv.getContext("2d");
   const css = getComputedStyle(document.documentElement);
   const ink = css.getPropertyValue("--ink").trim() || "#ece8de";
-  const accent = css.getPropertyValue("--accent").trim() || "#ff6a2b";
+  const accent = css.getPropertyValue("--accent").trim() || "#4b7bff";
   const paper = css.getPropertyValue("--paper").trim() || "#0e0e0c";
   let dpr = 1;
   const size = () => {
@@ -191,7 +191,7 @@ export function createRobot(cv, { engraving, bar, avoid } = {}) {
         else if (c === ":") { dot(x, y, ink, 0.5); dot(x + CELL, y + CELL, ink, 0.5); }   // half-tone shadow
         else if (c === "=") { dot(x, y, ink, 0.6); dot(x, y + CELL, ink, 0.6); }
         else if (c === "o") {
-          // the eyes: orange; they shift a dot toward the cursor
+          // the eyes: blue; they shift a dot toward the cursor
           const look = bot.look * bot.face;
           big(x + look * CELL, y, accent, bot.eye);
         } else if (c === "b") {

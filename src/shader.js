@@ -4,7 +4,7 @@
    is, with slow clouds of sparse dots drifting behind.
 
    Kept calm on purpose: letters near the cursor rise a little, lean toward it
-   and warm to orange, easing back when it leaves; a new word flips in, and
+   and warm to blue, easing back when it leaves; a new word flips in, and
    Enter drops one soft ripple (a small wave-equation grid on the CPU) that
    the dots ride. Raw WebGL2, no library.
    ========================================================================= */
@@ -105,7 +105,7 @@ export function createEngraving(canvas, { reduceMotion = false } = {}) {
   gl.uniform3fv(U.uPaper, hex("#121210"));
   gl.uniform3fv(U.uPaperDeep, hex("#0a0a09"));
   gl.uniform3fv(U.uInk, hex("#ece8de"));
-  gl.uniform3fv(U.uPink, hex("#ff6a2b"));
+  gl.uniform3fv(U.uPink, hex("#4b7bff"));
   gl.uniform1i(U.uA, 0); gl.uniform1i(U.uB, 1); gl.uniform1i(U.uW, 2); gl.uniform1i(U.uS, 3);
 
   const newTex = () => {

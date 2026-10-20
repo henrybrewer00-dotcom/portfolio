@@ -1,4 +1,4 @@
-/* The opening: a few seconds before "who are you?". Faint dither static gathers into "henry." (its dot orange),
+/* The opening: a few seconds before "who are you?". Faint dither static gathers into "henry." (its dot blue),
    which then re-dithers into "hello." in exactly the spot, size and face where the page draws its own "hello.".
    Then the dark cover dissolves dot by dot around the letters, so the page's dotted background comes through,
    and the intro's letters fade into the page's identical ones underneath: no cut, the last frame is the page.
@@ -21,7 +21,7 @@ export function boot({ skip = false, word = "hello.", onReveal = () => {} } = {}
   cv.className = "boot"; cv.setAttribute("aria-hidden", "true");
   document.body.appendChild(cv);
   const ctx = cv.getContext("2d"), css = getComputedStyle(root);
-  const ink = css.getPropertyValue("--ink").trim() || "#ece8de", accent = css.getPropertyValue("--accent").trim() || "#ff6a2b";
+  const ink = css.getPropertyValue("--ink").trim() || "#ece8de", accent = css.getPropertyValue("--accent").trim() || "#4b7bff";
   const paper = css.getPropertyValue("--paper").trim() || "#0e0e0c";
 
   let W, H, cols, rows, from, to, dot;
