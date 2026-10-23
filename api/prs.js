@@ -13,10 +13,11 @@ const LOGIN = "henrybrewer00-dotcom";
 const DAY = 864e5;
 const at = (d) => new Date(d).getTime();
 
-const QUERY = `query {
+const QUERY = `query($after: String) {
   viewer {
     contributionsCollection { contributionCalendar { totalContributions weeks { firstDay contributionDays { contributionCount } } } }
-    pullRequests(first: 100, orderBy: { field: CREATED_AT, direction: DESC }) {
+    pullRequests(first: 100, after: $after, orderBy: { field: CREATED_AT, direction: DESC }) {
+      pageInfo { hasNextPage endCursor }
       nodes { title number url createdAt mergedAt state repository { name nameWithOwner isPrivate } }
     }
   }
@@ -38,16 +39,38 @@ function prWeeks(prs) {
   return out;
 }
 
-async function fromGraphQL(token) {
-  const r = await fetch("https://api.github.com/graphql", {
-    method: "POST",
-    headers: { authorization: `bearer ${token}`, "content-type": "application/json", "user-agent": "henry93-portfolio" },
-    body: JSON.stringify({ query: QUERY }),
-  });
-  const j = await r.json();
-  if (!r.ok || j.errors || !j.data) throw new Error("graphql " + r.status);
-  const v = j.data.viewer, cal = v.contributionsCollection.contributionCalendar;
-  const prs = v.pullRequests.nodes.filter((p) => p.state !== "CLOSED" || p.mergedAt).map((p) => shape(p, repoName));
+// one token's view: every PR he opened that it can see, a page of 100 at a time (up to 500)
+async function viewerPrs(token) {
+  let after = null, nodes = [], cal = null;
+  for (let page = 0; page < 5; page++) {
+    const r = await fetch("https://api.github.com/graphql", {
+      method: "POST",
+      headers: { authorization: `bearer ${token}`, "content-type": "application/json", "user-agent": "henry93-portfolio" },
+      body: JSON.stringify({ query: QUERY, variables: { after } }),
+    });
+    const j = await r.json();
+    if (!r.ok || j.errors || !j.data) throw new Error("graphql " + r.status);
+    const v = j.data.viewer;
+    cal = cal || v.contributionsCollection.contributionCalendar;
+    nodes = nodes.concat(v.pullRequests.nodes);
+    if (!v.pullRequests.pageInfo.hasNextPage) break;
+    after = v.pullRequests.pageInfo.endCursor;
+  }
+  return { nodes, cal };
+}
+
+// A fine-grained token only sees private repos under one owner, so work in an organization's private repos
+// (Crawft's, say) needs a second token: every GITHUB_TOKEN* variable is read and the PRs are merged.
+const tokens = () => Object.keys(process.env).filter((k) => /^GITHUB_TOKEN/.test(k)).sort().map((k) => process.env[k]).filter(Boolean);
+
+async function fromGraphQL() {
+  const views = await Promise.all(tokens().map((t) => viewerPrs(t).catch(() => null)));
+  if (!views.some(Boolean)) throw new Error("graphql: no token worked");
+  const seen = new Set(), nodes = [];
+  for (const v of views) if (v) for (const p of v.nodes) if (!seen.has(p.url)) { seen.add(p.url); nodes.push(p); }
+  const cal = views.find(Boolean).cal;
+  // every PR he opened counts, merged, open or closed
+  const prs = nodes.map((p) => shape(p, repoName));
   return {
     source: "github", unit: "contributions", total: cal.totalContributions, prCount: prs.length, prs,
     weeks: cal.weeks.map((w) => ({ t: at(w.firstDay + "T00:00:00Z"), n: w.contributionDays.reduce((a, d) => a + d.contributionCount, 0) })),
@@ -58,7 +81,7 @@ async function fromSearch() {
   const r = await fetch(`https://api.github.com/search/issues?q=author:${LOGIN}+type:pr&sort=created&order=desc&per_page=100`, { headers: { "user-agent": "henry93-portfolio", accept: "application/vnd.github+json" } });
   if (!r.ok) throw new Error("search " + r.status);
   const j = await r.json();
-  const prs = j.items.filter((i) => i.state === "open" || i.pull_request.merged_at).map((i) => ({
+  const prs = j.items.map((i) => ({
     repo: i.repository_url.split("/").pop(), n: i.number, title: i.title, url: i.html_url,
     at: at(i.pull_request.merged_at || i.created_at), merged: !!i.pull_request.merged_at, private: false,
   }));
@@ -74,12 +97,12 @@ function fromContent() {
 let kept = null;
 export async function getPrs() {
   if (kept && Date.now() - kept.at < 3600e3) return kept.out;
-  let out, why = process.env.GITHUB_TOKEN ? null : "no GITHUB_TOKEN";
-  try { out = process.env.GITHUB_TOKEN ? await fromGraphQL(process.env.GITHUB_TOKEN) : await fromSearch(); }
+  let out, why = tokens().length ? null : "no GITHUB_TOKEN";
+  try { out = tokens().length ? await fromGraphQL() : await fromSearch(); }
   catch (e) {
     console.warn("prs: falling back", e.message);
     why = e.message;   // just the API and its status code, never the token
-    try { out = process.env.GITHUB_TOKEN ? await fromSearch() : fromContent(); } catch (e2) { out = fromContent(); }
+    try { out = tokens().length ? await fromSearch() : fromContent(); } catch (e2) { out = fromContent(); }
   }
   out.prs.sort((a, b) => b.at - a.at);
   if (why) out.fallback = why;   // says why it isn't the full GitHub picture, for checking the setup
