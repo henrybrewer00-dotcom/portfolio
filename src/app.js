@@ -34,12 +34,8 @@ const zoomBtn = $("[data-zoom-out]");
 const pond = createPond($("[data-pond]"), { ignore: "a, button, input, textarea, select, label, form, .card, .pins, .pr-list, .results, .top, .tools", onZoom: (on) => { zoomBtn.hidden = !on; } });
 zoomBtn.addEventListener("click", () => pond.zoomOut());
 document.body.classList.add("is-ready");
-// the tool row picks what a click on open water does
-const tools = [...document.querySelectorAll("[data-tool]")];
-tools.forEach((b) => b.addEventListener("click", () => {
-  tools.forEach((o) => o.setAttribute("aria-checked", String(o === b)));
-  pond.setTool(b.dataset.tool);
-}));
+// one way to play (Henry's pick): the koi follow the cursor, and a click calls them to that spot
+pond.setTool("call");
 
 /* ---------- the model ---------- */
 fetch("model/model.json?v=20261023t")

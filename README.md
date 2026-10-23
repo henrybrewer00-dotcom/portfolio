@@ -5,9 +5,8 @@ Henry's current job") and ghost text finishes the sentence: **Tab** (or →)
 accepts it, **Enter** opens the cards. Behind it, black and white ASCII koi
 swim over a black cell grid (`src/pond.js`, after stackedlol/ascii-sharks):
 fish scatter from the cursor, the koi come to look when it rests, and tiles
-flip over as the cursor crosses them. A picker in the corner sets what a click
-on open water does: feed (pellets, and the view leans in on the tiles),
-ripple, call (the koi follow you) or lily pad. The big word
+flip over as the cursor crosses them. The koi follow the cursor, and a click on
+open water calls them to that spot. The big word
 ("hello." / "henry." / whatever you opened) is drawn into the same grid as
 tiles and decodes cell by cell when it changes. Black and white only.
 
