@@ -13,6 +13,7 @@ import { ditherTiles } from "./tiledither.js";
 import { createModel } from "./model.js";
 import { createSuggester } from "./suggest.js";
 import { createEngraving } from "./shader.js";
+import { createPond } from "./pond.js";
 
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[c]);
@@ -27,7 +28,9 @@ const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 let model = null, ranked = [], current = null; // current = { text, ghost, intent } the Tab key would accept
 const { suggest } = createSuggester(INTENTS);
 
-/* ---------- the engraving ---------- */
+/* ---------- the koi pond, and the engraving over it ---------- */
+// clicks on anything you can use stay with it; a click on open water feeds the koi
+try { createPond($("[data-pond]"), { ignore: "a, button, input, textarea, select, label, form, .card, .pins, .pr-list, .results, .top, [data-robot]" }); } catch (e) { console.warn(e); }
 let engraving = null;
 (async () => {
   try { await Promise.race([document.fonts.load('400 120px "Instrument Serif"'), new Promise((r) => setTimeout(r, 1500))]); } catch (e) {}

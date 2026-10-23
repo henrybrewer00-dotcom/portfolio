@@ -2,9 +2,11 @@
 
 One search bar over an engraving. Type what you want to see ("show me
 Henry's current job") and ghost text finishes the sentence: **Tab** (or →)
-accepts it, **Enter** opens the cards. The background is a banknote-style
-engraving shader that redraws "henry." on the home screen and the name of
-whatever you opened.
+accepts it, **Enter** opens the cards. Behind it, black and white ASCII koi
+swim over a black cell grid (`src/pond.js`, after stackedlol/ascii-sharks):
+fish scatter from the cursor, the koi come to look when it rests, and a click
+on open water drops food and leans the view in on the tiles. A dither shader
+on top draws "hello." / "henry." and the name of whatever you opened.
 
 There is no chatbot and nothing is generated. A small decision model picks
 which cards to show; every word on screen comes from `src/content.js`.

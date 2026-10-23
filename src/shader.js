@@ -1,7 +1,7 @@
 /* =========================================================================
    henry. — the dither field. Light dots on near-black, placed by an 8×8 Bayer
    matrix; the word is drawn to an offscreen mask and the dots crowd where it
-   is, with slow clouds of sparse dots drifting behind.
+   is. The canvas is transparent elsewhere, so the koi pond shows through.
 
    Kept calm on purpose: letters near the cursor rise a little, lean toward it
    and warm to orange, easing back when it leaves; a new word flips in, and
@@ -57,12 +57,9 @@ void main() {
   float shine = texture(uS, tuv).r;                // where the robot has buffed: brighter, a touch denser, slowly dulling
   float sharp = src.r, glow = src.g, blush = src.b;
 
-  // slow clouds of dots drift behind the word; the tilt leans them as you type
-  float n = fbm((p + vec2(p.y * uTilt * 4.0, 0.0)) * 0.0028 + vec2(uTime * 0.025, -uTime * 0.018));
+  // the koi pond (src/pond.js) shows through everywhere but the word, the ripples and the buffed spots
   float shade = clamp((g.x - g.y) * 1.6, -1.0, 1.0);
-  float field = 0.015 + smoothstep(0.42, 0.8, n) * 0.2;
-  float vig = smoothstep(1.2, 0.2, length((uv - vec2(0.5, 0.55)) * vec2(uRes.x / uRes.y, 1.0)));
-  float tone = field * mix(0.35, 1.0, vig) + glow * 0.16 + sharp * 0.86 + max(shade, 0.0) * 0.35 + abs(h) * 0.12;
+  float tone = glow * 0.16 + sharp * 0.86 + max(shade, 0.0) * 0.35 + abs(h) * 0.12;
   tone *= 1.0 - max(-shade, 0.0) * 0.5;
   tone += shine * (0.12 + sharp * 0.1);
   float on = step(bayer8(cell) + 0.001, clamp(tone, 0.0, 0.97));
@@ -70,8 +67,8 @@ void main() {
   // the accent is the dot colour, never a fill: the answer's word, letters you hover, a big splash
   float warm = clamp(hot * smoothstep(0.35, 0.8, sharp) + blush * 0.9 + smoothstep(0.6, 1.6, h) * 0.5, 0.0, 1.0);
   vec3 ink = mix(mix(uInk, vec3(1.0), shine), uPink, warm);
-  vec3 paper = mix(uPaperDeep, uPaper, smoothstep(1.4, 0.2, length(uv - 0.5)));
-  o = vec4(mix(paper, ink, on * mix(0.55, 1.0, max(max(sharp, warm), shine))), 1.0);
+  float a = on * mix(0.55, 1.0, max(max(sharp, warm), shine));
+  o = vec4(ink * a, a);
 }`;
 
 const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
@@ -82,7 +79,7 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
  * @returns {{ show(text: string, hot: boolean): void, pulse(x: number, y: number): void, ripple(x: number, y: number, amount?: number): void, tilt(v: number): void } | null} null when WebGL2 is missing
  */
 export function createEngraving(canvas, { reduceMotion = false } = {}) {
-  const gl = canvas.getContext("webgl2", { antialias: false, alpha: false, powerPreference: "low-power" });
+  const gl = canvas.getContext("webgl2", { antialias: false, alpha: true, premultipliedAlpha: true, powerPreference: "low-power" });
   if (!gl) return null;
 
   const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };

@@ -3,7 +3,7 @@
    bone-white type and dots, and signal orange as the only accent.
    ========================================================================= */
 :root {
-  --paper: #0e0e0c; --card: #181816; --ink: #ece8de; --accent: #ff6a2b;
+  --paper: #000000; --pond: #000000; --card: #181816; --ink: #ece8de; --accent: #ff6a2b;
   --muted: #8d8a80; --soft: #26251f; --soft-ink: #cfcbbf; --border: #2c2b26;
   --faint: rgba(236, 232, 222, 0.3);
   color-scheme: dark;
@@ -20,8 +20,10 @@ a { color: inherit; text-decoration: none; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
-/* ---------- the engraving ---------- */
-.engraving { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; opacity: 0; transition: opacity 1.4s ease; }
+/* ---------- the pond and the engraving over it ---------- */
+.pond { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; font-family: var(--mono); opacity: 0; transition: opacity 1.4s ease; }
+body.is-ready .pond { opacity: 1; }
+.engraving { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; opacity: 0; transition: opacity 1.4s ease; pointer-events: none; }
 body.is-ready .engraving { opacity: 1; }
 body.no-gl { background: repeating-linear-gradient(-4deg, transparent 0 4px, rgba(0, 0, 0, 0.05) 4px 5px), var(--paper); }
 body.no-gl::before { content: "henry."; position: fixed; left: 0; right: 0; top: 18vh; text-align: center; font: 400 clamp(6rem, 22vw, 18rem)/1 var(--serif); color: var(--ink); pointer-events: none; }
