@@ -292,21 +292,13 @@ function staticGh() {
   return { source: "static", unit: "pull requests", total: prs.length, prCount: prs.length, weeks, prs };
 }
 let gh = staticGh(), chart = null, repaint = [], regrow = [], seen = false;
-// the chart is pull requests per week over the last six months, where nearly all of them are
-const SPAN = 26;
-function prWeeks() {
-  const sunday = (t) => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime() - d.getDay() * DAY; };
-  const end = sunday(Date.now()), weeks = [];
-  for (let k = SPAN - 1; k >= 0; k--) { const t = end - k * 7 * DAY; weeks.push({ t, n: gh.prs.filter((p) => sunday(p.at) === t).length }); }
-  return weeks;
-}
 const plural = (n, unit) => `${n} ${n === 1 ? unit.replace(/s$/, "") : unit}`;
 function renderGh() {
   const shown = gh.prs.slice(0, 12);
   $("[data-prs]").innerHTML = shown.map((p) => `<li class="post"><span class="post-role">${esc(p.repo)}${p.n ? " #" + p.n : ""}</span>${p.url
     ? `<a class="post-text" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.title)} ↗</a>` : `<span class="post-text is-private">a pull request</span>`}<span class="post-t">${dayName(p.at)}</span></li>`).join("");
-  $("[data-gh-unit]").textContent = "pull requests per week · last 6 months";
-  $("[data-days]").setAttribute("aria-label", "Pull requests per week over the last six months. Use the arrow keys to move through the weeks.");
+  $("[data-gh-unit]").textContent = "pull requests · last 6 months";
+  $("[data-days]").setAttribute("aria-label", "Pull requests over the last six months, as a running total. Point at it, or use the arrow keys, to see the total on a given day.");
 
 }
 function drawGh() {
@@ -318,23 +310,23 @@ function drawGh() {
   const bars = [...el.querySelectorAll("canvas")].map((c, i) => dither.bar(c, rows[i][1] / max, false, reduceMotion));
   repaint = bars.map((b) => b.paint); regrow = bars.map((b) => b.grow);
 
-  // per week: drag through time. At rest the readout shows the whole count; pointing at (or arrowing to) a week shows that week
-  const days = $("[data-days]"), weeks = prWeeks(), total = weeks.reduce((a, w) => a + w.n, 0);
+  // like a stock: the running total of pull requests, day by day over the last six months. At rest the readout shows
+  // the total and the last 30 days; pointing at a day shows the total by then
+  const days = $("[data-days]"), DAYS = 182, today = new Date(); today.setHours(23, 59, 59, 999);
+  const t0 = today.getTime() - (DAYS - 1) * DAY;
+  const series = [], dates = [];
+  for (let d = 0, run = 0; d < DAYS; d++) { const end = t0 + d * DAY; run = gh.prs.filter((p) => p.at >= t0 && p.at <= end).length; series.push(run); dates.push(end); }
+  const total = series.at(-1), month = total - series[Math.max(0, DAYS - 31)];
   const fresh = days.cloneNode(true); days.replaceWith(fresh);   // a redraw (GitHub answering) starts on a clean canvas
-  let pointing = false;
-  fresh.addEventListener("pointerenter", () => { pointing = true; });
-  fresh.addEventListener("pointerleave", () => { pointing = false; });
-  fresh.addEventListener("keydown", () => { pointing = true; }, true);
-  fresh.addEventListener("blur", () => { pointing = false; });
-  if (!weeks.length) return;
-  chart = dither.timeline(fresh, weeks.map((w) => w.n), {
-    span: weeks.length, reduce: reduceMotion, live: true,   // the newest week keeps moving
+  $("[data-days-from]").textContent = dayName(t0); $("[data-days-to]").textContent = "today";
+  chart = dither.stock(fresh, series, {
+    reduce: reduceMotion,
     onFocus: (i) => {
       // the hand-picked stand-ins are only a few PRs, so they never get counted out loud
-      $("[data-readout-n]").textContent = pointing ? plural(weeks[i].n, "pull requests") : gh.source === "static" ? "pull requests" : plural(total, "pull requests");
-      $("[data-readout-d]").textContent = !pointing ? "in the last 6 months" : i === weeks.length - 1 ? "this week" : `week of ${dayName(weeks[i].t)}`;
+      if (gh.source === "static") { $("[data-readout-n]").textContent = "pull requests"; $("[data-readout-d]").textContent = "in the last 6 months"; return; }
+      $("[data-readout-n]").textContent = plural(i < 0 ? total : series[i], "pull requests");
+      $("[data-readout-d]").textContent = i < 0 ? `▲ ${month} in the last 30 days` : i === DAYS - 1 ? "as of today" : `by ${dayName(dates[i])}`;
     },
-    onPan: (a, b) => { $("[data-days-from]").textContent = dayName(weeks[a].t); $("[data-days-to]").textContent = b === weeks.length - 1 ? "this week" : dayName(weeks[b].t); },
   });
 }
 const lightRow = (row, on) => { const el = $("[data-roles]"), i = [...el.children].indexOf(row), c = row.querySelector("canvas"), nEl = row.querySelector(".row-n");

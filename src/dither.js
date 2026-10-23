@@ -131,3 +131,82 @@ export function timeline(canvas, values, { span = 21, reduce = false, live = fal
     get window() { return [Math.floor(off), Math.min(n - 1, Math.floor(off) + span - 1)]; },
   };
 }
+
+/**
+ * A stock-style line: values[i] is a running total, one per day, oldest first. The line is drawn in solid dots
+ * with a dithered fill under it that fades toward the floor, and it draws itself in from the left. The newest
+ * point is live: a dot that pulses with a ring rolling off it, like a ticker. Pointing at (or arrowing through)
+ * the chart moves a dotted crosshair and calls onFocus(i); leaving calls onFocus(-1).
+ */
+export function stock(canvas, values, { reduce = false, onFocus = () => {} } = {}) {
+  let g = setup(canvas), k = reduce ? 1 : 0, hover = -1, raf = 0, visible = false;
+  const n = values.length, max = Math.max(1, ...values) * 1.12;
+  const xAt = (i) => (i / Math.max(1, n - 1)) * (g.w - g.px * 6);
+  const yAt = (v) => g.h - g.px * 2 - (v / max) * (g.h - g.px * 8);
+  const valueAtX = (x) => { const f = clamp(x / (g.w - g.px * 6), 0, 1) * (n - 1), i = Math.floor(f), t = f - i; return values[i] + ((values[Math.min(n - 1, i + 1)] ?? values[i]) - values[i]) * t; };
+
+  function draw(now) {
+    const { ctx, w, h, px } = g, ink = css("--ink"), t = now / 1000;
+    ctx.clearRect(0, 0, w, h);
+    const reach = (w - px * 6) * (1 - (1 - k) ** 3);   // how far the line has drawn in
+    // the faint floor grid: a dotted rule every quarter
+    ctx.fillStyle = ink; ctx.globalAlpha = 0.18;
+    for (let q = 1; q <= 3; q++) { const y = Math.round((h * q) / 4 / px) * px; for (let x = 0; x < w; x += px * 4) ctx.fillRect(x, y, px, px); }
+    ctx.globalAlpha = 1;
+    // the fill under the line, then the line itself, a column of dots at a time
+    for (let x = 0; x <= reach; x += px) {
+      const y = Math.round(yAt(valueAtX(x)) / px) * px, depth = h - y;
+      for (let yy = y + px * 2; yy < h; yy += px) {
+        const d = 0.62 * (1 - (yy - y) / depth) ** 1.4;
+        if (d > BAYER[((yy / px) & 3) * 4 + ((x / px) & 3)]) ctx.fillRect(x, yy, px, px);
+      }
+      ctx.fillRect(x, y - px, px, px * 2);
+      // keep the line unbroken where it climbs a step
+      const y2 = Math.round(yAt(valueAtX(x + px)) / px) * px;
+      if (Math.abs(y2 - y) > px) ctx.fillRect(x, Math.min(y, y2), px, Math.abs(y2 - y));
+    }
+    // the crosshair: a dotted upright and a hollow square on the line
+    if (hover >= 0 && k >= 1) {
+      const x = Math.round(xAt(hover) / px) * px, y = Math.round(yAt(values[hover]) / px) * px;
+      for (let yy = 0; yy < h; yy += px * 3) ctx.fillRect(x, yy, px, px);
+      ctx.clearRect(x - px * 3, y - px * 3, px * 7, px * 7); ctx.fillRect(x - px * 2, y - px * 2, px * 5, px * 5); ctx.clearRect(x - px, y - px, px * 3, px * 3);
+    }
+    // the live end: a pulsing dot and a ring of dots rolling off it
+    if (k >= 1) {
+      const x = Math.round(xAt(n - 1) / px) * px, y = Math.round(yAt(values[n - 1]) / px) * px;
+      const beat = reduce ? 0 : (t * 0.8) % 1, size = px * (2 + Math.round(1 + Math.sin(t * 5)));
+      ctx.fillRect(x - size, y - size, size * 2 + px, size * 2 + px);
+      if (!reduce) {
+        const r = px * (3 + beat * 9), steps = 18;
+        ctx.globalAlpha = 1 - beat;
+        for (let s = 0; s < steps; s++) { const a = (s / steps) * Math.PI * 2; ctx.fillRect(Math.round((x + Math.cos(a) * r) / px) * px, Math.round((y + Math.sin(a) * r) / px) * px, px, px); }
+        ctx.globalAlpha = 1;
+      }
+    }
+  }
+  function loop(now) {
+    raf = 0;
+    if (k < 1) k = Math.min(1, k + 0.02);
+    draw(now);
+    if (k < 1 || (visible && !reduce)) raf = requestAnimationFrame(loop);
+  }
+  const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
+  const indexAt = (e) => { const r = canvas.getBoundingClientRect(); return clamp(Math.round(((e.clientX - r.left) / r.width) * (n - 1) * (g.w / (g.w - g.px * 6))), 0, n - 1); };
+  const focus = (i) => { if (i !== hover) { hover = i; onFocus(i); kick(); if (reduce) draw(performance.now()); } };
+  canvas.addEventListener("pointermove", (e) => focus(indexAt(e)));
+  canvas.addEventListener("pointerdown", (e) => focus(indexAt(e)));
+  canvas.addEventListener("pointerleave", () => focus(-1));
+  canvas.addEventListener("blur", () => focus(-1));
+  canvas.addEventListener("keydown", (e) => {
+    const step = { ArrowLeft: -1, ArrowRight: 1, Home: -n, End: n }[e.key];
+    if (step == null) return;
+    e.preventDefault(); focus(clamp((hover < 0 ? n - 1 : hover) + step * (Math.abs(step) === 1 ? 7 : 1), 0, n - 1));
+  });
+  new IntersectionObserver((es) => { visible = es.some((e) => e.isIntersecting); if (visible) kick(); }).observe(canvas);
+  onFocus(-1);
+  kick();
+  return {
+    resize() { g = setup(canvas); kick(); },
+    replay() { if (!reduce) { k = 0; kick(); } },
+  };
+}
