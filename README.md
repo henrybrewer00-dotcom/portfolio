@@ -1,12 +1,13 @@
 # henry. — portfolio
 
-One search bar over an engraving. Type what you want to see ("show me
+One search bar over an ASCII koi pond. Type what you want to see ("show me
 Henry's current job") and ghost text finishes the sentence: **Tab** (or →)
 accepts it, **Enter** opens the cards. Behind it, black and white ASCII koi
 swim over a black cell grid (`src/pond.js`, after stackedlol/ascii-sharks):
 fish scatter from the cursor, the koi come to look when it rests, and a click
-on open water drops food and leans the view in on the tiles. A dither shader
-on top draws "hello." / "henry." and the name of whatever you opened.
+on open water drops food and leans the view in on the tiles. The big word
+("hello." / "henry." / whatever you opened) is drawn into the same grid as
+tiles and decodes cell by cell when it changes. Black and white only.
 
 There is no chatbot and nothing is generated. A small decision model picks
 which cards to show; every word on screen comes from `src/content.js`.
@@ -36,11 +37,12 @@ No build step on deploy: `model/model.json` is committed.
 |---|---|
 | `index.html` | The page: ask bar, results, no-JS list |
 | `api/ask.js` | On Enter, one or two sentences from Claude Haiku 5.5, grounded in content.js. Needs ANTHROPIC_API_KEY in Vercel |
-| `styles.css` | kargul palette: paper #efede8, ink #141412, pink #f2a9b8; bar, ghost text, cards, mobile |
+| `styles.css` | Black and bone palette; bar, ghost text, cards, mobile |
 | `src/content.js` | Every card and every intent |
 | `src/model.js` | Text features + the classifier (shared by training and the browser) |
 | `src/suggest.js` | Ghost-text matching |
-| `src/shader.js` | The engraving, raw WebGL2 |
+| `src/pond.js` | The koi pond and the big word, drawn as ASCII tiles on a canvas |
+| `src/boot.js` | The intro: "henry." decodes in the pond, then becomes "hello." |
 | `src/app.js` | Wiring: keystrokes, Tab, Enter, cards, deep links (`/#sitelight`) |
 | `tools/train.mjs`, `tools/test.mjs` | Train and check the model |
 | `deck/`, `old/` | The two previous portfolios (card deck, terminal) |

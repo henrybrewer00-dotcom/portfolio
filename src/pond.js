@@ -4,6 +4,10 @@
    shaded glyph tiles. A koi rides a follow-the-leader spine; every cell is supersampled against its
    outline in body coordinates (s along the spine, 0 = nose, 1 = tail; v across it, in px).
 
+   The page's big word ("hello.", "henry.", or whatever was opened) is drawn into the same grid as
+   bright tiles, over the koi. A new word decodes in: each cell scrambles through a few glyphs before
+   it settles, in a ragged sweep from left to right.
+
    Interactive, but calm: fish scatter from the cursor, koi drift over to see what it is, and a click
    drops food. The view leans in on the spot so the tiles come up close, the koi come and eat, and
    the view eases back out. */
@@ -108,6 +112,8 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
   let W = 0, H = 0, dpr = 1, cw = 12, ch = 18, cols = 0, rows = 0, time = 0;
   let energy = new Float32Array(0), tmp = new Float32Array(0), cell = new Uint8Array(0), lum = new Float32Array(0), key = new Uint32Array(0), dim = new Float32Array(0), fishAt = new Uint32Array(0), frame = 0;
   let koi = [], fish = [], food = [], lastSpawn = 0, raf = 0, last = 0, acc = 0, running = false;
+  // the word: coverage per cell now (cover) and before the last change (was), and when each cell flips over
+  let wordText = "", cover = new Float32Array(0), was = new Float32Array(0), flipAt = new Float32Array(0);
   const pointer = { x: 0, y: 0, active: false, still: 0 };
   // the camera: a click leans in on a spot (zoom > 1) and then eases back out
   const cam = { x: 0, y: 0, z: 1, tz: 1, until: 0 };
@@ -125,6 +131,7 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
     energy = new Float32Array(n); tmp = new Float32Array(n); cell = new Uint8Array(n); lum = new Float32Array(n);
     key = new Uint32Array(n); dim = new Float32Array(n); fishAt = new Uint32Array(n);
     if (first) seed();
+    cover = layoutWord(wordText); was = cover; flipAt = new Float32Array(cols * rows);
     if (!running) still();
   }
 
@@ -378,7 +385,50 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
     [energy, tmp] = [tmp, energy];
   }
 
-  const RAMP = ":;t%SX8#@", FINS = "|/;:'", EDGE_HEAVY = ":;", EDGE_LIGHT = ".',`";
+  /* ---------- the word ---------- */
+  // laid out where the page always drew its big word, then sampled 3×3 per cell for coverage
+  function layoutWord(text) {
+    const out = new Float32Array(cols * rows);
+    if (!text || !cols) return out;
+    const small = W < 700, c = document.createElement("canvas"), w = Math.ceil(W), h = Math.ceil(H);
+    c.width = w; c.height = h;
+    const g = c.getContext("2d"), face = (px) => `400 ${px}px "Instrument Serif", Georgia, serif`;
+    let size = Math.min(H * (small ? 0.3 : 0.42), W * 0.9);
+    g.font = face(size);
+    const m = g.measureText(text).width;
+    if (m > W * 0.88) { size *= (W * 0.88) / m; g.font = face(size); }
+    g.textBaseline = "middle"; g.textAlign = "center"; g.fillStyle = g.strokeStyle = "#fff";
+    // a little stroke so the serif's hairlines survive at cell resolution
+    g.lineWidth = Math.max(2, cw * 0.4); g.lineJoin = "round";
+    const y = H * (small ? 0.3 : 0.36);
+    g.fillText(text, W / 2, y); g.strokeText(text, W / 2, y);
+    const d = g.getImageData(0, 0, w, h).data;
+    for (let r = 0; r < rows; r++) for (let col = 0; col < cols; col++) {
+      let sum = 0;
+      for (let j = 0; j < 3; j++) for (let k = 0; k < 3; k++) {
+        const x = Math.min(w - 1, Math.floor(col * cw + (k + 0.5) * cw / 3)), yy = Math.min(h - 1, Math.floor(r * ch + (j + 0.5) * ch / 3));
+        sum += d[(yy * w + x) * 4];
+      }
+      out[r * cols + col] = sum / (9 * 255);
+    }
+    return out;
+  }
+  function show(text, instant = false) {
+    const next = layoutWord(text);
+    wordText = text;
+    if (instant || reduce.matches) { cover = was = next; flipAt.fill(0); if (!running) draw(STEP); return; }
+    // cells that change flip over in a ragged sweep across the word: about a second end to end
+    was = new Float32Array(cols * rows);
+    for (let i = 0; i < was.length; i++) {
+      was[i] = shown(i);
+      flipAt[i] = time + ((i % cols) / cols) * 0.7 + hash3(i, 1, wordText.length) * 0.35;
+    }
+    cover = next;
+  }
+  // coverage this cell shows right now
+  const shown = (i) => (time >= flipAt[i] ? cover[i] : was[i]);
+
+  const RAMP = ":;t%SX8#@", FINS = "|/;:'", EDGE_HEAVY = ":;", EDGE_LIGHT = ".',`", SCRAMBLE = "/\\|-+=*#%<>";
   const DOTS = [0.12, 0.2, 0.3, 0.42, 0.56, 0.72].map((a) => `rgba(${I.join(",")},${a})`);
   const FISH = [0.22, 0.34, 0.48, 0.62, 0.78].map((a) => `rgba(${I.join(",")},${a})`);
 
@@ -409,7 +459,7 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
     const size = Math.max(2, Math.round(cw * 0.2));
     const dotBuckets = DOTS.map(() => []);
     for (let i = 0; i < n; i++) {
-      if (cell[i] || fishAt[i] === frame) continue;
+      if (cell[i] || fishAt[i] === frame || shown(i) >= 0.12) continue;
       const col = i % cols, row = (i / cols) | 0, e = energy[i];
       let v = e > 0.36 ? 0.3 + (e - 0.36) * 0.9 : 0;
       if (!v) {
@@ -446,6 +496,26 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
       ctx.fillStyle = flash && k === BODY ? mix(tone > 0.5 ? 0.35 : 1) : tone > 0.5 ? mix(0.1) : mix(Math.min(1, tone + 0.3));
       ctx.fillText(glyph, x + cw / 2, y + ch / 2 + 1);
     }
+    // the word, over everything: solid tiles where the letters are, light glyphs along their edges,
+    // and a short scramble in each cell as it flips over to a new word
+    for (let i = 0; i < n; i++) {
+      const v = shown(i), flipping = time >= flipAt[i] && time < flipAt[i] + 0.3 && (cover[i] > 0.12 || was[i] > 0.12);
+      if (v < 0.12 && !flipping) continue;
+      const x = (i % cols) * cw, y = ((i / cols) | 0) * ch;
+      if (flipping) {
+        ctx.fillStyle = mix(0.16); ctx.fillRect(x + 1, y + 1, cw - 1, ch - 1);
+        ctx.fillStyle = mix(0.75); ctx.fillText(SCRAMBLE[Math.floor(hash3(i, Math.floor(time * 24), 3) * SCRAMBLE.length)], x + cw / 2, y + ch / 2 + 1);
+        continue;
+      }
+      const kk = hash3(i, 5, 11);
+      if (v >= 0.5) {
+        ctx.fillStyle = mix(0.86 + v * 0.1); ctx.fillRect(x + 1, y + 1, cw - 1, ch - 1);
+        ctx.fillStyle = mix(0.1); ctx.fillText(RAMP[Math.floor(kk * 3)], x + cw / 2, y + ch / 2 + 1);
+      } else {
+        ctx.fillStyle = mix(0.35 + v);
+        ctx.fillText((v > 0.3 ? EDGE_HEAVY : EDGE_LIGHT)[Math.floor(kk * (v > 0.3 ? 2 : 4))], x + cw / 2, y + ch / 2 + 1);
+      }
+    }
   }
 
   /* ---------- loop ---------- */
@@ -472,7 +542,7 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
     pointer.x = p.x; pointer.y = p.y; pointer.active = e.pointerType !== "touch";
   };
   const onDown = (e) => {
-    if (reduce.matches || (e.target instanceof Element && e.target.closest(ignore))) return;
+    if (reduce.matches || document.documentElement.classList.contains("is-booting") || (e.target instanceof Element && e.target.closest(ignore))) return;
     const { x, y } = local(e);
     ring(x, y, 4, 1.1);
     for (const f of fish) { const dx = f.x - x, dy = f.y - y, d = Math.hypot(dx, dy); if (f.alive && d < 180 && d > 1e-3) { const k = (1 - d / 180) * 180; f.vx += (dx / d) * k; f.vy += (dy / d) * k; f.alarm = 1; } }
@@ -491,8 +561,14 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
   reduce.addEventListener?.("change", start);
   resize(); start();
   document.fonts?.load(`600 16px ${font}`).then(() => { if (!running) draw(STEP); });
+  // the word needs its real face; once it's in, lay the current word out again in place
+  document.fonts?.load('400 120px "Instrument Serif"').then(() => { if (wordText) { cover = was = layoutWord(wordText); flipAt.fill(0); if (!running) draw(STEP); } });
 
   return {
+    /** Draw a word into the pond (it decodes in cell by cell, or appears at once with instant). */
+    show,
+    /** A ring rolling out from a point on the page, e.g. under the bar on Enter. */
+    pulse(x, y) { ring(x, y, 6, 1.3); },
     /** Drop food at a point in page coordinates (the koi come to it), without moving the camera. */
     feed(x, y) { for (let k = 0; k < 3; k++) food.push({ x: x + rand(-1, 1) * cw * 2, y: y + rand(-1, 1) * ch, t: time }); ring(x, y, 3, 0.9); },
     destroy() {

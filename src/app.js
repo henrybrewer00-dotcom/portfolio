@@ -7,12 +7,10 @@
 import { INTENTS, HINTS, PINNED, PRS, personaById, personaFor, itemById, intentById } from "./content.js";
 import { fillButtons } from "./fill.js";
 import { createTrail } from "./trail.js";
-import { createRobot } from "./robot.js";
 import { boot } from "./boot.js";
 import { ditherTiles } from "./tiledither.js";
 import { createModel } from "./model.js";
 import { createSuggester } from "./suggest.js";
-import { createEngraving } from "./shader.js";
 import { createPond } from "./pond.js";
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -28,17 +26,10 @@ const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 let model = null, ranked = [], current = null; // current = { text, ghost, intent } the Tab key would accept
 const { suggest } = createSuggester(INTENTS);
 
-/* ---------- the koi pond, and the engraving over it ---------- */
+/* ---------- the koi pond, with the big word drawn into it ---------- */
 // clicks on anything you can use stay with it; a click on open water feeds the koi
-try { createPond($("[data-pond]"), { ignore: "a, button, input, textarea, select, label, form, .card, .pins, .pr-list, .results, .top, [data-robot]" }); } catch (e) { console.warn(e); }
-let engraving = null;
-(async () => {
-  try { await Promise.race([document.fonts.load('400 120px "Instrument Serif"'), new Promise((r) => setTimeout(r, 1500))]); } catch (e) {}
-  try { engraving = createEngraving($("[data-engraving]"), { reduceMotion }); } catch (e) { console.warn(e); }
-  if (!engraving) document.body.classList.add("no-gl");
-  else if (!persona) engraving.show("hello.", false);
-  document.body.classList.add("is-ready");
-})();
+const pond = createPond($("[data-pond]"), { ignore: "a, button, input, textarea, select, label, form, .card, .pins, .pr-list, .results, .top" });
+document.body.classList.add("is-ready");
 
 /* ---------- the model ---------- */
 fetch("model/model.json?v=20261017a")
@@ -88,7 +79,6 @@ function update() {
     }
   }
   if (guess) { const it = intentById[guess]; current = { text: it.suggest[0], ghost: "", intent: it.id, chip: true }; }
-  engraving && engraving.tilt(Math.min(text.length, 40) * 0.004);
   announce();
 }
 let sayT;
@@ -115,11 +105,11 @@ function chip(html, onClick) {
 }
 
 /* ---------- Enter: decide, then open ---------- */
-// Enter: the bar stamps down and a ring rolls out through the engraving
+// Enter: the bar stamps down and a ring rolls out through the pond
 function stamp() {
   bar.classList.remove("is-stamp"); void bar.offsetWidth; bar.classList.add("is-stamp");
   const b = bar.getBoundingClientRect();
-  engraving && engraving.pulse(b.left + b.width / 2, b.top + b.height / 2);
+  pond.pulse(b.left + b.width / 2, b.top + b.height / 2);
 }
 
 function decide() {
@@ -195,7 +185,7 @@ function open(intentId, q = "") {
   results.hidden = false;
   results.classList.toggle("is-single", intent.ids.length === 1);
   document.body.classList.add("has-results");
-  engraving && engraving.show(intent.engrave, true);
+  pond.show(intent.engrave);
   chips.innerHTML = ""; guessId = null;
   history.replaceState(null, "", "#" + intent.id);
   // the bar already rises to the top as the page's top padding collapses, so just go back to the top;
@@ -207,7 +197,7 @@ function close(focus = true) {
   if (asking) { asking.abort(); asking = null; }
   results.hidden = true;
   document.body.classList.remove("has-results");
-  engraving && engraving.show("henry.", false);
+  pond.show("henry.");
   history.replaceState(null, "", location.pathname);
   if (focus) input.focus();
 }
@@ -259,7 +249,7 @@ function intro() {
   document.body.classList.add("is-intro");
   renderPins();
   if (!results.hidden) close(false);
-  engraving && engraving.show("hello.", false);
+  pond.show("hello.");
   input.setAttribute("aria-label", "Who are you?");
   stopAnim(); input.value = ""; lastText = ""; hintIdx = 0; typeHint();
   input.focus({ preventScroll: true });
@@ -272,7 +262,7 @@ function choose(id, said = "") {
   setTimeout(() => document.body.classList.remove("is-revealing"), 1600);
   input.setAttribute("aria-label", "Ask about anything Henry has built");
   renderPins(); hintIdx = 0; typeHint(); input.focus({ preventScroll: true });
-  engraving && engraving.show("henry.", false);
+  pond.show("henry.");
   stamp();
   // one visit per browser, counted under what they said they do
   if (!store.get("henry.counted")) { store.set("henry.counted", "1"); fetch("api/crowd", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "visit", role: id }) }).catch(() => {}); }
@@ -373,8 +363,4 @@ if (!persona && location.hash) { persona = "curious"; renderPins(); }   // deep 
 if (!persona) intro();
 else { update(); typeHint(); input.focus({ preventScroll: true }); }
 // the opening plays over all of that, once per browser; when it clears, the prompt is ready to type into
-boot({ skip: !!location.hash, word: persona ? "henry." : "hello." }).then(() => {
-  input.focus({ preventScroll: true });
-  // Buff, the polishing robot, drifts in a moment after the page settles
-  setTimeout(() => createRobot($("[data-robot]"), { engraving: () => engraving, bar, avoid: () => $(".main").getBoundingClientRect() }), 1500);
-});
+boot({ pond, skip: !!location.hash, word: persona ? "henry." : "hello." }).then(() => input.focus({ preventScroll: true }));
