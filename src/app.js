@@ -29,11 +29,17 @@ const { suggest } = createSuggester(INTENTS);
 
 /* ---------- the koi pond, with the big word drawn into it ---------- */
 // clicks on anything you can use stay with it; a click on open water feeds the koi
-const pond = createPond($("[data-pond]"), { ignore: "a, button, input, textarea, select, label, form, .card, .pins, .pr-list, .results, .top" });
+const pond = createPond($("[data-pond]"), { ignore: "a, button, input, textarea, select, label, form, .card, .pins, .pr-list, .results, .top, .tools" });
 document.body.classList.add("is-ready");
+// the tool row picks what a click on open water does
+const tools = [...document.querySelectorAll("[data-tool]")];
+tools.forEach((b) => b.addEventListener("click", () => {
+  tools.forEach((o) => o.setAttribute("aria-checked", String(o === b)));
+  pond.setTool(b.dataset.tool);
+}));
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261020c")
+fetch("model/model.json?v=20261023q")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));

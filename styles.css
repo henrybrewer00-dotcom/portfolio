@@ -23,6 +23,13 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* ---------- the pond (src/pond.js draws the koi and the big word) ---------- */
 .pond { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; font-family: var(--mono); opacity: 0; transition: opacity 1.4s ease; }
 body.is-ready .pond { opacity: 1; }
+/* what a click on the water does: a quiet row in the corner, the picked one filled in */
+.tools { position: fixed; left: 1.6rem; bottom: 1.4rem; z-index: 20; display: flex; gap: 0.3rem; padding: 0.25rem; border-radius: 999px; background: rgba(0, 0, 0, 0.72); border: 1px solid #2a2925; font: 500 0.78rem/1 var(--mono); }
+.tools button { appearance: none; border: 0; border-radius: 999px; padding: 0.45rem 0.75rem; background: transparent; color: var(--muted); font: inherit; letter-spacing: 0.02em; transition: color 0.2s, background 0.2s; }
+.tools button:hover { color: var(--ink); }
+.tools button[aria-checked="true"] { background: var(--ink); color: #000; }
+.tools button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+@media (max-width: 700px) { .tools { left: 50%; transform: translateX(-50%); bottom: 0.9rem; } }
 
 /* ---------- chrome ---------- */
 .top { position: absolute; top: 0; left: 0; right: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: 1.3rem 1.6rem; }

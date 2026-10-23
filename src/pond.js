@@ -8,9 +8,13 @@
    bright tiles, over the koi. A new word decodes in: each cell scrambles through a few glyphs before
    it settles, in a ragged sweep from left to right.
 
-   Interactive, but calm: fish scatter from the cursor, koi drift over to see what it is, and a click
-   drops food. The view leans in on the spot so the tiles come up close, the koi come and eat, and
-   the view eases back out. */
+   Interactive, but calm: fish scatter from the cursor, koi drift over to see what it is, and tiles
+   flip over like cards as the cursor passes across them. What a click on open water does depends
+   on the tool picked (setTool):
+     feed   drops pellets; the view leans in so the tiles come up close, the koi come and eat
+     ripple a ring rolls out across the water; fish scatter and nearby koi startle away
+     call   the koi follow the cursor (or the last tap) around the pond
+     lily   floats a lily pad that drifts on the current; koi glide under it */
 
 const TAU = Math.PI * 2;
 const NODES = 20;
@@ -112,6 +116,8 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
   let W = 0, H = 0, dpr = 1, cw = 12, ch = 18, cols = 0, rows = 0, time = 0;
   let energy = new Float32Array(0), tmp = new Float32Array(0), cell = new Uint8Array(0), lum = new Float32Array(0), key = new Uint32Array(0), dim = new Float32Array(0), fishAt = new Uint32Array(0), frame = 0;
   let koi = [], fish = [], food = [], lastSpawn = 0, raf = 0, last = 0, acc = 0, running = false;
+  // what a click does, rings rolling out, lily pads, a tap the koi swim to in "call", and per-cell flip start times
+  let tool = "feed", ripples = [], pads = [], lure = null, flipT = new Float32Array(0);
   // the word: coverage per cell now (cover) and before the last change (was), and when each cell flips over
   let wordText = "", cover = new Float32Array(0), was = new Float32Array(0), flipAt = new Float32Array(0);
   const pointer = { x: 0, y: 0, active: false, still: 0 };
@@ -129,7 +135,7 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
     canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
     const n = cols * rows;
     energy = new Float32Array(n); tmp = new Float32Array(n); cell = new Uint8Array(n); lum = new Float32Array(n);
-    key = new Uint32Array(n); dim = new Float32Array(n); fishAt = new Uint32Array(n);
+    key = new Uint32Array(n); dim = new Float32Array(n); fishAt = new Uint32Array(n); flipT = new Float32Array(n).fill(-9);
     if (first) seed();
     cover = layoutWord(wordText); was = cover; flipAt = new Float32Array(cols * rows);
     if (!running) still();
@@ -235,6 +241,10 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
       let goal = null, eager = 0;
       for (const p of food) { const d = Math.hypot(p.x - hx, p.y - hy); if (!goal || d < goal.d) goal = { x: p.x, y: p.y, d }; }
       if (goal) eager = 2.6;
+      else if (tool === "call" && (pointer.active || lure)) {
+        const t = pointer.active ? pointer : lure, d = Math.hypot(t.x - hx, t.y - hy);
+        goal = { x: t.x, y: t.y, d }; eager = 2.1;
+      }
       else if (pointer.active && pointer.still > 0.6) { const d = Math.hypot(pointer.x - hx, pointer.y - hy); if (d < minSide * 0.5) { goal = { x: pointer.x, y: pointer.y, d }; eager = 0.9 * clamp(1 - d / (minSide * 0.5), 0, 1); } }
       if (goal && goal.d > L * 0.06) { dx += ((goal.x - hx) / goal.d) * eager; dy += ((goal.y - hy) / goal.d) * eager; }
       else if (!goal) {
@@ -246,6 +256,11 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
         const ex = (hx - W / 2) / (W * 0.28), ey = (hy - H * 0.4) / (H * 0.15), e2 = ex * ex + ey * ey;
         if (e2 < 1) { const e = Math.sqrt(e2) || 1e-3, w = (1 - e) * 2; dx += (ex / e) * w; dy += (ey / e) * w; }
       }
+      // a ripple close by startles it: a quick dart away from the middle of the ring
+      if (an.scare && time < an.scare.until) {
+        const ax = hx - an.scare.x, ay = hy - an.scare.y, d = Math.hypot(ax, ay) || 1, w = 3.2 * (an.scare.until - time) / 1.6;
+        dx += (ax / d) * w; dy += (ay / d) * w;
+      }
       for (const o of koi) {
         if (o === an) continue;
         for (let k = 0; k < NODES; k += 4) {
@@ -256,10 +271,11 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
       // dip off the edge now and then, but always come back
       const over = Math.max(-hx, hx - W, -hy, hy - H);
       if (over > -L * 0.05) { const w = clamp((over + L * 0.05) / (L * 0.35), 0, 1) * 3.5, tx = W / 2 - hx, ty = H / 2 - hy, d = Math.hypot(tx, ty) || 1; dx += (tx / d) * w; dy += (ty / d) * w; }
-      const agility = Math.min(goal && eager > 2 ? 1.1 : 0.6, an.speed / (L * 0.2)), maxTurn = agility * dt;
+      const scared = an.scare && time < an.scare.until;
+      const agility = Math.min((goal && eager > 2) || scared ? 1.1 : 0.6, an.speed / (L * 0.2)), maxTurn = agility * dt;
       const turned = clamp(angleDiff(an.heading, Math.atan2(dy, dx)), -maxTurn, maxTurn);
       an.heading += turned; an.turn += (turned / dt - an.turn) * Math.min(1, dt * 3);
-      const cruise = KOI.cruise + L * 0.025, want = eager > 2 ? cruise * 1.7 : cruise;
+      const cruise = KOI.cruise + L * 0.025, want = scared ? cruise * 2.6 : eager > 2 ? cruise * 1.7 : cruise;
       an.speed += (want - an.speed) * Math.min(1, dt * 0.8);
       an.phase += dt * KOI.beat * (1 + an.speed / 50);
       N[0] += Math.cos(an.heading) * an.speed * dt; N[1] += Math.sin(an.heading) * an.speed * dt;
@@ -276,6 +292,21 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
       food = food.filter((p) => { if ((p.x - N[0]) ** 2 + (p.y - N[1]) ** 2 < mr * mr) { ring(p.x, p.y, 3, 0.9); return false; } return true; });
     }
     food = food.filter((p) => time - p.t < 14);
+    if (lure && time > lure.until) lure = null;
+  }
+
+  function stepPads(dt) {
+    // pads ride the current, slowly, and nudge off the edges and each other
+    for (const p of pads) {
+      current(p.x, p.y, time, cur);
+      p.vx += (cur.x * 0.06 - p.vx) * dt * 0.5; p.vy += (cur.y * 0.06 - p.vy) * dt * 0.5;
+      const m = p.r + 10;
+      if (p.x < m) p.vx += dt * 4; else if (p.x > W - m) p.vx -= dt * 4;
+      if (p.y < m) p.vy += dt * 4; else if (p.y > H - m) p.vy -= dt * 4;
+      for (const o of pads) { if (o === p) continue; const dx = p.x - o.x, dy = p.y - o.y, d = Math.hypot(dx, dy) || 1, gap = p.r + o.r; if (d < gap) { p.vx += (dx / d) * dt * 6; p.vy += (dy / d) * dt * 6; } }
+      p.x += p.vx * dt * 6; p.y += p.vy * dt * 6; p.spin += p.vx * dt * 0.002;
+    }
+    ripples = ripples.filter((r) => time - r.t < 2.6);
   }
 
   function respawn() {
@@ -291,7 +322,7 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
   function step(dt) {
     time += dt;
     pointer.still += dt;
-    stepFish(dt); stepKoi(dt); respawn();
+    stepFish(dt); stepKoi(dt); stepPads(dt); respawn();
     // the camera eases toward its target; after a dive it drifts back out
     if (cam.tz > 1 && time > cam.until) cam.tz = 1;
     cam.z += (cam.tz - cam.z) * Math.min(1, dt * (cam.tz > cam.z ? 2.2 : 1.1));
@@ -432,6 +463,21 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
   const DOTS = [0.12, 0.2, 0.3, 0.42, 0.56, 0.72].map((a) => `rgba(${I.join(",")},${a})`);
   const FISH = [0.22, 0.34, 0.48, 0.62, 0.78].map((a) => `rgba(${I.join(",")},${a})`);
 
+  // one tile: a shaded square with a glyph cut into it. A tile the cursor just crossed turns over like a
+  // card: it narrows to an edge, shows its back (the colours swapped) and turns back again
+  const FLIP = 0.7;
+  function tile(i, x, y, bg, fg, glyph) {
+    const f = (time - flipT[i]) / FLIP;
+    if (f < 0 || f >= 1) {
+      ctx.fillStyle = mix(bg); ctx.fillRect(x + 1, y + 1, cw - 1, ch - 1);
+      ctx.fillStyle = mix(fg); ctx.fillText(glyph, x + cw / 2, y + ch / 2 + 1);
+      return;
+    }
+    const w = Math.abs(Math.cos(f * TAU)), back = f > 0.25 && f < 0.75, tw = (cw - 1) * Math.max(w, 0.08);
+    ctx.fillStyle = mix(back ? fg : bg); ctx.fillRect(x + 1 + (cw - 1 - tw) / 2, y + 1, tw, ch - 1);
+    if (w > 0.45) { ctx.fillStyle = mix(back ? bg : fg); ctx.fillText(glyph, x + cw / 2, y + ch / 2 + 1); }
+  }
+
   function draw(dt) {
     if (!cols) return;
     rasterize(); wake(dt);
@@ -472,10 +518,41 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
       ctx.fillStyle = DOTS[k];
       for (const i of b) ctx.fillRect(Math.round((i % cols) * cw + cw * 0.66 - size / 2), Math.round(((i / cols) | 0) * ch + ch * 0.64 - size / 2), size, size);
     });
+    // ripples: a thin ring of glyphs rolling outward and fading, with a fainter ring following it
+    for (const rp of ripples) {
+      const age = time - rp.t;
+      for (const [lag, amt] of [[0, 1], [0.4, 0.55], [0.8, 0.3]]) {
+        const a = age - lag; if (a < 0) continue;
+        const rad = a * Math.min(W, H) * 0.3, fade = Math.max(0, 1 - a / 2) * amt; if (fade <= 0) continue;
+        const steps = Math.ceil((TAU * rad) / (cw * 0.8)) + 6;
+        ctx.fillStyle = mix(0.15 + 0.8 * fade);
+        let lastI = -1;
+        for (let k = 0; k < steps; k++) {
+          const t = (k / steps) * TAU, i = cellOf(rp.x + Math.cos(t) * rad, rp.y + Math.sin(t) * rad * 0.92);
+          if (i < 0 || i === lastI || cell[i] || shown(i) >= 0.12) continue; lastI = i;
+          ctx.fillText(a < 0.25 ? "o" : "~", (i % cols) * cw + cw / 2, ((i / cols) | 0) * ch + ch / 2 + 1);
+        }
+      }
+    }
     // food: a small bright pellet, bobbing
     ctx.font = `600 ${Math.round(ch * 0.74)}px ${font}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     for (const p of food) { const i = cellOf(p.x, p.y); if (i < 0) continue; ctx.fillStyle = mix(0.9 - 0.2 * Math.sin(time * 4 + p.t)); ctx.fillText("o", (i % cols) * cw + cw / 2, ((i / cols) | 0) * ch + ch / 2 + 1); }
     buckets.forEach((b, k) => { ctx.fillStyle = FISH[k]; for (const i of b) ctx.fillText("-", (i % cols) * cw + cw / 2, ((i / cols) | 0) * ch + ch / 2 + 1); });
+    // lily pads, floating over everything that swims: a round tile leaf with its notch
+    for (const p of pads) {
+      const grow = smooth(0, 0.7, time - p.t), r = p.r * grow; if (r < 2) continue;
+      const c0 = Math.max(0, Math.floor((p.x - r) / cw)), c1 = Math.min(cols - 1, Math.floor((p.x + r) / cw));
+      const r0 = Math.max(0, Math.floor((p.y - r) / ch)), r1 = Math.min(rows - 1, Math.floor((p.y + r) / ch));
+      for (let row = r0; row <= r1; row++) for (let col = c0; col <= c1; col++) {
+        const i = row * cols + col;
+        const dx = col * cw + cw / 2 - p.x, dy = row * ch + ch / 2 - p.y, d = Math.hypot(dx, dy) / r;
+        if (d > 1 || (d > 0.12 && Math.abs(angleDiff(p.spin, Math.atan2(dy, dx))) < 0.3)) continue;   // the notch
+        const x = col * cw, y = row * ch, vein = Math.abs(Math.sin(Math.atan2(dy, dx) * 4 - p.spin)) < 0.18 && d > 0.2;
+        if (d > 0.86) { if (cell[i]) continue; ctx.fillStyle = mix(0.62); ctx.fillText(EDGE_HEAVY[(col + row) & 1], x + cw / 2, y + ch / 2 + 1); continue; }
+        tile(i, x, y, 0.3 + 0.14 * (1 - d), vein ? 0.85 : 0.6, vein ? "/" : "~=-"[(col * 7 + row * 3) % 3]);
+        cell[i] = 10;   // a koi under the pad is hidden this frame
+      }
+    }
     // the koi: a shaded tile per cell with a glyph cut into it
     for (let i = 0; i < n; i++) {
       const k = cell[i]; if (!k) continue;
@@ -486,15 +563,13 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
         ctx.fillText((l >= 0.5 ? EDGE_HEAVY : EDGE_LIGHT)[(kk >>> 8) % (l >= 0.5 ? 2 : 4)], x + cw / 2, y + ch / 2 + 1);
         continue;
       }
+      if (k === 10) continue;
       const tone = 0.07 + l * 0.9;
-      ctx.fillStyle = mix(tone);
-      ctx.fillRect(x + 1, y + 1, cw - 1, ch - 1);
       let glyph;
       if (k === EYE) glyph = "o";
       else if (k === FIN) glyph = FINS[(kk >>> 8) % FINS.length];
       else glyph = RAMP[clamp(Math.floor((1 - lum[i]) * 8.99) + ((kk >>> 4) % 3) - 1, 0, RAMP.length - 1)];
-      ctx.fillStyle = flash && k === BODY ? mix(tone > 0.5 ? 0.35 : 1) : tone > 0.5 ? mix(0.1) : mix(Math.min(1, tone + 0.3));
-      ctx.fillText(glyph, x + cw / 2, y + ch / 2 + 1);
+      tile(i, x, y, tone, flash && k === BODY ? (tone > 0.5 ? 0.35 : 1) : tone > 0.5 ? 0.1 : Math.min(1, tone + 0.3), glyph);
     }
     // the word, over everything: solid tiles where the letters are, light glyphs along their edges,
     // and a short scramble in each cell as it flips over to a new word
@@ -509,8 +584,7 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
       }
       const kk = hash3(i, 5, 11);
       if (v >= 0.5) {
-        ctx.fillStyle = mix(0.86 + v * 0.1); ctx.fillRect(x + 1, y + 1, cw - 1, ch - 1);
-        ctx.fillStyle = mix(0.1); ctx.fillText(RAMP[Math.floor(kk * 3)], x + cw / 2, y + ch / 2 + 1);
+        tile(i, x, y, 0.86 + v * 0.1, 0.1, RAMP[Math.floor(kk * 3)]);
       } else {
         ctx.fillStyle = mix(0.35 + v);
         ctx.fillText((v > 0.3 ? EDGE_HEAVY : EDGE_LIGHT)[Math.floor(kk * (v > 0.3 ? 2 : 4))], x + cw / 2, y + ch / 2 + 1);
@@ -538,19 +612,45 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
   const local = (e) => { const r = canvas.getBoundingClientRect(), z = cam.z; return { x: (e.clientX - r.left - cam.x) / z + cam.x, y: (e.clientY - r.top - cam.y) / z + cam.y }; };
   const onMove = (e) => {
     const p = local(e);
-    if (Math.hypot(p.x - pointer.x, p.y - pointer.y) > 3) pointer.still = 0;
+    const moved = Math.hypot(p.x - pointer.x, p.y - pointer.y);
+    if (moved > 3) pointer.still = 0;
+    // tiles along the cursor's path turn over (only ones that are not already mid-turn)
+    if (moved > 0 && e.pointerType !== "touch" && flipT.length) {
+      const steps = Math.min(12, Math.ceil(moved / (cw * 0.5)));
+      for (let k = 1; k <= steps; k++) {
+        const x = pointer.x + ((p.x - pointer.x) * k) / steps, y = pointer.y + ((p.y - pointer.y) * k) / steps;
+        for (const [ox, oy] of [[0, 0], [cw * 0.6, 0], [-cw * 0.6, 0], [0, ch * 0.5], [0, -ch * 0.5]]) {
+          const i = cellOf(x + ox, y + oy); if (i >= 0 && time - flipT[i] > FLIP) flipT[i] = time + hash3(i, 2, 4) * 0.08;
+        }
+      }
+    }
     pointer.x = p.x; pointer.y = p.y; pointer.active = e.pointerType !== "touch";
   };
   const onDown = (e) => {
     if (reduce.matches || document.documentElement.classList.contains("is-booting") || (e.target instanceof Element && e.target.closest(ignore))) return;
     const { x, y } = local(e);
     ring(x, y, 4, 1.1);
-    for (const f of fish) { const dx = f.x - x, dy = f.y - y, d = Math.hypot(dx, dy); if (f.alive && d < 180 && d > 1e-3) { const k = (1 - d / 180) * 180; f.vx += (dx / d) * k; f.vy += (dy / d) * k; f.alarm = 1; } }
-    // a few pellets scattered around the spot, and the view leans in close enough to see the tiles
-    for (let k = 0; k < 3; k++) food.push({ x: x + rand(-1, 1) * cw * 2, y: y + rand(-1, 1) * ch, t: time + k * 0.01 });
-    if (food.length > 9) food.splice(0, food.length - 9);
-    if (cam.z < 1.05) { cam.x = x; cam.y = y; }
-    cam.tz = 2.1; cam.until = time + 3.2;
+    const scatter = (reach, kick) => { for (const f of fish) { const dx = f.x - x, dy = f.y - y, d = Math.hypot(dx, dy); if (f.alive && d < reach && d > 1e-3) { const k = (1 - d / reach) * kick; f.vx += (dx / d) * k; f.vy += (dy / d) * k; f.alarm = 1; } } };
+    if (tool === "ripple") {
+      ripples.push({ x, y, t: time }); if (ripples.length > 4) ripples.shift();
+      scatter(Math.min(W, H) * 0.5, 260);
+      for (const an of koi) if (Math.hypot(an.nodes[0] - x, an.nodes[1] - y) < an.L * 1.3) an.scare = { x, y, until: time + 1.6 };
+    } else if (tool === "call") {
+      lure = { x, y, until: time + 6 };
+      scatter(120, 120);
+    } else if (tool === "lily") {
+      const minSide = Math.min(W, H);
+      pads.push({ x, y, r: minSide * rand(0.09, 0.13), spin: rand(0, TAU), vx: 0, vy: 0, t: time });
+      if (pads.length > 6) pads.shift();
+      scatter(160, 160);
+    } else {
+      scatter(180, 180);
+      // a few pellets scattered around the spot, and the view leans in close enough to see the tiles
+      for (let k = 0; k < 3; k++) food.push({ x: x + rand(-1, 1) * cw * 2, y: y + rand(-1, 1) * ch, t: time + k * 0.01 });
+      if (food.length > 9) food.splice(0, food.length - 9);
+      if (cam.z < 1.05) { cam.x = x; cam.y = y; }
+      cam.tz = 1.8; cam.until = time + 3.6;
+    }
   };
   const onLeave = () => { pointer.active = false; };
   const ro = new ResizeObserver(resize); ro.observe(canvas);
@@ -567,6 +667,8 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
   return {
     /** Draw a word into the pond (it decodes in cell by cell, or appears at once with instant). */
     show,
+    /** What a click on open water does: "feed", "ripple", "call" or "lily". */
+    setTool(name) { tool = name; lure = null; },
     /** A ring rolling out from a point on the page, e.g. under the bar on Enter. */
     pulse(x, y) { ring(x, y, 6, 1.3); },
     /** Drop food at a point in page coordinates (the koi come to it), without moving the camera. */

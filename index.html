@@ -25,11 +25,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
     <script>try { if (!location.hash && !matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("is-booting"); } catch (e) {}</script>
-    <link rel="preload" href="model/model.json?v=20261020c" as="fetch" crossorigin />
-    <link rel="stylesheet" href="styles.css?v=20261023p" />
+    <link rel="preload" href="model/model.json?v=20261023q" as="fetch" crossorigin />
+    <link rel="stylesheet" href="styles.css?v=20261023q" />
   </head>
   <body>
     <canvas class="pond" data-pond aria-hidden="true"></canvas>
+    <div class="tools" role="radiogroup" aria-label="What a click on the water does" data-tools>
+      <button type="button" role="radio" aria-checked="true" data-tool="feed">feed</button>
+      <button type="button" role="radio" aria-checked="false" data-tool="ripple">ripple</button>
+      <button type="button" role="radio" aria-checked="false" data-tool="call">call</button>
+      <button type="button" role="radio" aria-checked="false" data-tool="lily">lily pad</button>
+    </div>
 
     <header class="top">
       <a class="brand" href="./" data-home>henry.</a>
@@ -103,7 +109,7 @@
         <article class="card"><p class="kicker">voice AI</p><h3>Lily</h3><p>Calls my grandma every morning, has an actual conversation, then texts the family how she sounded.</p> <a class="act" href="https://lily.insforge.site">Live ↗</a> <a class="act" href="https://github.com/henrybrewer00-dotcom/lily">Repo ↗</a></article>
         <article class="card"><p class="kicker">hackathons</p><h3>Some hackathon wins</h3><p>InsForge · Frontier Tower · a16z × Cursor</p></article>
         <article class="card"><p class="kicker">open source</p><h3>Glasscast</h3><p>Screen Studio costs money, so I made a free one. Cinematic zooms, auto-captions, a webcam bubble, bring your own AI keys.</p> <a class="act" href="https://github.com/henrybrewer00-dotcom/Glasscast">Repo ↗</a></article>
-        <article class="card"><p class="kicker">design</p><h3>This site</h3><p>My portfolio, designed from scratch. Behind the page is a koi pond drawn in ASCII tiles: black and white koi, little fish that scatter from your cursor, and wakes that light up where they swim. Rest the cursor and the koi come to look; click the water to feed them. My name decodes into the pond tile by tile. Black and white only.</p> <a class="act" href="https://github.com/henrybrewer00-dotcom/portfolio">Repo ↗</a></article>
+        <article class="card"><p class="kicker">design</p><h3>This site</h3><p>My portfolio, designed from scratch. Behind the page is a koi pond drawn in ASCII tiles: black and white koi, little fish that scatter from your cursor, and wakes that light up where they swim. Rest the cursor and the koi come to look, and tiles flip over as you pass across them. A little picker in the corner sets what a click does: feed the koi, send a ripple, call them over, or float a lily pad. My name decodes into the pond tile by tile. Black and white only.</p> <a class="act" href="https://github.com/henrybrewer00-dotcom/portfolio">Repo ↗</a></article>
         <article class="card"><p class="kicker">voice AI</p><h3>Lily's Drive-Thru</h3><p>Order out loud. The AI takes it, upsells you once, reads the total back with tax, and fires a live ticket to the kitchen screen.</p> <a class="act" href="https://github.com/henrybrewer00-dotcom/voice-drive-thru">Repo ↗</a></article>
         <article class="card"><p class="kicker">AI + audio</p><h3>Eleven Mile</h3><p>Pick two people and a topic and watch them rap-battle. Claude writes the bars, ElevenLabs raps them. A little dumb and I love it.</p> <a class="act" href="https://github.com/henrybrewer00-dotcom/eleven-mile">Repo ↗</a></article>
         <article class="card"><p class="kicker">accessibility</p><h3>PawBot</h3><p>Helps older people use a computer one step at a time, like helping your grandparent figure out their email.</p> <a class="act" href="https://github.com/henrybrewer00-dotcom/PawBot">Repo ↗</a></article>
@@ -119,6 +125,6 @@
     </main>
 
     <canvas class="trail" data-trail aria-hidden="true"></canvas>
-    <script type="module" src="src/app.js?v=20261023p"></script>
+    <script type="module" src="src/app.js?v=20261023q"></script>
   </body>
 </html>
