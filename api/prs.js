@@ -70,7 +70,10 @@ function fromContent() {
   return { source: "static", unit: "pull requests", total: prs.length, prCount: prs.length, weeks: prWeeks(prs), prs };
 }
 
-export default async function handler(req, res) {
+// the same answer for api/ask, kept for an hour per instance
+let kept = null;
+export async function getPrs() {
+  if (kept && Date.now() - kept.at < 3600e3) return kept.out;
   let out, why = process.env.GITHUB_TOKEN ? null : "no GITHUB_TOKEN";
   try { out = process.env.GITHUB_TOKEN ? await fromGraphQL(process.env.GITHUB_TOKEN) : await fromSearch(); }
   catch (e) {
@@ -80,6 +83,12 @@ export default async function handler(req, res) {
   }
   out.prs.sort((a, b) => b.at - a.at);
   if (why) out.fallback = why;   // says why it isn't the full GitHub picture, for checking the setup
+  kept = { at: Date.now(), out };
+  return out;
+}
+
+export default async function handler(req, res) {
+  const out = await getPrs();
   res.setHeader("cache-control", "public, s-maxage=3600, stale-while-revalidate=86400");
   res.status(200).json(out);
 }

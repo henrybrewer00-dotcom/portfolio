@@ -5,6 +5,7 @@
 // page just shows the cards.
 
 import { ITEMS, intentById, personaById } from "../src/content.js";
+import { getPrs } from "./prs.js";
 
 const MODEL = "claude-haiku-5-5";
 const FACTS = ITEMS.map((it) => `- ${it.title} (${it.kicker})${it.body ? ": " + it.body : ""}${it.list ? ": " + it.list.join(", ") : ""}${it.facts ? " " + it.facts.join(" ") : ""}`).join("\n");
@@ -63,7 +64,18 @@ export default async function handler(req, res) {
   });
   const intent = intentById[body.intent];
   const visitor = personaById[body.who];
-  const hint = (intent ? `\n(The page is showing: ${intent.title}.)` : "") + (visitor && visitor.id !== "curious" ? `\n(Background, never mention it: the visitor is ${visitor.noun}.)` : "");
+  // questions about his pull requests get today's numbers from GitHub (private repos stay unnamed); they ride in the
+  // user turn, not the system prompt, so the cached prompt stays the same on every call
+  const aboutPrs = (intent && intent.id === "oss") || /\b(prs?|pr's|pull requests?|contribut\w*|open[- ]source|commits?)\b/i.test(q + " " + prior.map((m) => m.content).join(" "));
+  let live = "";
+  if (aboutPrs) {
+    try {
+      const d = await getPrs(), six = Date.now() - 182 * 864e5, recent = d.prs.filter((p) => p.at >= six);
+      const named = d.prs.filter((p) => !p.private).slice(0, 8).map((p) => `${p.repo} #${p.n} "${p.title}"${p.merged ? " (merged)" : ""}`).join("; ");
+      live = `\n(Live from GitHub, use these numbers over any older fact: ${d.prs.length} pull requests in all, ${d.prs.filter((p) => p.merged).length} merged, ${recent.length} in the last six months, ${d.prs.filter((p) => p.private).length} of them in private work repos he can't name. Newest public ones: ${named}. The whole list and a weekly chart are in the "pull requests" section further down this page.)`;
+    } catch { /* GitHub is slow or down: answer from content.js alone */ }
+  }
+  const hint = live + (intent ? `\n(The page is showing: ${intent.title}.)` : "") + (visitor && visitor.id !== "curious" ? `\n(Background, never mention it: the visitor is ${visitor.noun}.)` : "");
 
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",

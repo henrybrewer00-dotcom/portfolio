@@ -42,7 +42,7 @@ tools.forEach((b) => b.addEventListener("click", () => {
 }));
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261023q")
+fetch("model/model.json?v=20261023t")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -254,12 +254,12 @@ $("[data-pins]").addEventListener("click", (e) => {
 });
 
 /* ---------- the intro: "first, who are you?" ---------- */
-function intro() {
+function intro(draw = true) {
   persona = null;
   document.body.classList.add("is-intro");
   renderPins();
   if (!results.hidden) close(false);
-  pond.show("hello.");
+  if (draw) pond.show("hello.");   // on first load the opening (boot.js) draws it
   input.setAttribute("aria-label", "Who are you?");
   stopAnim(); input.value = ""; lastText = ""; hintIdx = 0; typeHint();
   input.focus({ preventScroll: true });
@@ -350,7 +350,11 @@ fetch("api/prs").then((r) => (r.ok ? r.json() : null)).then((d) => {
 }).catch(() => {});
 // the charts grow in every time they scroll into view, not just the first time
 // the section fades up into place each time it scrolls into view, and drops back out of sight when it leaves
-new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle("is-in", e.isIntersecting)), { threshold: 0.08 }).observe($("[data-crowd]"));
+// (only once the page has actually been scrolled, so a tall screen doesn't give it away up front)
+let crowdOnScreen = false;
+const revealCrowd = () => $("[data-crowd]").classList.toggle("is-in", crowdOnScreen && scrollY > 40);
+new IntersectionObserver((es) => { crowdOnScreen = es.some((e) => e.isIntersecting); revealCrowd(); }, { threshold: 0.08 }).observe($("[data-crowd]"));
+addEventListener("scroll", revealCrowd, { passive: true });
 new IntersectionObserver((es) => {
   if (!es.some((e) => e.isIntersecting)) return;
   if (!seen) { seen = true; drawGh(); return; }
@@ -442,7 +446,7 @@ ditherTiles($("[data-pins]"));
 fillButtons(document.querySelectorAll(".key.fill"));
 renderPins();
 if (!persona && location.hash) { persona = "curious"; renderPins(); }   // deep links skip the intro
-if (!persona) intro();
+if (!persona) intro(false);
 else { update(); typeHint(); input.focus({ preventScroll: true }); }
 // the opening plays over all of that, once per browser; when it clears, the prompt is ready to type into
 boot({ pond, skip: !!location.hash, word: persona ? "henry." : "hello." }).then(() => input.focus({ preventScroll: true }));

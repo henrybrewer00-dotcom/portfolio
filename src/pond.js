@@ -118,6 +118,8 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
   let koi = [], fish = [], food = [], lastSpawn = 0, raf = 0, last = 0, acc = 0, running = false;
   // what a click does, rings rolling out, lily pads, a tap the koi swim to in "call", and per-cell flip start times
   let tool = "feed", ripples = [], pads = [], lure = null, flipT = new Float32Array(0);
+  // the opening: little fish swimming in from all sides, each one settling into a cell of the word
+  let school = [], gatherEnd = -1;
   // the word: coverage per cell now (cover) and before the last change (was), and when each cell flips over
   let wordText = "", cover = new Float32Array(0), was = new Float32Array(0), flipAt = new Float32Array(0);
   const pointer = { x: 0, y: 0, active: false, still: 0 };
@@ -452,7 +454,7 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
   }
   function show(text, instant = false) {
     const next = layoutWord(text);
-    wordText = text;
+    wordText = text; school = []; gatherEnd = -1;   // a new word cuts the opening short
     if (instant || reduce.matches) { cover = was = next; flipAt.fill(0); if (!running) draw(STEP); return; }
     // cells that change flip over in a ragged sweep across the word: about a second end to end
     was = new Float32Array(cols * rows);
@@ -461,6 +463,39 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
       flipAt[i] = time + ((i % cols) / cols) * 0.7 + hash3(i, 1, wordText.length) * 0.35;
     }
     cover = next;
+  }
+  // a word formed by a school: every lit cell gets a fish that spirals in from off screen and turns into
+  // its tile as it lands. The landings ripple outward from the middle of the word
+  function gather(text, { from = 0.1, over = 2.2 } = {}) {
+    const next = layoutWord(text);
+    wordText = text; cover = next; was = new Float32Array(cols * rows); school = [];
+    let cx = 0, cy = 0, n = 0;
+    for (let i = 0; i < next.length; i++) if (next[i] >= 0.12) { cx += i % cols; cy += (i / cols) | 0; n++; }
+    cx /= n || 1; cy /= n || 1;
+    const R = Math.hypot(W, H) * 0.65, spin = Math.random() < 0.5 ? 1 : -1;
+    for (let i = 0; i < next.length; i++) {
+      if (next[i] < 0.12) { flipAt[i] = 0; continue; }
+      const c = i % cols, r = (i / cols) | 0, d = Math.hypot((c - cx) / cols, (r - cy) / rows);
+      const t1 = time + from + over * clamp(0.15 + d * 1.4 + hash3(i, 7, 3) * 0.25, 0, 1), a = rand(0, TAU);
+      flipAt[i] = t1; flipT[i] = t1;
+      school.push({ i, tx: c * cw + cw / 2, ty: r * ch + ch / 2, ox: Math.cos(a) * R, oy: Math.sin(a) * R, t0: time + from * hash3(i, 1, 9), t1, spin });
+    }
+    gatherEnd = time + from + over + 0.2;
+    ripples.push({ x: cx * cw, y: cy * ch, t: time }); 
+  }
+  function drawSchool() {
+    if (!school.length) return;
+    school = school.filter((f) => time < f.t1);
+    for (const f of school) {
+      if (time < f.t0) continue;
+      const at = (t) => { const e = 1 - (1 - clamp((t - f.t0) / (f.t1 - f.t0), 0, 1)) ** 3, k = 1 - e, a = f.spin * 2.2 * k, ca = Math.cos(a), sa = Math.sin(a);
+        return [f.tx + (f.ox * ca - f.oy * sa) * k, f.ty + (f.ox * sa + f.oy * ca) * k]; };
+      const [x, y] = at(time), [px, py] = at(time - 0.03), dx = x - px, dy = y - py;
+      const glyph = Math.abs(dx) > Math.abs(dy) * 1.5 ? (dx > 0 ? ">" : "<") : Math.abs(dy) > Math.abs(dx) * 1.5 ? (dy > 0 ? "v" : "^") : dx * dy > 0 ? "\\" : "/";
+      const near = clamp(1 - (f.t1 - time) / 0.6, 0, 1);
+      ctx.fillStyle = mix(0.45 + 0.5 * near);
+      ctx.fillText(glyph, Math.round(x / cw) * cw + cw / 2, Math.round(y / ch) * ch + ch / 2 + 1);
+    }
   }
   // coverage this cell shows right now
   const shown = (i) => (time >= flipAt[i] ? cover[i] : was[i]);
@@ -609,10 +644,11 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
     ctx.fillStyle = vignette; ctx.fillRect(0, 0, W, H);
     ctx.setTransform(dpr * z, 0, 0, dpr * z, dpr * cam.x * (1 - z), dpr * cam.y * (1 - z));
     ctx.font = `600 ${Math.round(ch * 0.74)}px ${font}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    drawSchool();
     // the word, over everything: solid tiles where the letters are, light glyphs along their edges,
     // and a short scramble in each cell as it flips over to a new word
     for (let i = 0; i < n; i++) {
-      const v = shown(i), flipping = time >= flipAt[i] && time < flipAt[i] + 0.3 && (cover[i] > 0.12 || was[i] > 0.12);
+      const v = shown(i), flipping = time > gatherEnd && time >= flipAt[i] && time < flipAt[i] + 0.3 && (cover[i] > 0.12 || was[i] > 0.12);
       if (v < 0.12 && !flipping) continue;
       const x = (i % cols) * cw, y = ((i / cols) | 0) * ch;
       if (flipping) {
@@ -721,6 +757,8 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
   return {
     /** Draw a word into the pond (it decodes in cell by cell, or appears at once with instant). */
     show,
+    /** Form a word out of a school of fish swimming in from every side (the opening). */
+    gather,
     /** What a click on open water does: "feed", "ripple", "call" or "lily". */
     setTool(name) { tool = name; lure = null; },
     /** Lean the view back out after a dive. */

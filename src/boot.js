@@ -25,9 +25,9 @@ export function boot({ pond, skip = false, word = "hello." } = {}) {
       resolve();
     };
     const at = (s, fn) => timers.push(setTimeout(fn, s * 1000));
-    at(0.5, () => pond.show("henry."));
-    if (word !== "henry.") at(2.6, () => pond.show(word));
-    at(word !== "henry." ? 3.9 : 2.6, end);
+    at(0.5, () => pond.gather("henry.", { from: 0.1, over: 2.3 }));
+    if (word !== "henry.") at(3.7, () => pond.show(word));
+    at(word !== "henry." ? 5.0 : 3.4, end);
     at(0.15, () => { addEventListener("pointerdown", end, { once: true }); addEventListener("keydown", end, { once: true }); });
   }));
 }
