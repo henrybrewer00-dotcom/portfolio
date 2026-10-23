@@ -25,8 +25,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
     <script>try { if (!location.hash && !matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("is-booting"); } catch (e) {}</script>
-    <link rel="preload" href="model/model.json?v=20261017a" as="fetch" crossorigin />
-    <link rel="stylesheet" href="styles.css?v=20261023m" />
+    <link rel="preload" href="model/model.json?v=20261020c" as="fetch" crossorigin />
+    <link rel="stylesheet" href="styles.css?v=20261023p" />
   </head>
   <body>
     <canvas class="pond" data-pond aria-hidden="true"></canvas>
@@ -71,12 +71,25 @@
 
       <p class="foot"><button type="button" class="act is-soft" data-browse>browse everything</button> · <a class="act is-soft" href="deck/">older site: card deck</a> · <a class="act is-soft" href="old/">older site: terminal</a></p>
 
-      <section class="crowd prs" id="prs" aria-labelledby="prs-title">
+      <section class="crowd prs" id="prs" data-crowd aria-labelledby="prs-title">
         <div class="crowd-head">
           <h2 class="crowd-title" id="prs-title">pull requests</h2>
           <a class="sample" href="https://github.com/henrybrewer00-dotcom" target="_blank" rel="noopener">github ↗</a>
         </div>
-        <div class="pr-list" data-prs></div>
+        <figure class="chart chart-visits">
+          <figcaption><span data-gh-unit>pull requests per week</span></figcaption>
+          <p class="readout" data-readout aria-live="polite"><b data-readout-n></b> <span data-readout-d></span></p>
+          <canvas class="cols" data-days tabindex="0" aria-label="Pull requests per week. Drag, or use the arrow keys, to move through time."></canvas>
+          <p class="cols-axis"><span data-days-from></span><span data-days-to></span></p>
+        </figure>
+        <figure class="chart chart-roles">
+          <figcaption><span>where they went</span></figcaption>
+          <div class="rows" data-roles></div>
+        </figure>
+        <div class="wall">
+          <p class="wall-q">most recent</p>
+          <ul class="posts" data-prs></ul>
+        </div>
       </section>
 
       <noscript>
@@ -106,6 +119,6 @@
     </main>
 
     <canvas class="trail" data-trail aria-hidden="true"></canvas>
-    <script type="module" src="src/app.js?v=20261023m"></script>
+    <script type="module" src="src/app.js?v=20261023p"></script>
   </body>
 </html>

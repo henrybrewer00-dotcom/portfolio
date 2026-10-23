@@ -9,6 +9,7 @@ import { fillButtons } from "./fill.js";
 import { createTrail } from "./trail.js";
 import { boot } from "./boot.js";
 import { ditherTiles } from "./tiledither.js";
+import * as dither from "./dither.js";
 import { createModel } from "./model.js";
 import { createSuggester } from "./suggest.js";
 import { createPond } from "./pond.js";
@@ -32,7 +33,7 @@ const pond = createPond($("[data-pond]"), { ignore: "a, button, input, textarea,
 document.body.classList.add("is-ready");
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261017a")
+fetch("model/model.json?v=20261020c")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -269,11 +270,75 @@ function choose(id, said = "") {
 }
 $("[data-change]").addEventListener("click", intro);
 
-/* ---------- merged pull requests (visits are still logged in the background, just not shown) ---------- */
-const prDate = (d) => new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", year: "numeric" });
-$("[data-prs]").innerHTML = PRS.map((pr, i) => `<a class="pin pr" style="--i:${i}" href="${pr.url}" target="_blank" rel="noopener"><span class="pin-kicker">${esc(pr.repo)} #${pr.n}</span><span class="pr-title">${esc(pr.what)}</span><code class="pr-commit">${esc(pr.title)}</code><span class="pr-meta">merged ${prDate(pr.merged)} ↗</span></a>`).join("");
-const tease = $("[data-tease]");
-tease.textContent = `${PRS.length} merged pull requests to ${new Set(PRS.map((p) => p.repo)).size} open-source projects. See them ↓`; tease.hidden = false;
+/* ---------- Henry's GitHub activity (visits are still logged in the background, just not shown) ---------- */
+// the same dithered charts and list the visitor section had, filled from GitHub (api/prs.js) instead.
+// Until that answers, and if it can't, the merged PRs in content.js stand in.
+const DAY = 864e5, dayOf = (d) => new Date(d + "T12:00:00").getTime();
+const dayName = (t) => new Date(t).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+function staticGh() {
+  const prs = PRS.map((p) => ({ repo: p.repo, n: p.n, title: p.what, url: p.url, at: dayOf(p.merged), merged: true, private: false })).sort((a, b) => b.at - a.at);
+  const sunday = (t) => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime() - d.getDay() * DAY; };
+  const weeks = [];
+  for (let t = sunday(prs.at(-1).at), end = sunday(Date.now()); t <= end; t += 7 * DAY) weeks.push({ t, n: prs.filter((p) => sunday(p.at) === t).length });
+  return { source: "static", unit: "pull requests", total: prs.length, prCount: prs.length, weeks, prs };
+}
+let gh = staticGh(), chart = null, repaint = [], regrow = [], seen = false;
+const plural = (n, unit) => `${n} ${n === 1 ? unit.replace(/s$/, "") : unit}`;
+function renderGh() {
+  const shown = gh.prs.slice(0, 12);
+  $("[data-prs]").innerHTML = shown.map((p) => `<li class="post"><span class="post-role">${esc(p.repo)}${p.n ? " #" + p.n : ""}</span>${p.url
+    ? `<a class="post-text" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.title)} ↗</a>` : `<span class="post-text is-private">a pull request</span>`}<span class="post-t">${dayName(p.at)}</span></li>`).join("");
+  $("[data-gh-unit]").textContent = gh.unit === "contributions" ? "contributions per week" : "pull requests per week";
+  $("[data-days]").setAttribute("aria-label", `${gh.unit === "contributions" ? "Contributions" : "Pull requests"} per week. Drag, or use the arrow keys, to move through time.`);
+  const tease = $("[data-tease]");
+  // the hand-picked stand-ins are only a few of them, so they never get counted out loud
+  tease.textContent = gh.source === "static" ? "My pull requests, newest first ↓" : `${plural(gh.prCount, "pull requests")}${gh.unit === "contributions" ? ` and ${gh.total} contributions this year` : ""}. See them ↓`; tease.hidden = false;
+}
+function drawGh() {
+  // where they went: one dithered row per repo, holding (or hovering) a row lights it and shows its share
+  const counts = {}; gh.prs.forEach((p) => { counts[p.repo] = (counts[p.repo] || 0) + 1; });
+  const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 6), max = rows.length ? rows[0][1] : 1;
+  const el = $("[data-roles]");
+  el.innerHTML = rows.map(([repo, n]) => `<div class="row" tabindex="0"><span class="row-label">${esc(repo)}</span><canvas class="row-bar"></canvas><span class="row-n" data-plain="${n}" data-pct="${Math.round((n / gh.prs.length) * 100)}%">${n}</span></div>`).join("");
+  const bars = [...el.querySelectorAll("canvas")].map((c, i) => dither.bar(c, rows[i][1] / max, false, reduceMotion));
+  repaint = bars.map((b) => b.paint); regrow = bars.map((b) => b.grow);
+
+  // per week: drag through time. At rest the readout shows the whole count; pointing at (or arrowing to) a week shows that week
+  const days = $("[data-days]"), weeks = gh.weeks;
+  const fresh = days.cloneNode(true); days.replaceWith(fresh);   // a redraw (GitHub answering) starts on a clean canvas
+  let pointing = false;
+  fresh.addEventListener("pointerenter", () => { pointing = true; });
+  fresh.addEventListener("pointerleave", () => { pointing = false; });
+  fresh.addEventListener("keydown", () => { pointing = true; }, true);
+  fresh.addEventListener("blur", () => { pointing = false; });
+  if (!weeks.length) return;
+  chart = dither.timeline(fresh, weeks.map((w) => w.n), {
+    span: Math.min(weeks.length, innerWidth < 700 ? 20 : 34), reduce: reduceMotion,
+    onFocus: (i) => {
+      $("[data-readout-n]").textContent = pointing ? plural(weeks[i].n, gh.unit) : gh.source === "static" ? "pull requests" : plural(gh.total, gh.unit);
+      $("[data-readout-d]").textContent = !pointing ? (gh.unit === "contributions" ? "in the last year" : `since ${dayName(gh.prs.at(-1).at)}`) : i === weeks.length - 1 ? "this week" : `week of ${dayName(weeks[i].t)}`;
+    },
+    onPan: (a, b) => { $("[data-days-from]").textContent = dayName(weeks[a].t); $("[data-days-to]").textContent = b === weeks.length - 1 ? "this week" : dayName(weeks[b].t); },
+  });
+}
+const lightRow = (row, on) => { const el = $("[data-roles]"), i = [...el.children].indexOf(row), c = row.querySelector("canvas"), nEl = row.querySelector(".row-n");
+  c.dataset.lit = on ? "1" : ""; nEl.textContent = on ? nEl.dataset.pct : nEl.dataset.plain; row.classList.toggle("is-lit", on); repaint[i](); };
+$("[data-roles]").addEventListener("pointerover", (e) => { const r = e.target.closest(".row"); if (r) lightRow(r, true); });
+$("[data-roles]").addEventListener("pointerout", (e) => { const r = e.target.closest(".row"); if (r && !r.contains(e.relatedTarget)) lightRow(r, false); });
+$("[data-roles]").addEventListener("focusin", (e) => { if (e.target.closest(".row")) lightRow(e.target, true); });
+$("[data-roles]").addEventListener("focusout", (e) => { if (e.target.closest(".row")) lightRow(e.target, false); });
+renderGh();
+fetch("api/prs").then((r) => (r.ok ? r.json() : null)).then((d) => {
+  if (!d || !Array.isArray(d.prs) || !d.prs.length) return;
+  gh = d; renderGh(); if (seen) drawGh();
+}).catch(() => {});
+// the charts grow in every time they scroll into view, not just the first time
+new IntersectionObserver((es) => {
+  if (!es.some((e) => e.isIntersecting)) return;
+  if (!seen) { seen = true; drawGh(); return; }
+  if (chart) chart.replay(); regrow.forEach((f) => f());
+}, { threshold: 0.25 }).observe($("[data-crowd]"));
+addEventListener("resize", () => { if (chart) chart.resize(); repaint.forEach((f) => f()); });
 
 /* ---------- wiring ---------- */
 input.addEventListener("input", () => {
@@ -356,7 +421,6 @@ if (location.hash && intentById[location.hash.slice(1)]) setTimeout(() => open(l
 
 createTrail($("[data-trail]"));
 ditherTiles($("[data-pins]"));
-ditherTiles($("[data-prs]"));
 fillButtons(document.querySelectorAll(".key.fill"));
 renderPins();
 if (!persona && location.hash) { persona = "curious"; renderPins(); }   // deep links skip the intro
