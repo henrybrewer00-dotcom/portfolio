@@ -29,7 +29,10 @@ body.is-ready .pond { opacity: 1; }
 .tools button:hover { color: var(--ink); }
 .tools button[aria-checked="true"] { background: var(--ink); color: #000; }
 .tools button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-@media (max-width: 700px) { .tools { left: 50%; transform: translateX(-50%); bottom: 0.9rem; } }
+.zoom-out { position: fixed; left: 50%; top: 4.6rem; transform: translateX(-50%); z-index: 20; appearance: none; border: 1px solid #2a2925; border-radius: 999px; padding: 0.55rem 1rem; background: var(--ink); color: #000; font: 500 0.8rem/1 var(--mono); animation: reveal 0.4s var(--ease) both; }
+.zoom-out[hidden] { display: none; }
+.zoom-out:hover { background: #fff; }
+@media (max-width: 700px) { .tools { left: 50%; transform: translateX(-50%); bottom: 0.9rem; } .zoom-out { top: 4rem; } }
 
 /* ---------- chrome ---------- */
 .top { position: absolute; top: 0; left: 0; right: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: 1.3rem 1.6rem; }
@@ -168,8 +171,8 @@ a:focus-visible, button:focus-visible, .act:focus-visible { outline: 2px solid v
 body.is-intro .ask .hint, body.is-intro .ask .chips, body.is-intro .pinned, body.is-intro .foot, body.is-intro .crowd { display: none; }
 body.is-intro .ghost .rest.is-hint::before { content: "who are you? "; color: var(--ink); opacity: 1; }
 body.is-intro .ghost .rest.is-hint { opacity: 0.9; }
-body.is-revealing .pinned, body.is-revealing .foot, body.is-revealing .crowd, body.is-revealing .ask .hint { animation: reveal 0.9s var(--ease) both; }
-body.is-revealing .foot { animation-delay: 0.25s; } body.is-revealing .crowd { animation-delay: 0.35s; }
+body.is-revealing .pinned, body.is-revealing .foot, body.is-revealing .ask .hint { animation: reveal 0.9s var(--ease) both; }
+body.is-revealing .foot { animation-delay: 0.25s; }
 @keyframes reveal { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } }
 .change { margin-left: 0.5rem; font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
 a.sample { color: var(--muted); text-decoration: none; } a.sample:hover { color: var(--accent); }
@@ -180,6 +183,9 @@ a.post-text { color: inherit; text-decoration: none; transition: color 0.2s; } a
 .tease:hover { background: var(--accent); color: var(--paper); transform: translateY(2px); }
 
 /* ---------- who's been here ---------- */
+.crowd { opacity: 0; transform: translateY(36px); transition: opacity 0.9s var(--ease), transform 0.9s var(--ease); }
+.crowd.is-in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .crowd { opacity: 1; transform: none; transition: none; } }
 .crowd { margin-top: 5rem; padding: 1.6rem; background: var(--card); border: 1px solid var(--border); border-radius: 24px; scroll-margin-top: 2rem; }
 body.has-results .crowd { margin-top: 3rem; }
 .crowd-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.4rem; }

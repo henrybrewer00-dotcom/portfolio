@@ -104,7 +104,7 @@ const SPECIES = [
 ];
 
 /* ---------- the engine ---------- */
-export function createPond(canvas, { ignore = "a, button, input, textarea, select, label, form, [data-pond-ignore]" } = {}) {
+export function createPond(canvas, { ignore = "a, button, input, textarea, select, label, form, [data-pond-ignore]", onZoom = () => {} } = {}) {
   const ctx = canvas.getContext("2d", { alpha: false });
   const css = (n, d) => getComputedStyle(document.documentElement).getPropertyValue(n).trim() || d;
   const rgb = (hex) => { const h = hex.replace("#", ""); const n = parseInt(h.length === 3 ? h.replace(/./g, "$&$&") : h, 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
@@ -124,6 +124,7 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
   // the camera: a click leans in on a spot (zoom > 1) and then eases back out
   const cam = { x: 0, y: 0, z: 1, tz: 1, until: 0 };
   const cur = { x: 0, y: 0 };
+  let vignette = "transparent";
 
   function resize() {
     const r = canvas.getBoundingClientRect();
@@ -137,6 +138,8 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
     energy = new Float32Array(n); tmp = new Float32Array(n); cell = new Uint8Array(n); lum = new Float32Array(n);
     key = new Uint32Array(n); dim = new Float32Array(n); fishAt = new Uint32Array(n); flipT = new Float32Array(n).fill(-9);
     if (first) seed();
+    vignette = ctx.createRadialGradient(W / 2, H * 0.45, Math.min(W, H) * 0.35, W / 2, H * 0.45, Math.hypot(W, H) * 0.62);
+    vignette.addColorStop(0, `rgba(${P.join(",")},0)`); vignette.addColorStop(1, `rgba(${P.join(",")},0.72)`);
     cover = layoutWord(wordText); was = cover; flipAt = new Float32Array(cols * rows);
     if (!running) still();
   }
@@ -272,10 +275,12 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
       const over = Math.max(-hx, hx - W, -hy, hy - H);
       if (over > -L * 0.05) { const w = clamp((over + L * 0.05) / (L * 0.35), 0, 1) * 3.5, tx = W / 2 - hx, ty = H / 2 - hy, d = Math.hypot(tx, ty) || 1; dx += (tx / d) * w; dy += (ty / d) * w; }
       const scared = an.scare && time < an.scare.until;
-      const agility = Math.min((goal && eager > 2) || scared ? 1.1 : 0.6, an.speed / (L * 0.2)), maxTurn = agility * dt;
+      const agility = Math.min((goal && eager > 2) || scared ? 1.4 : 0.6, Math.max(an.speed, 12) / (L * 0.12)), maxTurn = agility * dt;
       const turned = clamp(angleDiff(an.heading, Math.atan2(dy, dx)), -maxTurn, maxTurn);
       an.heading += turned; an.turn += (turned / dt - an.turn) * Math.min(1, dt * 3);
-      const cruise = KOI.cruise + L * 0.025, want = scared ? cruise * 2.6 : eager > 2 ? cruise * 1.7 : cruise;
+      // closing in on a pellet it slows right down, so it can turn tight enough to take it
+      const near = goal && eager > 2 ? clamp(goal.d / (L * 0.5), 0.3, 1) : 1;
+      const cruise = KOI.cruise + L * 0.025, want = scared ? cruise * 2.6 : eager > 2 ? cruise * 1.7 * near : cruise;
       an.speed += (want - an.speed) * Math.min(1, dt * 0.8);
       an.phase += dt * KOI.beat * (1 + an.speed / 50);
       N[0] += Math.cos(an.heading) * an.speed * dt; N[1] += Math.sin(an.heading) * an.speed * dt;
@@ -288,8 +293,9 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
         N[k * 2] = px + Math.cos(ang) * seg; N[k * 2 + 1] = py + Math.sin(ang) * seg; prev = ang;
       }
       // a gulp at the surface: the pellet is gone and a ring spreads
-      const mr = L * 0.06 + 6;
-      food = food.filter((p) => { if ((p.x - N[0]) ** 2 + (p.y - N[1]) ** 2 < mr * mr) { ring(p.x, p.y, 3, 0.9); return false; } return true; });
+      // a gulp only when the pellet is right at the mouth, just ahead of the nose
+      const mr = L * 0.02 + cw * 0.5, mx = N[0] + Math.cos(an.heading) * L * 0.015, my = N[1] + Math.sin(an.heading) * L * 0.015;
+      food = food.filter((p) => { if ((p.x - mx) ** 2 + (p.y - my) ** 2 < mr * mr) { ring(p.x, p.y, 3, 0.9); an.gulp = time; return false; } return true; });
     }
     food = food.filter((p) => time - p.t < 14);
     if (lure && time > lure.until) lure = null;
@@ -324,7 +330,7 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
     pointer.still += dt;
     stepFish(dt); stepKoi(dt); stepPads(dt); respawn();
     // the camera eases toward its target; after a dive it drifts back out
-    if (cam.tz > 1 && time > cam.until) cam.tz = 1;
+    if (cam.tz > 1 && time > cam.until) zoomOut();
     cam.z += (cam.tz - cam.z) * Math.min(1, dt * (cam.tz > cam.z ? 2.2 : 1.1));
   }
 
@@ -462,6 +468,9 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
   const RAMP = ":;t%SX8#@", FINS = "|/;:'", EDGE_HEAVY = ":;", EDGE_LIGHT = ".',`", SCRAMBLE = "/\\|-+=*#%<>";
   const DOTS = [0.12, 0.2, 0.3, 0.42, 0.56, 0.72].map((a) => `rgba(${I.join(",")},${a})`);
   const FISH = [0.22, 0.34, 0.48, 0.62, 0.78].map((a) => `rgba(${I.join(",")},${a})`);
+  const CAUSTIC = [0.11, 0.2, 0.32].map((a) => `rgba(${I.join(",")},${a})`);
+  const caustic = [];
+  let bubbles = [];
 
   // one tile: a shaded square with a glyph cut into it. A tile the cursor just crossed turns over like a
   // card: it narrows to an edge, shows its back (the colours swapped) and turns back again
@@ -509,11 +518,35 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
       const col = i % cols, row = (i / cols) | 0, e = energy[i];
       let v = e > 0.36 ? 0.3 + (e - 0.36) * 0.9 : 0;
       if (!v) {
+        // light through the surface: a slow, wobbling net of bright lines, like caustics on a pond floor
+        const cx = col * 0.21, cy = row * 0.3, t = time;
+        const net = Math.sin(cx + Math.sin(cy * 0.7 + t * 0.45) * 1.9 + t * 0.22) + Math.sin(cy * 0.9 - Math.sin(cx * 0.6 - t * 0.38) * 1.7 - t * 0.18);
+        const edge = Math.abs(net);
+        if (edge < 0.2) { caustic.push(i, edge < 0.06 ? 1 : 0); continue; }
+      }
+      if (!v) {
         const cloud = noise(col * 0.09 + time * 0.03, row * 0.13 - time * 0.02, 5);
         if (cloud > 0.68 && hash3(col, row, 9) < (cloud - 0.68) * 2.2) v = 0.05 + 0.1 * (0.5 + 0.5 * Math.sin(time * (0.4 + hash3(col, row, 3)) + col));
       }
       if (v > 0) dotBuckets[clamp(Math.floor(v * DOTS.length), 0, DOTS.length - 1)].push(i);
     }
+    // the caustic net, faint dashes along the bright lines, a little brighter where they cross
+    ctx.font = `600 ${Math.round(ch * 0.74)}px ${font}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    for (let k = 0; k < caustic.length; k += 2) {
+      const i = caustic[k], col = i % cols, row = (i / cols) | 0, glow = 0.5 + 0.5 * Math.sin(time * 0.6 + col * 0.15 + row * 0.2);
+      ctx.fillStyle = caustic[k + 1] ? CAUSTIC[1 + (glow > 0.6 ? 1 : 0)] : CAUSTIC[0];
+      ctx.fillText(caustic[k + 1] ? "~" : "-", col * cw + cw / 2, row * ch + ch / 2 + 1);
+    }
+    caustic.length = 0;
+    // bubbles: now and then one surfaces, swells and pops into a ring
+    if (Math.random() < 0.6 * (1 / 60) * (W * H) / 900000 && bubbles.length < 8) bubbles.push({ x: rand(0, W), y: rand(0, H), t: time, life: rand(1.6, 2.6) });
+    bubbles = bubbles.filter((b) => {
+      const a = (time - b.t) / b.life; if (a >= 1) { ring(b.x, b.y, 2, 0.8); return false; }
+      const i = cellOf(b.x, b.y); if (i < 0 || cell[i] || shown(i) >= 0.12) return true;
+      ctx.fillStyle = mix(0.3 + 0.5 * a);
+      ctx.fillText(a < 0.4 ? "." : a < 0.8 ? "°" : "*", (i % cols) * cw + cw / 2, ((i / cols) | 0) * ch + ch / 2 + 1);
+      return true;
+    });
     dotBuckets.forEach((b, k) => {
       ctx.fillStyle = DOTS[k];
       for (const i of b) ctx.fillRect(Math.round((i % cols) * cw + cw * 0.66 - size / 2), Math.round(((i / cols) | 0) * ch + ch * 0.64 - size / 2), size, size);
@@ -571,6 +604,11 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
       else glyph = RAMP[clamp(Math.floor((1 - lum[i]) * 8.99) + ((kk >>> 4) % 3) - 1, 0, RAMP.length - 1)];
       tile(i, x, y, tone, flash && k === BODY ? (tone > 0.5 ? 0.35 : 1) : tone > 0.5 ? 0.1 : Math.min(1, tone + 0.3), glyph);
     }
+    // deeper water toward the edges
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = vignette; ctx.fillRect(0, 0, W, H);
+    ctx.setTransform(dpr * z, 0, 0, dpr * z, dpr * cam.x * (1 - z), dpr * cam.y * (1 - z));
+    ctx.font = `600 ${Math.round(ch * 0.74)}px ${font}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     // the word, over everything: solid tiles where the letters are, light glyphs along their edges,
     // and a short scramble in each cell as it flips over to a new word
     for (let i = 0; i < n; i++) {
@@ -607,6 +645,20 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
     running = true; last = performance.now(); raf = requestAnimationFrame(tick);
   }
   function still() { if (time < 4) for (let i = 0; i < 240; i++) step(STEP); draw(STEP); }
+
+  function zoomIn(x, y) {
+    if (cam.z < 1.05) { cam.x = x; cam.y = y; }
+    cam.tz = 1.8; cam.until = time + 8;
+    onZoom(true);
+  }
+  function zoomOut() { if (cam.tz === 1) return; cam.tz = 1; onZoom(false); }
+  const onKey = (e) => { if (e.key === "Escape" && cam.tz > 1) zoomOut(); };
+  // the wheel (or a trackpad pinch) leans in and out too
+  const onWheel = (e) => {
+    if (e.target instanceof Element && e.target.closest(ignore)) return;
+    if (e.deltaY > 0 && cam.tz > 1) zoomOut();
+    else if (e.ctrlKey && e.deltaY < 0 && cam.tz === 1) { const p = local(e); zoomIn(p.x, p.y); }
+  };
 
   // screen → pond, through the camera
   const local = (e) => { const r = canvas.getBoundingClientRect(), z = cam.z; return { x: (e.clientX - r.left - cam.x) / z + cam.x, y: (e.clientY - r.top - cam.y) / z + cam.y }; };
@@ -645,17 +697,19 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
       scatter(160, 160);
     } else {
       scatter(180, 180);
-      // a few pellets scattered around the spot, and the view leans in close enough to see the tiles
+      // a few pellets scattered around the spot. The first click leans the view in close enough to see the
+      // tiles; while it's close, clicks keep feeding and keep it there (Esc, scrolling or the button lean back out)
       for (let k = 0; k < 3; k++) food.push({ x: x + rand(-1, 1) * cw * 2, y: y + rand(-1, 1) * ch, t: time + k * 0.01 });
       if (food.length > 9) food.splice(0, food.length - 9);
-      if (cam.z < 1.05) { cam.x = x; cam.y = y; }
-      cam.tz = 1.8; cam.until = time + 3.6;
+      if (cam.tz === 1) zoomIn(x, y); else cam.until = time + 8;
     }
   };
   const onLeave = () => { pointer.active = false; };
   const ro = new ResizeObserver(resize); ro.observe(canvas);
   addEventListener("pointermove", onMove, { passive: true });
   addEventListener("pointerdown", onDown, { passive: true });
+  addEventListener("keydown", onKey);
+  addEventListener("wheel", onWheel, { passive: true });
   document.documentElement.addEventListener("pointerleave", onLeave);
   document.addEventListener("visibilitychange", start);
   reduce.addEventListener?.("change", start);
@@ -669,13 +723,15 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
     show,
     /** What a click on open water does: "feed", "ripple", "call" or "lily". */
     setTool(name) { tool = name; lure = null; },
+    /** Lean the view back out after a dive. */
+    zoomOut,
     /** A ring rolling out from a point on the page, e.g. under the bar on Enter. */
     pulse(x, y) { ring(x, y, 6, 1.3); },
     /** Drop food at a point in page coordinates (the koi come to it), without moving the camera. */
     feed(x, y) { for (let k = 0; k < 3; k++) food.push({ x: x + rand(-1, 1) * cw * 2, y: y + rand(-1, 1) * ch, t: time }); ring(x, y, 3, 0.9); },
     destroy() {
       cancelAnimationFrame(raf); ro.disconnect();
-      removeEventListener("pointermove", onMove); removeEventListener("pointerdown", onDown);
+      removeEventListener("pointermove", onMove); removeEventListener("pointerdown", onDown); removeEventListener("keydown", onKey); removeEventListener("wheel", onWheel);
       document.documentElement.removeEventListener("pointerleave", onLeave); document.removeEventListener("visibilitychange", start);
     },
   };

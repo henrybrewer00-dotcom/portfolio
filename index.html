@@ -25,8 +25,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
     <script>try { if (!location.hash && !matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("is-booting"); } catch (e) {}</script>
-    <link rel="preload" href="model/model.json?v=20261023q" as="fetch" crossorigin />
-    <link rel="stylesheet" href="styles.css?v=20261023q" />
+    <link rel="preload" href="model/model.json?v=20261023s" as="fetch" crossorigin />
+    <link rel="stylesheet" href="styles.css?v=20261023s" />
   </head>
   <body>
     <canvas class="pond" data-pond aria-hidden="true"></canvas>
@@ -36,6 +36,7 @@
       <button type="button" role="radio" aria-checked="false" data-tool="call">call</button>
       <button type="button" role="radio" aria-checked="false" data-tool="lily">lily pad</button>
     </div>
+    <button type="button" class="zoom-out" data-zoom-out hidden>zoom out <span aria-hidden="true">⤢</span></button>
 
     <header class="top">
       <a class="brand" href="./" data-home>henry.</a>
@@ -58,7 +59,6 @@
         <section class="pinned" aria-label="Pinned">
           <p class="pinned-label"><span data-picked-for>pinned</span><button type="button" class="change" data-change hidden>change</button></p>
           <div class="pins" data-pins></div>
-          <a class="tease" href="#prs" data-tease hidden></a>
         </section>
         <p class="sr-only" aria-live="polite" data-say></p>
       </form>
@@ -125,6 +125,6 @@
     </main>
 
     <canvas class="trail" data-trail aria-hidden="true"></canvas>
-    <script type="module" src="src/app.js?v=20261023q"></script>
+    <script type="module" src="src/app.js?v=20261023s"></script>
   </body>
 </html>

@@ -45,7 +45,7 @@ export function bar(canvas, share, lit, reduce) {
  * The visits chart. values[i] is one day, oldest first; it opens on the newest `span` days.
  * onFocus(i) is called with the index under the pointer (or the newest visible day when it leaves).
  */
-export function timeline(canvas, values, { span = 21, reduce = false, onFocus = () => {}, onPan = () => {} } = {}) {
+export function timeline(canvas, values, { span = 21, reduce = false, live = false, onFocus = () => {}, onPan = () => {} } = {}) {
   let g = setup(canvas);
   const n = values.length;
   let off = Math.max(0, n - span), vel = 0, drag = null, hover = -1, k = reduce ? 1 : 0, raf = 0, top = 0;
@@ -66,6 +66,15 @@ export function timeline(canvas, values, { span = 21, reduce = false, onFocus = 
       const x = Math.round(((i - off) * cw) / px) * px, bw = Math.floor((cw - gap) / px) * px;
       const ch = Math.max(px, Math.round((h * 0.94 * (values[i] / max) * k) / px) * px);
       ctx.fillStyle = i === hover ? acc : ink;
+      // the newest week is still filling up: bands of dots roll up through it, and a dim ghost above it breathes
+      if (live && i === n - 1 && !reduce) {
+        const t = performance.now() / 1000, gh = Math.round((h * 0.94 * Math.max(0.12, Math.min(1, values[i] / max + 0.18)) * k) / px) * px;
+        fill(ctx, x, h - gh, bw, gh, px, (fx, fy) => {
+          const solid = fy > 1 - ch / gh, wave = 0.5 + 0.5 * Math.sin(fy * 9 + t * 2.6);
+          return solid ? 0.3 + fy * 0.5 + wave * 0.3 : wave * 0.22 * (0.6 + 0.4 * Math.sin(t * 1.3));
+        });
+        continue;
+      }
       fill(ctx, x, h - ch, bw, ch, px, (fx, fy) => (i === hover ? 0.55 : 0.32) + fy * 0.6);
     }
   }
@@ -75,7 +84,7 @@ export function timeline(canvas, values, { span = 21, reduce = false, onFocus = 
     else if (!drag) vel = 0;
     if (k < 1) k = Math.min(1, k + 0.035);
     draw();
-    if (vel || k < 1 || Math.abs(windowMax() - top) > 0.05) raf = requestAnimationFrame(loop);
+    if (vel || k < 1 || Math.abs(windowMax() - top) > 0.05 || (live && !reduce && visible)) raf = requestAnimationFrame(loop);
   }
   const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
   const indexAt = (e) => { const r = canvas.getBoundingClientRect(); return clamp(Math.floor(off + clamp((e.clientX - r.left) / r.width, 0, 0.999) * span), 0, n - 1); };
@@ -111,6 +120,9 @@ export function timeline(canvas, values, { span = 21, reduce = false, onFocus = 
     focus(i);
   });
 
+  // a live chart only animates while it's on screen
+  let visible = false;
+  if (live) new IntersectionObserver((es) => { visible = es.some((e) => e.isIntersecting); if (visible) kick(); }).observe(canvas);
   onFocus(n - 1);
   kick();
   return {

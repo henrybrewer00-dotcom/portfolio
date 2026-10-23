@@ -29,7 +29,10 @@ const { suggest } = createSuggester(INTENTS);
 
 /* ---------- the koi pond, with the big word drawn into it ---------- */
 // clicks on anything you can use stay with it; a click on open water feeds the koi
-const pond = createPond($("[data-pond]"), { ignore: "a, button, input, textarea, select, label, form, .card, .pins, .pr-list, .results, .top, .tools" });
+// a dive into the pond shows a "zoom out" button until the view leans back out
+const zoomBtn = $("[data-zoom-out]");
+const pond = createPond($("[data-pond]"), { ignore: "a, button, input, textarea, select, label, form, .card, .pins, .pr-list, .results, .top, .tools", onZoom: (on) => { zoomBtn.hidden = !on; } });
+zoomBtn.addEventListener("click", () => pond.zoomOut());
 document.body.classList.add("is-ready");
 // the tool row picks what a click on open water does
 const tools = [...document.querySelectorAll("[data-tool]")];
@@ -289,16 +292,22 @@ function staticGh() {
   return { source: "static", unit: "pull requests", total: prs.length, prCount: prs.length, weeks, prs };
 }
 let gh = staticGh(), chart = null, repaint = [], regrow = [], seen = false;
+// the chart is pull requests per week over the last six months, where nearly all of them are
+const SPAN = 26;
+function prWeeks() {
+  const sunday = (t) => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime() - d.getDay() * DAY; };
+  const end = sunday(Date.now()), weeks = [];
+  for (let k = SPAN - 1; k >= 0; k--) { const t = end - k * 7 * DAY; weeks.push({ t, n: gh.prs.filter((p) => sunday(p.at) === t).length }); }
+  return weeks;
+}
 const plural = (n, unit) => `${n} ${n === 1 ? unit.replace(/s$/, "") : unit}`;
 function renderGh() {
   const shown = gh.prs.slice(0, 12);
   $("[data-prs]").innerHTML = shown.map((p) => `<li class="post"><span class="post-role">${esc(p.repo)}${p.n ? " #" + p.n : ""}</span>${p.url
     ? `<a class="post-text" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.title)} ↗</a>` : `<span class="post-text is-private">a pull request</span>`}<span class="post-t">${dayName(p.at)}</span></li>`).join("");
-  $("[data-gh-unit]").textContent = gh.unit === "contributions" ? "contributions per week" : "pull requests per week";
-  $("[data-days]").setAttribute("aria-label", `${gh.unit === "contributions" ? "Contributions" : "Pull requests"} per week. Drag, or use the arrow keys, to move through time.`);
-  const tease = $("[data-tease]");
-  // the hand-picked stand-ins are only a few of them, so they never get counted out loud
-  tease.textContent = gh.source === "static" ? "My pull requests, newest first ↓" : `${plural(gh.prCount, "pull requests")}${gh.unit === "contributions" ? ` and ${gh.total} contributions this year` : ""}. See them ↓`; tease.hidden = false;
+  $("[data-gh-unit]").textContent = "pull requests per week · last 6 months";
+  $("[data-days]").setAttribute("aria-label", "Pull requests per week over the last six months. Use the arrow keys to move through the weeks.");
+
 }
 function drawGh() {
   // where they went: one dithered row per repo, holding (or hovering) a row lights it and shows its share
@@ -310,7 +319,7 @@ function drawGh() {
   repaint = bars.map((b) => b.paint); regrow = bars.map((b) => b.grow);
 
   // per week: drag through time. At rest the readout shows the whole count; pointing at (or arrowing to) a week shows that week
-  const days = $("[data-days]"), weeks = gh.weeks;
+  const days = $("[data-days]"), weeks = prWeeks(), total = weeks.reduce((a, w) => a + w.n, 0);
   const fresh = days.cloneNode(true); days.replaceWith(fresh);   // a redraw (GitHub answering) starts on a clean canvas
   let pointing = false;
   fresh.addEventListener("pointerenter", () => { pointing = true; });
@@ -319,10 +328,11 @@ function drawGh() {
   fresh.addEventListener("blur", () => { pointing = false; });
   if (!weeks.length) return;
   chart = dither.timeline(fresh, weeks.map((w) => w.n), {
-    span: Math.min(weeks.length, innerWidth < 700 ? 20 : 34), reduce: reduceMotion,
+    span: weeks.length, reduce: reduceMotion, live: true,   // the newest week keeps moving
     onFocus: (i) => {
-      $("[data-readout-n]").textContent = pointing ? plural(weeks[i].n, gh.unit) : gh.source === "static" ? "pull requests" : plural(gh.total, gh.unit);
-      $("[data-readout-d]").textContent = !pointing ? (gh.unit === "contributions" ? "in the last year" : `since ${dayName(gh.prs.at(-1).at)}`) : i === weeks.length - 1 ? "this week" : `week of ${dayName(weeks[i].t)}`;
+      // the hand-picked stand-ins are only a few PRs, so they never get counted out loud
+      $("[data-readout-n]").textContent = pointing ? plural(weeks[i].n, "pull requests") : gh.source === "static" ? "pull requests" : plural(total, "pull requests");
+      $("[data-readout-d]").textContent = !pointing ? "in the last 6 months" : i === weeks.length - 1 ? "this week" : `week of ${dayName(weeks[i].t)}`;
     },
     onPan: (a, b) => { $("[data-days-from]").textContent = dayName(weeks[a].t); $("[data-days-to]").textContent = b === weeks.length - 1 ? "this week" : dayName(weeks[b].t); },
   });
@@ -339,6 +349,8 @@ fetch("api/prs").then((r) => (r.ok ? r.json() : null)).then((d) => {
   gh = d; renderGh(); if (seen) drawGh();
 }).catch(() => {});
 // the charts grow in every time they scroll into view, not just the first time
+// the section fades up into place each time it scrolls into view, and drops back out of sight when it leaves
+new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle("is-in", e.isIntersecting)), { threshold: 0.08 }).observe($("[data-crowd]"));
 new IntersectionObserver((es) => {
   if (!es.some((e) => e.isIntersecting)) return;
   if (!seen) { seen = true; drawGh(); return; }
