@@ -138,7 +138,7 @@ export function timeline(canvas, values, { span = 21, reduce = false, live = fal
  * point is live: a dot that pulses with a ring rolling off it, like a ticker. Pointing at (or arrowing through)
  * the chart moves a dotted crosshair and calls onFocus(i); leaving calls onFocus(-1).
  */
-export function stock(canvas, values, { reduce = false, onFocus = () => {} } = {}) {
+export function stock(canvas, values, { reduce = false, onFocus = () => {}, stride = 1 } = {}) {
   let g = setup(canvas), k = reduce ? 1 : 0, hover = -1, raf = 0, visible = false;
   const n = values.length, max = Math.max(1, ...values) * 1.12;
   const xAt = (i) => (i / Math.max(1, n - 1)) * (g.w - g.px * 6);
@@ -200,7 +200,7 @@ export function stock(canvas, values, { reduce = false, onFocus = () => {} } = {
   canvas.addEventListener("keydown", (e) => {
     const step = { ArrowLeft: -1, ArrowRight: 1, Home: -n, End: n }[e.key];
     if (step == null) return;
-    e.preventDefault(); focus(clamp((hover < 0 ? n - 1 : hover) + step * (Math.abs(step) === 1 ? 7 : 1), 0, n - 1));
+    e.preventDefault(); focus(clamp((hover < 0 ? n - 1 : hover) + step * (Math.abs(step) === 1 ? stride : 1), 0, n - 1));
   });
   new IntersectionObserver((es) => { visible = es.some((e) => e.isIntersecting); if (visible) kick(); }).observe(canvas);
   onFocus(-1);
