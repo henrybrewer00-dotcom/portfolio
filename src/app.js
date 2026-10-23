@@ -297,8 +297,9 @@ function renderGh() {
   const shown = gh.prs.slice(0, 12);
   $("[data-prs]").innerHTML = shown.map((p) => `<li class="post"><span class="post-role">${esc(p.repo)}${p.n ? " #" + p.n : ""}</span>${p.url
     ? `<a class="post-text" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.title)} ↗</a>` : `<span class="post-text is-private">a pull request</span>`}<span class="post-t">${dayName(p.at)}</span></li>`).join("");
-  $("[data-gh-unit]").textContent = "pull requests · last 6 months";
-  $("[data-days]").setAttribute("aria-label", "Pull requests over the last six months, as a running total. Point at it, or use the arrow keys, to see the total on a given day.");
+  const live = gh.source !== "static";
+  $("[data-gh-unit]").textContent = live ? "last 12 months" : "pull requests · last 6 months";
+  $("[data-days]").setAttribute("aria-label", live ? "PRs and contributions over the last year, as a running total, week by week. Point at it, or use the arrow keys, to see the total by a given week." : "Pull requests over the last six months.");
 
 }
 function drawGh() {
@@ -310,13 +311,21 @@ function drawGh() {
   const bars = [...el.querySelectorAll("canvas")].map((c, i) => dither.bar(c, rows[i][1] / max, false, reduceMotion));
   repaint = bars.map((b) => b.paint); regrow = bars.map((b) => b.grow);
 
-  // like a stock: the running total of pull requests, day by day over the last six months. At rest the readout shows
-  // the total and the last 30 days; pointing at a day shows the total by then
-  const days = $("[data-days]"), DAYS = 182, today = new Date(); today.setHours(23, 59, 59, 999);
-  const t0 = today.getTime() - (DAYS - 1) * DAY;
+  // like a stock: the running total of his PRs and contributions (GitHub's own count, the one on his profile),
+  // week by week over the last year. At rest the readout shows the total and the last month; pointing at a week
+  // shows the total by then. Without GitHub, the hand-picked PRs stand in, day by day over six months
+  const days = $("[data-days]"), today = new Date(); today.setHours(23, 59, 59, 999);
   const series = [], dates = [];
-  for (let d = 0, run = 0; d < DAYS; d++) { const end = t0 + d * DAY; run = gh.prs.filter((p) => p.at >= t0 && p.at <= end).length; series.push(run); dates.push(end); }
-  const total = series.at(-1), month = total - series[Math.max(0, DAYS - 31)];
+  if (gh.source !== "static" && gh.weeks.length) {
+    let run = 0;
+    for (const w of gh.weeks) { run += w.n; series.push(run); dates.push(w.t + 6 * DAY); }
+    series[series.length - 1] = gh.total;   // the calendar's own total, so the end of the line matches his profile
+  } else {
+    const t = today.getTime() - 181 * DAY;
+    for (let d = 0; d < 182; d++) { const end = t + d * DAY; series.push(gh.prs.filter((p) => p.at >= t && p.at <= end).length); dates.push(end); }
+  }
+  const N = series.length, t0 = dates[0] - (gh.source !== "static" ? 6 * DAY : 0);
+  const total = series.at(-1), month = total - series[Math.max(0, N - (gh.source !== "static" ? 5 : 31))];
   const fresh = days.cloneNode(true); days.replaceWith(fresh);   // a redraw (GitHub answering) starts on a clean canvas
   $("[data-days-from]").textContent = dayName(t0); $("[data-days-to]").textContent = "today";
   chart = dither.stock(fresh, series, {
@@ -324,8 +333,8 @@ function drawGh() {
     onFocus: (i) => {
       // the hand-picked stand-ins are only a few PRs, so they never get counted out loud
       if (gh.source === "static") { $("[data-readout-n]").textContent = "pull requests"; $("[data-readout-d]").textContent = "in the last 6 months"; return; }
-      $("[data-readout-n]").textContent = plural(i < 0 ? total : series[i], "pull requests");
-      $("[data-readout-d]").textContent = i < 0 ? `▲ ${month} in the last 30 days` : i === DAYS - 1 ? "as of today" : `by ${dayName(dates[i])}`;
+      $("[data-readout-n]").textContent = `${i < 0 ? total : series[i]} PRs and contributions`;
+      $("[data-readout-d]").textContent = i < 0 ? `▲ ${month} in the last month` : i === N - 1 ? "as of today" : `by ${dayName(Math.min(dates[i], today.getTime()))}`;
     },
   });
 }

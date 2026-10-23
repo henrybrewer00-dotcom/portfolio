@@ -237,21 +237,34 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
 
   function stepKoi(dt) {
     const minSide = Math.min(W, H);
+    // one koi per patch of food, nearest first, so a handful of pellets doesn't pull every koi into one knot.
+    // The koi that claims a patch eats its way through it; the rest carry on with their loop
+    const claim = new Map();
+    if (food.length) {
+      const pairs = [];
+      for (const an of koi) for (const p of food) pairs.push([Math.hypot(p.x - an.nodes[0], p.y - an.nodes[1]), an, p]);
+      pairs.sort((a, b) => a[0] - b[0]);
+      const taken = new Set();
+      for (const [d, an, p] of pairs) {
+        if (claim.has(an) || taken.has(p)) continue;
+        claim.set(an, { x: p.x, y: p.y, d });
+        for (const q of food) if (Math.hypot(q.x - p.x, q.y - p.y) < an.L * 0.6) taken.add(q);
+      }
+    }
     for (const an of koi) {
       const L = an.L, N = an.nodes, hx = N[0], hy = N[1];
       let dx = Math.cos(an.heading), dy = Math.sin(an.heading);
       an.wander = clamp(an.wander + (Math.random() - 0.5) * dt * 2, -1, 1);
       dx += Math.cos(an.heading + an.wander) * 0.4; dy += Math.sin(an.heading + an.wander) * 0.4;
       // food in the water wins over everything; a resting cursor gets a curious look
-      let goal = null, eager = 0;
-      for (const p of food) { const d = Math.hypot(p.x - hx, p.y - hy); if (!goal || d < goal.d) goal = { x: p.x, y: p.y, d }; }
+      let goal = claim.get(an) || null, eager = 0;
       if (goal) eager = 2.6;
       else if (tool === "call" && (pointer.active || lure)) {
         const t = pointer.active ? pointer : lure, d = Math.hypot(t.x - hx, t.y - hy);
         goal = { x: t.x, y: t.y, d }; eager = 2.1;
       }
       else if (pointer.active && pointer.still > 0.6) { const d = Math.hypot(pointer.x - hx, pointer.y - hy); if (d < minSide * 0.5) { goal = { x: pointer.x, y: pointer.y, d }; eager = 0.9 * clamp(1 - d / (minSide * 0.5), 0, 1); } }
-      if (goal && goal.d > L * 0.06) { dx += ((goal.x - hx) / goal.d) * eager; dy += ((goal.y - hy) / goal.d) * eager; }
+      if (goal && (eager > 2 || goal.d > L * 0.06)) { dx += ((goal.x - hx) / goal.d) * eager; dy += ((goal.y - hy) / goal.d) * eager; }
       else if (!goal) {
         // otherwise a lazy loop around the middle of the page
         const rx = (hx - W / 2) / (W / minSide), ry = hy - H / 2, r = Math.hypot(rx, ry) || 1;
@@ -269,12 +282,13 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
       for (const o of koi) {
         if (o === an) continue;
         for (let k = 0; k < NODES; k += 4) {
-          const ox = hx - o.nodes[k * 2], oy = hy - o.nodes[k * 2 + 1], d = Math.hypot(ox, oy), range = (L + o.L) * (goal ? 0.18 : 0.4);
-          if (d < range && d > 1e-3) { const w = (1 - d / range) * 3; dx += (ox / d) * w; dy += (oy / d) * w; }
+          const ox = hx - o.nodes[k * 2], oy = hy - o.nodes[k * 2 + 1], d = Math.hypot(ox, oy), range = (L + o.L) * (eager > 2 ? 0.22 : 0.4);
+          if (d < range && d > 1e-3) { const w = (1 - d / range) * (eager > 2 ? 3 : 4.5); dx += (ox / d) * w; dy += (oy / d) * w; }
         }
       }
       // dip off the edge now and then, but always come back
-      const over = Math.max(-hx, hx - W, -hy, hy - H);
+      // (chasing a pellet near the edge it may slip a little past it, instead of fighting the push back)
+      const over = Math.max(-hx, hx - W, -hy, hy - H) - (eager > 2 ? L * 0.2 : 0);
       if (over > -L * 0.05) { const w = clamp((over + L * 0.05) / (L * 0.35), 0, 1) * 3.5, tx = W / 2 - hx, ty = H / 2 - hy, d = Math.hypot(tx, ty) || 1; dx += (tx / d) * w; dy += (ty / d) * w; }
       const scared = an.scare && time < an.scare.until;
       const agility = Math.min((goal && eager > 2) || scared ? 1.4 : 0.6, Math.max(an.speed, 12) / (L * 0.12)), maxTurn = agility * dt;
@@ -296,12 +310,15 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
       }
       // a gulp at the surface: the pellet is gone and a ring spreads
       // a gulp only when the pellet is right at the mouth, just ahead of the nose
-      const mr = L * 0.02 + cw * 0.5, mx = N[0] + Math.cos(an.heading) * L * 0.015, my = N[1] + Math.sin(an.heading) * L * 0.015;
+      const mr = L * 0.025 + cw * 0.6, mx = N[0] + Math.cos(an.heading) * L * 0.015, my = N[1] + Math.sin(an.heading) * L * 0.015;
       food = food.filter((p) => { if ((p.x - mx) ** 2 + (p.y - my) ** 2 < mr * mr) { ring(p.x, p.y, 3, 0.9); an.gulp = time; return false; } return true; });
     }
     food = food.filter((p) => time - p.t < 14);
     if (lure && time > lure.until) lure = null;
   }
+
+  // a pellet dropped right in a corner lands a little in from the rim, where a koi can turn to it
+  const inside = (x, y, t) => { const m = Math.min(W, H) * 0.08; return { x: clamp(x, m, W - m), y: clamp(y, m, H - m), t }; };
 
   function stepPads(dt) {
     // pads ride the current, slowly, and nudge off the edges and each other
@@ -472,28 +489,30 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
     let cx = 0, cy = 0, n = 0;
     for (let i = 0; i < next.length; i++) if (next[i] >= 0.12) { cx += i % cols; cy += (i / cols) | 0; n++; }
     cx /= n || 1; cy /= n || 1;
-    const R = Math.hypot(W, H) * 0.65, spin = Math.random() < 0.5 ? 1 : -1;
+    // they start close, scattered loosely around the word, and drift in: no spinning, nothing from off screen
+    const R = Math.min(W, H) * 0.32, spin = Math.random() < 0.5 ? 1 : -1;
     for (let i = 0; i < next.length; i++) {
       if (next[i] < 0.12) { flipAt[i] = 0; continue; }
       const c = i % cols, r = (i / cols) | 0, d = Math.hypot((c - cx) / cols, (r - cy) / rows);
-      const t1 = time + from + over * clamp(0.15 + d * 1.4 + hash3(i, 7, 3) * 0.25, 0, 1), a = rand(0, TAU);
-      flipAt[i] = t1; flipT[i] = t1;
-      school.push({ i, tx: c * cw + cw / 2, ty: r * ch + ch / 2, ox: Math.cos(a) * R, oy: Math.sin(a) * R, t0: time + from * hash3(i, 1, 9), t1, spin });
+      const t1 = time + from + over * clamp(0.35 + d * 0.9 + hash3(i, 7, 3) * 0.2, 0, 1), a = rand(0, TAU), k = rand(0.4, 1);
+      flipAt[i] = t1;
+      school.push({ i, tx: c * cw + cw / 2, ty: r * ch + ch / 2, ox: Math.cos(a) * R * k, oy: Math.sin(a) * R * k * 0.7, t0: time + from * hash3(i, 1, 9), t1, spin });
     }
     gatherEnd = time + from + over + 0.2;
-    ripples.push({ x: cx * cw, y: cy * ch, t: time }); 
+
   }
   function drawSchool() {
     if (!school.length) return;
     school = school.filter((f) => time < f.t1);
     for (const f of school) {
       if (time < f.t0) continue;
-      const at = (t) => { const e = 1 - (1 - clamp((t - f.t0) / (f.t1 - f.t0), 0, 1)) ** 3, k = 1 - e, a = f.spin * 2.2 * k, ca = Math.cos(a), sa = Math.sin(a);
+      // a soft ease in and out, with only a slight curve to the path
+      const at = (t) => { const u = clamp((t - f.t0) / (f.t1 - f.t0), 0, 1), e = 0.5 - 0.5 * Math.cos(Math.PI * u), k = 1 - e, a = f.spin * 0.5 * k, ca = Math.cos(a), sa = Math.sin(a);
         return [f.tx + (f.ox * ca - f.oy * sa) * k, f.ty + (f.ox * sa + f.oy * ca) * k]; };
       const [x, y] = at(time), [px, py] = at(time - 0.03), dx = x - px, dy = y - py;
       const glyph = Math.abs(dx) > Math.abs(dy) * 1.5 ? (dx > 0 ? ">" : "<") : Math.abs(dy) > Math.abs(dx) * 1.5 ? (dy > 0 ? "v" : "^") : dx * dy > 0 ? "\\" : "/";
-      const near = clamp(1 - (f.t1 - time) / 0.6, 0, 1);
-      ctx.fillStyle = mix(0.45 + 0.5 * near);
+      const near = clamp(1 - (f.t1 - time) / 0.6, 0, 1), appear = clamp((time - f.t0) / 0.8, 0, 1);
+      ctx.fillStyle = mix((0.2 + 0.6 * near) * appear);
       ctx.fillText(glyph, Math.round(x / cw) * cw + cw / 2, Math.round(y / ch) * ch + ch / 2 + 1);
     }
   }
@@ -735,7 +754,7 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
       scatter(180, 180);
       // a few pellets scattered around the spot. The first click leans the view in close enough to see the
       // tiles; while it's close, clicks keep feeding and keep it there (Esc, scrolling or the button lean back out)
-      for (let k = 0; k < 3; k++) food.push({ x: x + rand(-1, 1) * cw * 2, y: y + rand(-1, 1) * ch, t: time + k * 0.01 });
+      for (let k = 0; k < 3; k++) food.push(inside(x + rand(-1, 1) * cw * 2, y + rand(-1, 1) * ch, time + k * 0.01));
       if (food.length > 9) food.splice(0, food.length - 9);
       if (cam.tz === 1) zoomIn(x, y); else cam.until = time + 8;
     }
@@ -766,7 +785,7 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
     /** A ring rolling out from a point on the page, e.g. under the bar on Enter. */
     pulse(x, y) { ring(x, y, 6, 1.3); },
     /** Drop food at a point in page coordinates (the koi come to it), without moving the camera. */
-    feed(x, y) { for (let k = 0; k < 3; k++) food.push({ x: x + rand(-1, 1) * cw * 2, y: y + rand(-1, 1) * ch, t: time }); ring(x, y, 3, 0.9); },
+    feed(x, y) { for (let k = 0; k < 3; k++) food.push(inside(x + rand(-1, 1) * cw * 2, y + rand(-1, 1) * ch, time)); ring(x, y, 3, 0.9); },
     destroy() {
       cancelAnimationFrame(raf); ro.disconnect();
       removeEventListener("pointermove", onMove); removeEventListener("pointerdown", onDown); removeEventListener("keydown", onKey); removeEventListener("wheel", onWheel);
