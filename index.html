@@ -25,11 +25,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
     <script>try { if (!location.hash && !matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("is-booting"); } catch (e) {}</script>
-    <link rel="preload" href="model/model.json?v=20261017a" as="fetch" crossorigin />
-    <link rel="stylesheet" href="styles.css?v=20261017a" />
+    <link rel="preload" href="model/model.json?v=20261023t" as="fetch" crossorigin />
+    <link rel="stylesheet" href="styles.css?v=20261023x" />
   </head>
   <body>
-    <canvas class="engraving" data-engraving aria-hidden="true"></canvas>
+    <canvas class="pond" data-pond aria-hidden="true"></canvas>
+    <button type="button" class="zoom-out" data-zoom-out hidden>zoom out <span aria-hidden="true">⤢</span></button>
 
     <header class="top">
       <a class="brand" href="./" data-home>henry.</a>
@@ -52,7 +53,6 @@
         <section class="pinned" aria-label="Pinned">
           <p class="pinned-label"><span data-picked-for>pinned</span><button type="button" class="change" data-change hidden>change</button></p>
           <div class="pins" data-pins></div>
-          <a class="tease" href="#prs" data-tease hidden></a>
         </section>
         <p class="sr-only" aria-live="polite" data-say></p>
       </form>
@@ -71,12 +71,25 @@
 
       <p class="foot"><button type="button" class="act is-soft" data-browse>browse everything</button> · <a class="act is-soft" href="deck/">older site: card deck</a> · <a class="act is-soft" href="old/">older site: terminal</a></p>
 
-      <section class="crowd prs" id="prs" aria-labelledby="prs-title">
+      <section class="crowd prs" id="prs" data-crowd aria-labelledby="prs-title">
         <div class="crowd-head">
-          <h2 class="crowd-title" id="prs-title">pull requests</h2>
+          <h2 class="crowd-title" id="prs-title">PRs and contributions</h2>
           <a class="sample" href="https://github.com/henrybrewer00-dotcom" target="_blank" rel="noopener">github ↗</a>
         </div>
-        <div class="pr-list" data-prs></div>
+        <figure class="chart chart-visits">
+          <figcaption><span data-gh-unit>last 12 months</span></figcaption>
+          <p class="readout" data-readout aria-live="polite"><b data-readout-n></b> <span data-readout-d></span></p>
+          <canvas class="cols" data-days tabindex="0" aria-label="Pull requests per week. Drag, or use the arrow keys, to move through time."></canvas>
+          <p class="cols-axis"><span data-days-from></span><span data-days-to></span></p>
+        </figure>
+        <figure class="chart chart-roles">
+          <figcaption><span>where they went</span></figcaption>
+          <div class="rows" data-roles></div>
+        </figure>
+        <div class="wall">
+          <p class="wall-q">most recent</p>
+          <ul class="posts" data-prs></ul>
+        </div>
       </section>
 
       <noscript>
@@ -90,13 +103,13 @@
         <article class="card"><p class="kicker">voice AI</p><h3>Lily</h3><p>Calls my grandma every morning, has an actual conversation, then texts the family how she sounded.</p> <a class="act" href="https://lily.insforge.site">Live ↗</a> <a class="act" href="https://github.com/henrybrewer00-dotcom/lily">Repo ↗</a></article>
         <article class="card"><p class="kicker">hackathons</p><h3>Some hackathon wins</h3><p>InsForge · Frontier Tower · a16z × Cursor</p></article>
         <article class="card"><p class="kicker">open source</p><h3>Glasscast</h3><p>Screen Studio costs money, so I made a free one. Cinematic zooms, auto-captions, a webcam bubble, bring your own AI keys.</p> <a class="act" href="https://github.com/henrybrewer00-dotcom/Glasscast">Repo ↗</a></article>
-        <article class="card"><p class="kicker">design</p><h3>This site</h3><p>My portfolio, designed from scratch. Everything is drawn in one 3px dither grain: the dot field behind the page, an intro that dithers my name in and re-dithers it into the page, a pixel-art cursor with a fading orange trail, enter buttons that fill with orange dots, and charts of who's visited. Near-black, bone white, and one orange.</p> <a class="act" href="https://github.com/henrybrewer00-dotcom/portfolio">Repo ↗</a></article>
+        <article class="card"><p class="kicker">design</p><h3>This site</h3><p>My portfolio, designed from scratch. Behind the page is a koi pond drawn in ASCII tiles: black and white koi, little fish that scatter from your cursor, and wakes that light up where they swim. Rest the cursor and the koi come to look, and tiles flip over as you pass across them. The koi follow your cursor, and a click calls them over to that spot. My name decodes into the pond tile by tile. Black and white only.</p> <a class="act" href="https://github.com/henrybrewer00-dotcom/portfolio">Repo ↗</a></article>
         <article class="card"><p class="kicker">voice AI</p><h3>Lily's Drive-Thru</h3><p>Order out loud. The AI takes it, upsells you once, reads the total back with tax, and fires a live ticket to the kitchen screen.</p> <a class="act" href="https://github.com/henrybrewer00-dotcom/voice-drive-thru">Repo ↗</a></article>
         <article class="card"><p class="kicker">AI + audio</p><h3>Eleven Mile</h3><p>Pick two people and a topic and watch them rap-battle. Claude writes the bars, ElevenLabs raps them. A little dumb and I love it.</p> <a class="act" href="https://github.com/henrybrewer00-dotcom/eleven-mile">Repo ↗</a></article>
         <article class="card"><p class="kicker">accessibility</p><h3>PawBot</h3><p>Helps older people use a computer one step at a time, like helping your grandparent figure out their email.</p> <a class="act" href="https://github.com/henrybrewer00-dotcom/PawBot">Repo ↗</a></article>
         <article class="card"><p class="kicker">robotics</p><h3>S.I.E.G.E.</h3><p>A self-driving car that chases my dogs around while I'm busy. Sensors, steering logic, a lot of calibration, and wiring that looks worse than it works.</p></article>
         <article class="card"><p class="kicker">hardware · building now</p><h3>ROV Submarine</h3><p>A remote-controlled sub that has to survive real water. Most of the work is the unglamorous part: watertight, buoyant, and a battery that behaves.</p></article>
-        <article class="card"><p class="kicker">merged pull requests</p><h3>Open source</h3><p>Real, merged pull requests to tools I use: SymPy, Biome, Astro. Small fixes, shipped, and people actually run them.</p> <a class="act" href="https://github.com/search?q=is%3Apr+author%3Ahenrybrewer00-dotcom+is%3Amerged&amp;type=pullrequests">See the PRs ↗</a></article>
+        <article class="card"><p class="kicker">merged pull requests</p><h3>Open source</h3><p>Real, merged pull requests to tools I use: SymPy, Biome, Astro. Small fixes, shipped, and people actually run them.</p> <a class="act" href="#prs">All my PRs ↓</a> <a class="act" href="https://github.com/pulls?q=is%3Apr+author%3Ahenrybrewer00-dotcom">On GitHub ↗</a></article>
         <article class="card"><p class="kicker">made with</p><h3>The stack</h3><p>React · TypeScript · Python · Electron · Arduino · Twilio · ElevenLabs · Claude · Vercel · GitHub</p></article>
         <article class="card"><p class="kicker">also</p><h3>Receipts</h3><p>Straight A's, 99.5 in math, 125 words a minute. Hackathon wins at InsForge, Frontier Tower and a16z × Cursor. Merged PRs in SymPy, Biome and Astro.</p></article>
         <article class="card"><p class="kicker">say hi</p><h3>Got an idea?</h3><p>Let's build it this weekend.</p> <a class="act" href="mailto:henrybrewer00@gmail.com?subject=You're%20hired&amp;body=Hi%20Henry%2C%0A%0AHere's%20what%20I'd%20love%20to%20build%20with%20you%3A%0A%0A">Email me →</a> <a class="act" href="https://github.com/henrybrewer00-dotcom">GitHub ↗</a> <a class="act" href="deck/">Older site: card deck</a> <a class="act" href="old/">Older site: terminal</a></article>
@@ -105,8 +118,7 @@
       </noscript>
     </main>
 
-    <canvas class="robot" data-robot aria-hidden="true"></canvas>
     <canvas class="trail" data-trail aria-hidden="true"></canvas>
-    <script type="module" src="src/app.js?v=20261017a"></script>
+    <script type="module" src="src/app.js?v=20261023x"></script>
   </body>
 </html>
