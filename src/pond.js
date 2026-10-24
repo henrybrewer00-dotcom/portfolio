@@ -260,8 +260,15 @@ export function createPond(canvas, { ignore = "a, button, input, textarea, selec
       let goal = claim.get(an) || null, eager = 0;
       if (goal) eager = 2.6;
       else if (tool === "call" && (pointer.active || lure)) {
-        const t = pointer.active ? pointer : lure, d = Math.hypot(t.x - hx, t.y - hy);
-        goal = { x: t.x, y: t.y, d }; eager = 2.1;
+        // called over, a koi drifts toward the cursor at its own pace and then circles it at a respectful distance,
+        // each one a little further out, instead of swimming straight at it
+        const t = pointer.active ? pointer : lure, d = Math.hypot(t.x - hx, t.y - hy) || 1e-3, keep = L * (0.4 + 0.15 * an.id);
+        if (d > keep * 1.3) { goal = { x: t.x, y: t.y, d }; eager = 0.9 * clamp((d - keep) / (minSide * 0.4), 0.4, 1); }
+        else {
+          const ux = (hx - t.x) / d, uy = (hy - t.y) / d, out = clamp((keep - d) / keep, -0.3, 1);
+          dx += -uy * an.orbitDir * 0.7 + ux * out * 1.4; dy += ux * an.orbitDir * 0.7 + uy * out * 1.4;
+          goal = { x: hx, y: hy, d: 0 };   // no wander back to the middle while it's keeping company
+        }
       }
       else if (pointer.active && pointer.still > 0.6) { const d = Math.hypot(pointer.x - hx, pointer.y - hy); if (d < minSide * 0.5) { goal = { x: pointer.x, y: pointer.y, d }; eager = 0.9 * clamp(1 - d / (minSide * 0.5), 0, 1); } }
       if (goal && (eager > 2 || goal.d > L * 0.06)) { dx += ((goal.x - hx) / goal.d) * eager; dy += ((goal.y - hy) / goal.d) * eager; }
