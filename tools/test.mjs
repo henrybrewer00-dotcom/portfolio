@@ -63,7 +63,23 @@ for (const typed of ["henry's cu", "show me hen", "the sub", "how do i", "voice"
 // who-are-you answers: a job at a school is a job, not a student
 const ROLES = [["guide at alpha school", "educator"], ["I teach high school math", "educator"], ["school principal", "educator"], ["school nurse", "educator"],
   ["professor at stanford university", "educator"], ["student at alpha school", "student"], ["junior in high school", "student"], ["I go to school", "student"],
-  ["I work for Google", "engineer"], ["software engineer at a school", "engineer"], ["product designer", "designer"], ["just browsing", "curious"]];
+  ["I work for Google", "engineer"], ["software engineer at a school", "engineer"], ["product designer", "designer"], ["just browsing", "curious"],
+  // wanting a kind of person is hiring that kind, not being it
+  ["im lokoing to hire a designer", "hiring-designer"], ["I'm looking to hire a designer", "hiring-designer"], ["I need a designer", "hiring-designer"],
+  ["we have an open role for a ux designer", "hiring-designer"], ["design recruiter", "hiring-designer"], ["engineer looking to hire designers", "hiring-designer"],
+  ["looking for someone to design our logo", "hiring-designer"], ["hiring engineers", "hiring-engineer"], ["I'm hiring engineers", "hiring-engineer"],
+  ["we're looking for a frontend dev", "hiring-engineer"], ["tech recruiter", "hiring-engineer"], ["looking for someone to build my app", "hiring-engineer"],
+  ["recruiting software engineers for a startup", "hiring-engineer"], ["hiring a security engineer", "hiring-security"], ["my team needs a pentester", "hiring-security"],
+  ["hiring hackers", "hiring-security"], ["I'm a recruiter", "hiring"], ["i want to hire you", "hiring"], ["my company is hiring", "hiring"], ["hr", "hiring"],
+  ["I'm a talent acquisition partner", "hiring"], ["school hiring teachers", "hiring"], ["looking for interns", "hiring-engineer"], ["hiring manager", "hiring"],
+  ["looking for a cofounder", "founder"], ["looking for a technical cofounder", "founder"], ["investor looking for startups", "founder"],
+  // wanting to be one, or wanting work, is not hiring
+  ["I want to be a designer", "designer"], ["I want to become an engineer", "engineer"], ["looking for a job as a designer", "designer"],
+  ["student looking for an internship", "student"], ["I need a website", "curious"], ["I'm opening a bakery", "curious"],
+  // typos, negations, more ways to say it
+  ["desginer", "designer"], ["softwre enginer", "engineer"], ["hirign a desinger", "hiring-designer"], ["I'm not a designer, I code", "engineer"],
+  ["cs major", "student"], ["art director", "designer"], ["illustrator", "designer"], ["junior developer", "engineer"], ["senior in high school", "student"],
+  ["I'm in 8th grade", "student"], ["white hat hacker", "security"], ["I run a startup", "founder"], ["I'm a teacher", "educator"], ["I'm a parent", "student"]];
 const wrongRoles = ROLES.filter(([t, want]) => personaFor(t) !== want);
 for (const [t, want] of wrongRoles) console.error(`  role: "${t}" → ${personaFor(t)}, want ${want}`);
 console.log(`roles: ${ROLES.length - wrongRoles.length}/${ROLES.length}`);
