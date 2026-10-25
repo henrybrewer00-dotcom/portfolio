@@ -140,7 +140,20 @@ body.has-results .pinned { display: none; }
 
 .foot { display: table; margin: 3rem auto 0; padding: 0.3rem 0.9rem; border-radius: 999px; background: var(--paper); font: 0.8rem var(--sans); color: var(--muted); text-align: center; }
 .foot .act { font-size: 0.8rem; }
-.noscript { margin-top: 2rem; display: grid; gap: 1rem; }
+
+/* ---------- about: who Henry is, as plain text in the page (for people and for search engines) ---------- */
+.about { margin: 3rem 0 2rem; padding: 1.6rem; background: var(--card); border: 1px solid var(--border); border-radius: 24px; color: var(--soft-ink); }
+@media (max-width: 700px) { .about { padding: 1.2rem; } }
+.about-title { font: 400 2rem/1 var(--serif); letter-spacing: -0.01em; color: var(--ink); margin-bottom: 1rem; }
+.about-bio { max-width: 46rem; font-size: 1rem; line-height: 1.6; }
+.about-links { margin: 0.8rem 0 2rem -0.5rem; }
+.about-links .act { font-size: 0.8rem; }
+.about-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1.6rem 2rem; border-top: 1px solid var(--border); padding-top: 1.6rem; }
+.about-list .kicker { margin-bottom: 0.35rem; font-size: 0.62rem; }
+.about-list h3 { font: 400 1.35rem/1.1 var(--serif); color: var(--ink); margin-bottom: 0.35rem; }
+.about-list p { font-size: 0.84rem; line-height: 1.5; color: var(--muted); }
+.about-list p + p { margin: 0.3rem 0 0 -0.5rem; }
+.about-list .act { font-size: 0.78rem; }
 
 a:focus-visible, button:focus-visible, .act:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
@@ -162,7 +175,7 @@ a:focus-visible, button:focus-visible, .act:focus-visible { outline: 2px solid v
 }
 
 /* ---------- intro: only the prompt box, asking who you are ---------- */
-body.is-intro .ask .hint, body.is-intro .ask .chips, body.is-intro .pinned, body.is-intro .foot, body.is-intro .crowd { display: none; }
+body.is-intro .ask .hint, body.is-intro .ask .chips, body.is-intro .pinned, body.is-intro .foot, body.is-intro .crowd, body.is-intro .about { display: none; }
 body.is-intro .ghost .rest.is-hint::before { content: "who are you? "; color: var(--ink); opacity: 1; }
 body.is-intro .ghost .rest.is-hint { opacity: 0.9; }
 body.is-revealing .pinned, body.is-revealing .foot, body.is-revealing .ask .hint { animation: reveal 0.9s var(--ease) both; }

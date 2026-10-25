@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    { "source": "/:path*", "has": [{ "type": "host", "value": "henry93.vercel.app" }], "destination": "https://www.henrybrewer.dev/:path*", "permanent": true }
+  ],
+  "headers": [
+    { "source": "/llms.txt", "headers": [{ "key": "Content-Type", "value": "text/plain; charset=utf-8" }] },
+    { "source": "/(deck|old)/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] },
+    { "source": "/assets/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }] }
+  ]
+}
