@@ -1,0 +1,56 @@
+# Henry Brewer
+
+> Henry Brewer is a 14-year-old builder from Austin, Texas. He is the cofounder and CTO of Crawft, an AI-powered monitoring tool for schools and managers, and the founder and CEO of SiteLight, which checks whether AI assistants recommend a business. He built Vurn AI, a fully autonomous AI pentesting tool, and he goes to Alpha High School. He also builds voice AI, robots and an ROV submarine, has won hackathons at InsForge, Frontier Tower and a16z × Cursor, and has merged pull requests in SymPy, Biome and Astro.
+
+Site: https://www.henrybrewer.dev/
+GitHub: https://github.com/henrybrewer00-dotcom
+Email: henrybrewer00@gmail.com
+
+## Work
+
+- [Crawft](https://crawft.ai) (current job): I'm cofounder and CTO, since mid-August 2026. Crawft is an AI-powered monitoring tool for schools and managers: it turns activity data into answers backed by evidence, and sends smart nudges that steer people off bad websites.
+  - Henry is Crawft's cofounder and CTO.
+  - Crawft is running a beta trial right now.
+  - It has a workplace mode (people, groups, managers) and a school mode (students, classes, teachers), on organization-owned computers.
+  - It turns each person's activity into a written daily account of their day, with every line linked to evidence, so a manager or teacher can see what happened without chasing updates.
+  - Nudges: an AI model judges whether activity is off task and sends the person a short message to get back on track; on-task work is never nudged.
+  - It's built from a native Mac agent in Swift, a Windows agent in Rust (in progress), a TypeScript backend on Fastify and PostgreSQL, Next.js web consoles, and infrastructure on AWS.
+  - It never records audio, camera video or location, and screenshot images are not sent to AI providers.
+  - Crawft's site headline is "See the work you're paying for." Pricing isn't public; teams contact sales.
+- Vurn AI (cybersecurity): A fully autonomous AI pentesting tool. 24 hours after I built it, it found a major vulnerability in a top-200 GitHub repo that gave access to over 40,000 Shopify accounts.
+  - Vurn AI scans the code of AI-written apps for security holes: leaked keys in the browser bundle, database tables with row-level security off, auth that only runs in the browser, IDOR and injection.
+  - It works in two passes: a fast deterministic pass for secrets and database rules, then a reasoning pass with Claude that reviews the code through focused security lenses using a map of the repo.
+  - Every finding from the reasoning pass is checked against the actual file, and dropped if the quoted code isn't there, so it doesn't report made-up bugs.
+  - Henry built a benchmark of 86 real, verified vulnerabilities plus 13 clean cases across 9 real repos in 6 languages; Vurn finds 70 of the 99.
+  - One of its real finds was a Shopify OAuth bug that sent an app's client secret to an attacker-chosen host.
+  - It's built with TypeScript, Next.js and React, with InsForge for the database and auth, about 14,000 lines of code and 99 unit and stress tests.
+- [SiteLight](https://sitelight.xyz) (founder): A personal challenge: go from nothing to revenue in under two weeks. I made it in 10 days. It checks whether AI assistants recommend your business when someone asks, then hands you the to-do list to become the answer.
+  - Henry is SiteLight's founder and CEO. It's live at sitelight.xyz.
+  - It's for local businesses like plumbers, coffee shops, golf courses, med spas and roofers.
+  - How it works: it writes the questions a buyer would ask, like "best coffee shop in Austin", asks four AI assistants (ChatGPT, Gemini, Perplexity and Claude), and checks whether the business is named, where it ranks, how it's described and which competitors come up instead.
+  - Then it gives a 0 to 100 score with a letter grade, a dashboard with a heatmap and share of voice, and ready-to-paste fixes: structured business data, an llms.txt file and FAQ blocks.
+  - Pricing is one-time scan packs through Stripe: $2 for one scan, $5 for three, $10 for eight.
+  - Henry sold it with cold emails that each included a real scan naming the competitors AI recommended instead; in one batch, 26 of 28 businesses he checked were invisible to AI.
+  - It's built with TypeScript, React, Vite and Tailwind, with InsForge for the database, auth and server functions, about 30,000 lines of code.
+- [Lily](https://lily.insforge.site) (voice AI): Calls my grandma every morning, has an actual conversation, then texts the family how she sounded.
+- Some hackathon wins (hackathons): InsForge, Frontier Tower, a16z × Cursor
+- [Glasscast](https://github.com/henrybrewer00-dotcom/Glasscast) (open source): Screen Studio costs money, so I made a free one. Cinematic zooms, auto-captions, a webcam bubble, bring your own AI keys.
+- [This site](https://github.com/henrybrewer00-dotcom/portfolio) (design): My portfolio, designed from scratch. Behind the page is a koi pond drawn in ASCII tiles: black and white koi, little fish that scatter from your cursor, and wakes that light up where they swim. Rest the cursor and the koi come to look, and tiles flip over as you pass across them. The koi follow your cursor, and a click calls them over to that spot. My name decodes into the pond tile by tile. Black and white only.
+- [Lily's Drive-Thru](https://github.com/henrybrewer00-dotcom/voice-drive-thru) (voice AI): Order out loud. The AI takes it, upsells you once, reads the total back with tax, and fires a live ticket to the kitchen screen.
+- [Eleven Mile](https://github.com/henrybrewer00-dotcom/eleven-mile) (AI + audio): Pick two people and a topic and watch them rap-battle. Claude writes the bars, ElevenLabs raps them. A little dumb and I love it.
+- [PawBot](https://github.com/henrybrewer00-dotcom/PawBot) (accessibility): Helps older people use a computer one step at a time, like helping your grandparent figure out their email.
+- S.I.E.G.E. (robotics): A self-driving car that chases my dogs around while I'm busy. Sensors, steering logic, a lot of calibration, and wiring that looks worse than it works.
+- ROV Submarine (hardware · building now): A remote-controlled sub that has to survive real water. Most of the work is the unglamorous part: watertight, buoyant, and a battery that behaves.
+- [Open source](https://github.com/pulls?q=is%3Apr+author%3Ahenrybrewer00-dotcom) (merged pull requests): Real, merged pull requests to tools I use: SymPy, Biome, Astro. Small fixes, shipped, and people actually run them.
+  - Some of his merged open-source PRs (examples, not the full count): SymPy #29951 (type hints for series acceleration, merged Jul 2026), Biome #10759 (lint rule ignores Svelte special elements, Jun 2026), Biome #10758 (formatter keeps parens around await/yield, Jun 2026), Astro #16703 (case-mismatched project paths, Jun 2026). He also opens many PRs in his own repos and in private work repos; the live count and full list are in the pull requests section of this page.
+- The stack (made with): React, TypeScript, Python, Electron, Arduino, Twilio, ElevenLabs, Claude, Vercel, GitHub
+- Receipts (also): Straight A's, 99.5 in math, 125 words a minute. Hackathon wins at InsForge, Frontier Tower and a16z × Cursor. Merged PRs in SymPy, Biome and Astro.
+
+## School
+
+- Henry goes to Alpha High School, part of Alpha School, which calls itself an AI-powered private school.
+- Alpha's model is 2 Hour Learning: students do their academics in a short morning block with adaptive software that gives each of them 1:1 learning at their own pace, aiming for full mastery before moving on.
+- At Alpha, the adults are called guides, not teachers: they don't grade or write lesson plans, they coach, motivate and support students.
+- Afternoons at Alpha are for life-skills workshops and students' own projects; at Alpha High that includes sports, arts and entrepreneurship.
+- Alpha says its students learn twice as fast and rank in the top 1% nationwide; Alpha High lists a December 2024 school-wide SAT average of 1410.
+- Alpha has campuses across the US; Alpha High has campuses in Austin, Miami, New York City, Oklahoma City, San Francisco and Santa Barbara.

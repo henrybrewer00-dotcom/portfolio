@@ -12,6 +12,13 @@
 export const GH = "https://github.com/henrybrewer00-dotcom";
 export const MAIL = "mailto:henrybrewer00@gmail.com?subject=" + encodeURIComponent("You're hired") + "&body=" + encodeURIComponent("Hi Henry,\n\nHere's what I'd love to build with you:\n\n");
 
+// Who Henry is, in the third person, for search engines and AI answer engines: the about section under the
+// page, the JSON-LD and llms.txt (all written by tools/seo.mjs). Only facts that are already on the cards.
+export const SITE = "https://www.henrybrewer.dev";
+export const BIO = "Henry Brewer is a 14-year-old builder from Austin, Texas. He is the cofounder and CTO of Crawft, an AI-powered monitoring tool for schools and managers, and the founder and CEO of SiteLight, which checks whether AI assistants recommend a business. He built Vurn AI, a fully autonomous AI pentesting tool, and he goes to Alpha High School. He also builds voice AI, robots and an ROV submarine, has won hackathons at InsForge, Frontier Tower and a16z × Cursor, and has merged pull requests in SymPy, Biome and Astro.";
+// profiles that are Henry's (schema.org sameAs): add LinkedIn, X and others here
+export const PROFILES = [GH];
+
 /**
  * @typedef {{ label: string, href: string }} Link
  * @typedef {{

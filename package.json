@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "model": "node tools/train.mjs",
+    "model": "node tools/train.mjs && node tools/seo.mjs",
+    "seo": "node tools/seo.mjs",
     "test": "node tools/test.mjs"
   }
 }
