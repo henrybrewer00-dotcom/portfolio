@@ -4,6 +4,7 @@
 
 Site: https://www.henrybrewer.dev/
 GitHub: https://github.com/henrybrewer00-dotcom
+X: https://x.com/Henry_J_Brew
 Email: henrybrewer00@gmail.com
 
 ## Work
