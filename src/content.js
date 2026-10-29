@@ -59,7 +59,6 @@ export const ITEMS = [
   { id: "sitelight", tease: "Nothing to revenue in 10 days.", kind: "job", pinned: true, kicker: "founder", title: "SiteLight", body: "A personal challenge: go from nothing to revenue in under two weeks. I made it in 10 days. It checks whether AI assistants recommend your business when someone asks, then hands you the to-do list to become the answer.", tags: ["Founder", "Marketing", "AI visibility", "10 days"], images: [
       { src: "assets/design/sitelight-landing.jpg", alt: "SiteLight's landing page: When AI recommends a business, is it you? with a live report card beside it.", cap: "the landing page" },
       { src: "assets/design/sitelight-scan.jpg", alt: "SiteLight's scan screen: balloons float while it asks ChatGPT, Gemini, Grok and Claude about a plumber.", cap: "the scan, while it asks each AI" },
-      { src: "assets/design/sitelight-overview.jpg", alt: "SiteLight's dashboard: an AI visibility score of 8 out of 100, grade F, with each assistant's result.", cap: "the score dashboard · demo data" },
       { src: "assets/design/sitelight-fixes.jpg", alt: "SiteLight's fixes page: a step-by-step plan to get named by AI.", cap: "the fix plan · demo data" },
       { src: "assets/sitelight-stripe.jpg", alt: "Stripe email: Congratulations, SiteLight! You've just received your first payment through Stripe. $2.00.", cap: "the first $2 · via stripe" }], links: [{ label: "sitelight.xyz ↗", href: "https://sitelight.xyz" }] ,
     // answer-only facts, from Henry and the SiteLight codebase as of 2026-10-13
