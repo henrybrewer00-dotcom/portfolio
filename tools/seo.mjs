@@ -23,19 +23,32 @@ const graph = {
   "@graph": [
     {
       "@type": "Person", "@id": person, name: "Henry Brewer", givenName: "Henry", familyName: "Brewer",
-      url: SITE + "/", description: BIO, image: SITE + "/assets/share-henry.png",
-      jobTitle: "Cofounder and CTO, Crawft",
-      worksFor: { "@id": "https://crawft.ai/#org" },
+      alternateName: ["Henry Brewer (developer)", "henrybrewer00-dotcom"],
+      url: SITE + "/", mainEntityOfPage: { "@id": `${SITE}/#page` }, image: SITE + "/assets/share-henry-2.png",
+      description: BIO,
+      // what tells this Henry Brewer apart from the others in search (the illustrator, the provost-marshal...)
+      disambiguatingDescription: "14-year-old software developer and entrepreneur from Austin, Texas; founder and CEO of SiteLight, former cofounder and CTO of Crawft, and creator of the AI pentesting tool Vurn AI.",
+      jobTitle: ["Software developer", "Founder and CEO of SiteLight"],
+      hasOccupation: [
+        { "@type": "Occupation", name: "Software developer", skills: "AI agents, cybersecurity, voice AI, TypeScript, React, Python" },
+        { "@type": "Occupation", name: "Entrepreneur" },
+      ],
+      worksFor: { "@id": "https://sitelight.xyz/#org" },
+      // Crawft: cofounder and CTO from mid-August 2026 until he sold his stake
+      affiliation: { "@type": "OrganizationRole", roleName: "Cofounder and CTO (former; sold his stake)", startDate: "2026-08", affiliation: { "@id": "https://crawft.ai/#org" } },
       alumniOf: { "@type": "EducationalOrganization", name: "Alpha High School", url: "https://alphahigh.school" },
+      homeLocation: { "@type": "Place", name: "Austin, Texas", address: { "@type": "PostalAddress", addressLocality: "Austin", addressRegion: "TX", addressCountry: "US" } },
+      nationality: { "@type": "Country", name: "United States" },
       email: "mailto:henrybrewer00@gmail.com",
-      knowsAbout: ["Artificial intelligence", "AI agents", "Cybersecurity", "Penetration testing", "Voice AI", "Robotics", "Web development", "TypeScript", "React", "Python", "Open source"],
+      award: ["Hackathon win: InsForge", "Hackathon win: Frontier Tower", "Hackathon win: a16z × Cursor"],
+      knowsAbout: ["Software development", "Artificial intelligence", "AI agents", "Cybersecurity", "Penetration testing", "Voice AI", "Robotics", "Web development", "Entrepreneurship", "Startups", "TypeScript", "React", "Python", "Open source"],
       sameAs: PROFILES,
     },
-    { "@type": "Organization", "@id": "https://crawft.ai/#org", name: "Crawft", url: "https://crawft.ai", description: item("crawft").body.replace(/^I'm cofounder and CTO, since mid-August 2026\. /, ""), founder: { "@id": person } },
+    { "@type": "Organization", "@id": "https://crawft.ai/#org", name: "Crawft", url: "https://crawft.ai", description: item("crawft").body.replace(/^I cofounded Crawft and was its CTO from mid-August 2026, then sold my stake\. /, ""), founder: { "@id": person } },
     { "@type": "Organization", "@id": "https://sitelight.xyz/#org", name: "SiteLight", url: "https://sitelight.xyz", description: "Checks whether AI assistants recommend your business when someone asks, then hands you the to-do list to become the answer.", founder: { "@id": person } },
-    { "@type": "SoftwareApplication", name: "Vurn AI", applicationCategory: "SecurityApplication", description: item("vurn").body, creator: { "@id": person } },
+    { "@type": "SoftwareApplication", name: "Vurn AI", applicationCategory: "SecurityApplication", operatingSystem: "Web", description: item("vurn").body, creator: { "@id": person }, author: { "@id": person } },
     { "@type": "WebSite", "@id": `${SITE}/#website`, url: SITE + "/", name: "Henry Brewer", inLanguage: "en", publisher: { "@id": person } },
-    { "@type": "ProfilePage", "@id": `${SITE}/#page`, url: SITE + "/", name: "Henry Brewer", isPartOf: { "@id": `${SITE}/#website` }, mainEntity: { "@id": person }, about: { "@id": person }, dateModified: today },
+    { "@type": "ProfilePage", "@id": `${SITE}/#page`, url: SITE + "/", name: "Henry Brewer", isPartOf: { "@id": `${SITE}/#website` }, mainEntity: { "@id": person }, about: { "@id": person }, dateCreated: "2026-10-25", dateModified: today },
   ],
 };
 const jsonld = JSON.stringify(graph, null, 2).replace(/</g, "\\u003c").split("\n").map((l) => "    " + l).join("\n");
@@ -43,7 +56,7 @@ const jsonld = JSON.stringify(graph, null, 2).replace(/</g, "\\u003c").split("\n
 // ---------- the about section (real text in the HTML, visible to everyone) ----------
 const links = (it) => (it.links || []).map((l) => ` <a class="act is-soft" href="${esc(abs(l.href))}">${esc(l.label)}</a>`).join("");
 const about = `      <section class="about" id="about" aria-labelledby="about-title">
-        <h2 class="about-title" id="about-title">About Henry Brewer</h2>
+        <h2 class="about-title" id="about-title">About Henry Brewer, 14-year-old developer</h2>
         <p class="about-bio">${esc(BIO)}</p>
         <p class="about-links"><a class="act is-soft" href="${GH}">GitHub ↗</a> <a class="act is-soft" href="https://crawft.ai">Crawft ↗</a> <a class="act is-soft" href="https://sitelight.xyz">SiteLight ↗</a> <a class="act is-soft" href="mailto:henrybrewer00@gmail.com">henrybrewer00@gmail.com</a></p>
         <ul class="about-list">
