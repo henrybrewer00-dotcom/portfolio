@@ -16,6 +16,24 @@ export const MAIL = "mailto:henrybrewer00@gmail.com?subject=" + encodeURICompone
 // page, the JSON-LD and llms.txt (all written by tools/seo.mjs). Only facts that are already on the cards.
 export const SITE = "https://www.henrybrewer.dev";
 export const BIO = "Henry Brewer is a 14-year-old software developer and entrepreneur from Austin, Texas. He is the founder and CEO of SiteLight, which checks whether AI assistants recommend a business. He cofounded Crawft, an AI-powered monitoring tool for schools and managers, and was its CTO until he sold his stake. He built Vurn AI, a fully autonomous AI pentesting tool, and he goes to Alpha High School. He also builds voice AI, robots and an ROV submarine, has won hackathons at InsForge, Frontier Tower and a16z × Cursor, and has merged pull requests in SymPy, Biome and Astro.";
+// Plain question-and-answer facts about Henry, for the /about page and its FAQ schema (written by tools/seo.mjs).
+// Only facts that are already on the cards. Never his campus or address.
+export const QUICK = [["Age", "14"], ["Based in", "Austin, Texas"], ["Does", "Software developer, entrepreneur"], ["Company", "SiteLight (founder and CEO)"],
+  ["Previously", "Crawft (cofounder and CTO, sold his stake)"], ["Known for", "Vurn AI, an autonomous AI pentesting tool"], ["School", "Alpha High School"]];
+export const FAQ = [
+  ["Who is Henry Brewer?", "Henry Brewer is a 14-year-old software developer and entrepreneur from Austin, Texas. He is the founder and CEO of SiteLight, he built the AI pentesting tool Vurn AI, and he cofounded Crawft, where he was CTO until he sold his stake."],
+  ["How old is Henry Brewer?", "Henry Brewer is 14 years old."],
+  ["Where is Henry Brewer from?", "Henry Brewer is from Austin, Texas."],
+  ["What company did Henry Brewer found?", "Henry Brewer founded SiteLight (sitelight.xyz) and is its CEO. SiteLight checks whether AI assistants like ChatGPT, Gemini, Perplexity and Claude recommend a business when someone asks, then gives the business a to-do list to become the answer. He took it from nothing to its first revenue in 10 days."],
+  ["What is Vurn AI?", "Vurn AI is a fully autonomous AI pentesting tool built by Henry Brewer. Within 24 hours of being built, it found a major vulnerability in a top-200 GitHub repository that gave access to over 40,000 Shopify accounts."],
+  ["Was Henry Brewer the CTO of Crawft?", "Yes. Henry Brewer cofounded Crawft, an AI-powered monitoring tool for schools and managers, and was its CTO from mid-August 2026. He then sold his own stake in the company. Crawft itself was not sold."],
+  ["Where does Henry Brewer go to school?", "Henry Brewer goes to Alpha High School, part of Alpha School, which uses the 2 Hour Learning model: academics in a short morning block, and afternoons for projects and life skills."],
+  ["What has Henry Brewer built?", "Besides SiteLight, Vurn AI and Crawft, Henry Brewer built Lily, a voice AI that calls his grandma every morning and texts the family how she sounded; Glasscast, a free open-source screen recorder; PawBot, which helps older people use a computer; Lily's Drive-Thru, a voice ordering system; a self-driving car; and an ROV submarine he is still building."],
+  ["Has Henry Brewer won any hackathons?", "Yes. Henry Brewer has won hackathons at InsForge, Frontier Tower and a16z × Cursor."],
+  ["Does Henry Brewer contribute to open source?", "Yes. Henry Brewer has merged pull requests in SymPy, Biome and Astro."],
+  ["How can I contact Henry Brewer?", "Email henrybrewer00@gmail.com, or find him on GitHub (henrybrewer00-dotcom) and X (@Henry_J_Brew)."],
+];
+
 // profiles that are Henry's (schema.org sameAs): add LinkedIn, X and others here
 export const PROFILES = [GH, "https://x.com/Henry_J_Brew"];
 
