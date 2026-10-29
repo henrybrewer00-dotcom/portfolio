@@ -146,7 +146,8 @@ body.has-results .pinned { display: none; }
 @media (max-width: 700px) { .about { padding: 1.2rem; } }
 .about-title { font: 400 2rem/1 var(--serif); letter-spacing: -0.01em; color: var(--ink); margin-bottom: 1rem; }
 .about-bio { max-width: 46rem; font-size: 1rem; line-height: 1.6; }
-.about-links { margin: 0.8rem 0 2rem -0.5rem; }
+.about-more { margin: 0.6rem 0 0 -0.5rem; }
+.about-links { margin: 0.4rem 0 2rem -0.5rem; }
 .about-links .act { font-size: 0.8rem; }
 .about-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1.6rem 2rem; border-top: 1px solid var(--border); padding-top: 1.6rem; }
 .about-list .kicker { margin-bottom: 0.35rem; font-size: 0.62rem; }
