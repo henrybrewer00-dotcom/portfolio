@@ -41,7 +41,7 @@ export const ITEMS = [
       "Alpha has campuses across the US; Alpha High has campuses in Austin, Miami, New York City, Oklahoma City, San Francisco and Santa Barbara."] },
   { id: "crawft", tease: "Cofounded it, then sold my stake.", kind: "job", pinned: true, kicker: "cofounder · sold my stake", title: "Crawft", body: "I cofounded Crawft and was its CTO from mid-August 2026, then sold my stake. Crawft is an AI-powered monitoring tool for schools and managers: it turns activity data into answers backed by evidence, and sends smart nudges that steer people off bad websites.", tags: ["Cofounder", "Sold stake", "AI monitoring", "Schools"], links: [{ label: "crawft.ai ↗", href: "https://crawft.ai" }],
     // answer-only facts (not shown on the card), from Henry, crawft.ai and the Crawft codebase, as of 2026-10-13
-    facts: ["Henry cofounded Crawft and was its CTO from mid-August 2026. He has since sold his stake in the company, so he no longer works there.", "Crawft was running a beta trial while Henry was CTO.",
+    facts: ["Henry cofounded Crawft and was its CTO from mid-August 2026. He has since sold his own stake in the company, so he no longer works there. Crawft itself was not sold or acquired; it carries on without him.", "Crawft was running a beta trial while Henry was CTO.",
       "It has a workplace mode (people, groups, managers) and a school mode (students, classes, teachers), on organization-owned computers.",
       "It turns each person's activity into a written daily account of their day, with every line linked to evidence, so a manager or teacher can see what happened without chasing updates.",
       "Nudges: an AI model judges whether activity is off task and sends the person a short message to get back on track; on-task work is never nudged.",
@@ -104,7 +104,7 @@ export const ITEMS = [
 export const INTENTS = [
   { id: "crawft", title: "Crawft", engrave: "Crawft", ids: ["crawft"],
     suggest: ["show me Crawft", "the company Henry sold his stake in", "Crawft"],
-    subjects: ["crawft", "monitoring tool", "school monitoring", "nudges", "craft", "his old job", "last job", "previous job", "past job", "former role", "cto", "cto job", "the company he sold", "his stake", "selling his stake", "exit", "employee monitoring"],
+    subjects: ["crawft", "monitoring tool", "school monitoring", "nudges", "craft", "his old job", "last job", "previous job", "past job", "former role", "cto", "cto job", "the stake he sold", "his stake", "selling his stake", "employee monitoring"],
     questions: ["what is crawft", "did henry sell a company", "what did henry sell", "what was his last job", "was henry a cto", "where did henry use to work", "why did he sell his stake", "is he still at crawft", "does he still work at crawft", "what happened with crawft"] },
   { id: "vurn", title: "Vurn AI", engrave: "Vurn AI", ids: ["vurn"],
     suggest: ["show me Henry's cyber work", "Henry's cybersecurity work", "Vurn AI"],
