@@ -55,12 +55,12 @@ const graph = {
 const jsonld = JSON.stringify(graph, null, 2).replace(/</g, "\\u003c").split("\n").map((l) => "    " + l).join("\n");
 
 // ---------- the about section (real text in the HTML, visible to everyone) ----------
-const links = (it) => (it.links || []).map((l) => ` <a class="act is-soft" href="${esc(abs(l.href))}">${esc(l.label)}</a>`).join("");
+const links = (it) => (it.links || []).map((l) => l.href ? ` <a class="act is-soft" href="${esc(abs(l.href))}">${esc(l.label)}</a>` : ` <span class="act is-soft">${esc(l.label)}</span>`).join("");
 const about = `      <section class="about" id="about" aria-labelledby="about-title">
         <h2 class="about-title" id="about-title">About Henry Brewer, 14-year-old developer</h2>
         <p class="about-bio">${esc(BIO)}</p>
         <p class="about-more"><a class="act is-soft" href="/about/">More about Henry Brewer →</a></p>
-        <p class="about-links"><a class="act is-soft" href="${GH}">GitHub ↗</a> <a class="act is-soft" href="https://crawft.ai">Crawft ↗</a> <a class="act is-soft" href="https://sitelight.xyz">SiteLight ↗</a> <a class="act is-soft" href="https://x.com/Henry_J_Brew">X ↗</a> <a class="act is-soft" href="mailto:henrybrewer00@gmail.com">henrybrewer00@gmail.com</a></p>
+        <p class="about-links"><a class="act is-soft" href="${GH}">GitHub ↗</a> <a class="act is-soft" href="https://crawft.ai">Crawft ↗</a> <a class="act is-soft" href="https://x.com/Henry_J_Brew">X ↗</a> <a class="act is-soft" href="mailto:henrybrewer00@gmail.com">henrybrewer00@gmail.com</a></p>
         <ul class="about-list">
 ${shown.map((it) => `          <li><p class="kicker">${esc(it.kicker)}</p><h3>${esc(it.title)}</h3><p>${esc(text(it))}</p>${links(it) ? `<p>${links(it).trim()}</p>` : ""}</li>`).join("\n")}
         </ul>
@@ -86,7 +86,7 @@ Email: henrybrewer00@gmail.com
 ## Work
 
 ${shown.map((it) => {
-  const link = (it.links || []).map((l) => abs(l.href)).find((h) => h.startsWith("http"));
+  const link = (it.links || []).filter((l) => l.href).map((l) => abs(l.href)).find((h) => h.startsWith("http"));
   const facts = (it.facts || []).map((f) => `  - ${f}`).join("\n");
   return `- ${link ? `[${it.title}](${link})` : it.title} (${it.kicker}): ${text(it)}${facts ? "\n" + facts : ""}`;
 }).join("\n")}
@@ -170,7 +170,7 @@ ${QUICK.map(([k, v]) => `        <dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("\n
       </dl>
       <h2>Questions people ask</h2>
 ${FAQ.map(([q, a]) => `      <h3>${esc(q)}</h3>\n      <p>${esc(a)}</p>`).join("\n")}
-      <p class="links"><a href="/">Ask about anything he's built →</a> <a href="${GH}">GitHub</a> <a href="https://x.com/Henry_J_Brew">X</a> <a href="https://sitelight.xyz">SiteLight</a> <a href="mailto:henrybrewer00@gmail.com">Email</a></p>
+      <p class="links"><a href="/">Ask about anything he's built →</a> <a href="${GH}">GitHub</a> <a href="https://x.com/Henry_J_Brew">X</a> <a href="mailto:henrybrewer00@gmail.com">Email</a></p>
     </main>
   </body>
 </html>

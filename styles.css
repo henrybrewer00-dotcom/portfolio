@@ -137,6 +137,8 @@ body.has-results .pinned { display: none; }
 .acts .act + .act:hover { background: var(--accent); color: var(--paper); }
 .act.is-soft { background: transparent; color: var(--muted); padding: 0.3em 0.5em; }
 .act.is-soft:hover { background: transparent; color: var(--ink); }
+.act.is-note, .acts .act.is-note { background: transparent; color: var(--muted); padding-left: 0; padding-right: 0; cursor: default; }
+.act.is-note:hover, .act.is-note:active { background: transparent; color: var(--muted); transform: none; }
 
 .foot { display: table; margin: 3rem auto 0; padding: 0.3rem 0.9rem; border-radius: 999px; background: var(--paper); font: 0.8rem var(--sans); color: var(--muted); text-align: center; }
 .foot .act { font-size: 0.8rem; }

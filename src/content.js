@@ -78,9 +78,9 @@ export const ITEMS = [
       { src: "assets/design/sitelight-landing.jpg", alt: "SiteLight's landing page: When AI recommends a business, is it you? with a live report card beside it.", cap: "the landing page" },
       { src: "assets/design/sitelight-scan.jpg", alt: "SiteLight's scan screen: balloons float while it asks ChatGPT, Gemini, Grok and Claude about a plumber.", cap: "the scan, while it asks each AI" },
       { src: "assets/design/sitelight-fixes.jpg", alt: "SiteLight's fixes page: a step-by-step plan to get named by AI.", cap: "the fix plan · demo data" },
-      { src: "assets/sitelight-stripe.jpg", alt: "Stripe email: Congratulations, SiteLight! You've just received your first payment through Stripe. $2.00.", cap: "the first $2 · via stripe" }], links: [{ label: "sitelight.xyz ↗", href: "https://sitelight.xyz" }] ,
+      { src: "assets/sitelight-stripe.jpg", alt: "Stripe email: Congratulations, SiteLight! You've just received your first payment through Stripe. $2.00.", cap: "the first $2 · via stripe" }], links: [{ label: "Sorry, SiteLight was shut down" }] ,
     // answer-only facts, from Henry and the SiteLight codebase as of 2026-10-13
-    facts: ["Henry is SiteLight's founder and CEO. It's live at sitelight.xyz.",
+    facts: ["Henry is SiteLight's founder and CEO. The SiteLight website (sitelight.xyz) has been shut down, so there's no live link anymore.",
       "It's for local businesses like plumbers, coffee shops, golf courses, med spas and roofers.",
       "How it works: it writes the questions a buyer would ask, like \"best coffee shop in Austin\", asks four AI assistants (ChatGPT, Gemini, Perplexity and Claude), and checks whether the business is named, where it ranks, how it's described and which competitors come up instead.",
       "Then it gives a 0 to 100 score with a letter grade, a dashboard with a heatmap and share of voice, and ready-to-paste fixes: structured business data, an llms.txt file and FAQ blocks.",

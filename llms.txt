@@ -25,8 +25,8 @@ Email: henrybrewer00@gmail.com
   - Henry built a benchmark of 86 real, verified vulnerabilities plus 13 clean cases across 9 real repos in 6 languages; Vurn finds 70 of the 99.
   - One of its real finds was a Shopify OAuth bug that sent an app's client secret to an attacker-chosen host.
   - It's built with TypeScript, Next.js and React, with InsForge for the database and auth, about 14,000 lines of code and 99 unit and stress tests.
-- [SiteLight](https://sitelight.xyz) (founder): A personal challenge: go from nothing to revenue in under two weeks. I made it in 10 days. It checks whether AI assistants recommend your business when someone asks, then hands you the to-do list to become the answer.
-  - Henry is SiteLight's founder and CEO. It's live at sitelight.xyz.
+- SiteLight (founder): A personal challenge: go from nothing to revenue in under two weeks. I made it in 10 days. It checks whether AI assistants recommend your business when someone asks, then hands you the to-do list to become the answer.
+  - Henry is SiteLight's founder and CEO. The SiteLight website (sitelight.xyz) has been shut down, so there's no live link anymore.
   - It's for local businesses like plumbers, coffee shops, golf courses, med spas and roofers.
   - How it works: it writes the questions a buyer would ask, like "best coffee shop in Austin", asks four AI assistants (ChatGPT, Gemini, Perplexity and Claude), and checks whether the business is named, where it ranks, how it's described and which competitors come up instead.
   - Then it gives a 0 to 100 score with a letter grade, a dashboard with a heatmap and share of voice, and ready-to-paste fixes: structured business data, an llms.txt file and FAQ blocks.
