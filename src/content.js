@@ -209,38 +209,106 @@ export const PERSONAS = [
   { id: "founder", label: "I'm building a startup", noun: "a founder", picks: ["sitelight", "crawft", "vurn"],
     match: ["founder", "startup", "company", "business", "investor", "vc", "invest", "entrepreneur", "own", "run a", "cofounder"] },
   { id: "security", label: "I work in security", noun: "a security person", picks: ["vurn", "crawft", "oss"],
-    match: ["security", "cyber", "pentest", "hacker", "hacking", "infosec", "red team", "bug bounty", "appsec", "ctf"] },
+    match: ["security", "cyber", "pentest", "hacker", "hacking", "infosec", "red team", "bug bounty", "appsec", "ctf", "pentester", "pen tester", "pen testing", "red teamer", "soc analyst", "blue team", "threat", "malware", "vulnerability"] },
   { id: "engineer", label: "I write code", noun: "an engineer", picks: ["vurn", "glasscast", "oss"],
     match: ["engineer", "engineering", "developer", "dev", "code", "coder", "coding", "programmer", "programming", "software", "swe", "sde", "backend", "frontend", "full stack", "fullstack", "build",
-      "ml", "ai", "data scientist", "data", "researcher", "research", "scientist", "tech", "devops", "sre", "infra", "web dev", "app dev", "intern", "internship"],
+      "ml", "ai", "data scientist", "data", "researcher", "research", "scientist", "tech", "devops", "sre", "infra", "web dev", "app dev", "intern", "internship", "computer science", "cs", "hacker news", "mobile dev", "ios", "android"],
     // working at a tech company says more than any job title they might leave out
     companies: ["google", "alphabet", "deepmind", "meta", "facebook", "instagram", "apple", "microsoft", "amazon", "aws", "netflix", "nvidia", "openai", "anthropic", "xai", "tesla", "spacex",
       "stripe", "shopify", "uber", "airbnb", "salesforce", "oracle", "ibm", "intel", "amd", "adobe", "linkedin", "github", "vercel", "cloudflare", "databricks", "palantir", "snowflake",
       "tiktok", "bytedance", "twitter", "snap", "spotify", "dropbox", "figma", "notion", "slack", "atlassian", "coinbase", "robinhood", "doordash", "lyft", "pinterest", "reddit", "discord"] },
   { id: "designer", label: "I design things", noun: "a designer", picks: ["site", "sitelight", "glasscast"],
-    match: ["design", "designer", "ux", "ui", "product", "pm", "product manager", "art", "creative", "brand", "figma"] },
+    match: ["design", "designer", "ux", "ui", "product", "pm", "product manager", "art", "creative", "brand", "figma", "artist", "illustrator", "animator", "graphic", "visual", "typography", "art director", "creative director", "motion design", "interaction design", "web designer"] },
   { id: "educator", label: "I teach", noun: "an educator", picks: ["crawft", "receipts", "pawbot"],
     match: ["teacher", "teach", "teaching", "guide", "educator", "education", "tutor", "tutoring", "principal", "professor", "prof", "instructor", "lecturer", "coach", "mentor",
       "faculty", "dean", "counselor", "counsellor", "librarian", "administrator", "admin", "head of school", "superintendent", "admissions", "teaching assistant", "ta", "homeschool", "school nurse", "school staff", "work at a school", "work at school", "works at a school"] },
   { id: "student", label: "I'm a student", noun: "a student", picks: ["wins", "siege", "sub"],
-    match: ["student", "learning", "kid", "teen", "parent", "freshman", "sophomore", "high schooler", "pupil", "studying", "study"],
+    match: ["student", "learning", "kid", "teen", "parent", "freshman", "sophomore", "high schooler", "pupil", "studying", "study", "major", "undergrad", "grad student", "phd", "junior", "senior in high school", "sixth grade", "eighth grade", "ninth grade", "grade"],
     // where someone is, not what they do: worth a point, so "guide at Alpha School" reads as a guide
     context: ["school", "college", "university", "high school", "middle school", "class", "homework"] },
   { id: "curious", label: "just looking around", noun: "a curious visitor", picks: ["vurn", "lily", "siege"], match: [] },
 ];
-export const personaById = Object.fromEntries(PERSONAS.map((p) => [p.id, p]));
+// Someone hiring (or looking for) a kind of person sees the work that kind of person would: "I'm looking to hire a
+// designer" is someone hiring a designer, not a designer. The hiring persona's own picks are for when no kind is named.
+const HIRING_FOR = {
+  engineer: { noun: "someone hiring an engineer", picks: ["crawft", "vurn", "oss"] },
+  designer: { noun: "someone hiring a designer", picks: ["site", "sitelight", "glasscast"] },
+  security: { noun: "someone hiring for security", picks: ["vurn", "crawft", "oss"] },
+};
+export const HIRING_PERSONAS = Object.entries(HIRING_FOR).map(([kind, p]) => ({ id: `hiring-${kind}`, label: "I'm hiring", ...p, match: [] }));
+export const personaById = Object.fromEntries([...PERSONAS, ...HIRING_PERSONAS].map((p) => [p.id, p]));
 
-/** Typed answer → persona id (curious when nothing matches). "I work for Google" counts as an engineer. */
-export function personaFor(text) {
-  const t = ` ${String(text).toLowerCase().replace(/[^a-z ]/g, " ").replace(/\s+/g, " ")} `;
+// saying you want a kind of person: these always mean hiring, whatever follows
+const HIRE_WORDS = ["hire", "hiring", "hires", "hired", "recruit", "recruiting", "recruiter", "recruitment", "headhunter", "headhunting", "talent", "staffing",
+  "sourcing", "sourcer", "hr", "hiring manager", "job opening", "open role", "open position", "headcount", "vacancy"];
+// these mean hiring only when a person comes next ("I need a designer", not "I need a website")
+const SEEK = /\b(looking for|looking to (?:find|get|bring on|add|work with)|searching for|seeking|scouting|scouting for|need|needs|needing|want|wants|find|finding|on the hunt for|in the market for)\b/;
+const PEOPLE = /\b(engineers?|developers?|devs?|programmers?|coders?|designers?|hackers?|pentesters?|interns?|freelancers?|contractors?|someone|somebody|people|candidates?|talent|hires?|teammates?|team members?|employees?|staff)\b/;
+// looking for work, not workers
+const JOB_HUNT = /\b(looking for|searching for|seeking|need|want|finding|find|hunting for|applying for|apply for)\s+(?:a |an |some |new |my first |)(job|jobs|work|internship|internships|position|role|gig|gigs|opportunit\w*|employment)\b|\bjob (hunting|searching|seeker)\b|\bopen to work\b/g;
+const CONTRACT = { "i m": "i am", "im": "i am", "we re": "we are", "were": "we are", "i ve": "i have", "ive": "i have", "i d": "i would", "id": "i would", "don t": "do not", "dont": "do not", "isn t": "is not", "wanna": "want to", "gonna": "going to", "lookin": "looking", "tryna": "trying to" };
+
+// everything we know how to spell, so a typo one letter off ("lokoing", "desginer") still counts
+const VOCAB = [...new Set([...PERSONAS.flatMap((p) => [...p.match, ...(p.context || []), ...(p.companies || [])]), ...HIRE_WORDS,
+  "looking", "searching", "seeking", "scouting", "finding", "developers", "engineers", "designers", "someone", "candidates", "freelancer", "contractor"]
+  .filter((w) => !w.includes(" ") && w.length >= 5))];
+function oneOff(a, b) {   // Damerau-Levenshtein distance is at most 1
+  if (a === b) return true;
+  if (Math.abs(a.length - b.length) > 1) return false;
+  let i = 0; while (i < a.length && a[i] === b[i]) i++;
+  if (a.length === b.length) return a.slice(i + 1) === b.slice(i + 1) || (a[i] === b[i + 1] && a[i + 1] === b[i] && a.slice(i + 2) === b.slice(i + 2));
+  return a.length > b.length ? a.slice(i + 1) === b.slice(i) : a.slice(i) === b.slice(i + 1);
+}
+const known = new Set(VOCAB);
+const fix = (w) => w.length < 5 || known.has(w) || known.has(w.replace(/s$/, "")) ? w : VOCAB.find((v) => v[0] === w[0] && oneOff(w, v)) || w;
+
+function clean(text) {
+  let t = ` ${String(text).toLowerCase().replace(/[’']/g, " ").replace(/[^a-z ]/g, " ").replace(/\s+/g, " ").trim()} `;
+  t = ` ${t.trim().split(" ").map(fix).join(" ")} `;
+  for (const [a, b] of Object.entries(CONTRACT)) t = t.replaceAll(` ${a} `, ` ${b} `);
+  // what they aren't doesn't count: "not a designer", "no longer teaching"
+  t = t.replace(/ (not|no longer|never|nor) (really |exactly |actually |even |)(a |an |)[a-z]+/g, " ");
+  return t.replace(/\s+/g, " ");
+}
+function score(t, list) {   // longer matches say more, so a phrase outweighs a stray short word
   const has = (w) => t.includes(` ${w} `) || t.includes(` ${w}s `);
-  let best = "curious", score = 0;
-  for (const p of PERSONAS) {
-    const s = p.match.reduce((n, w) => n + (has(w) ? w.length : 0), 0) + (p.context || []).filter(has).length;
-    if (s > score) { best = p.id; score = s; }
+  return list.filter(has);
+}
+function bestOf(t, ids) {
+  let best = null, top = 0;
+  for (const id of ids) {
+    const p = personaById[id];
+    const s = score(t, p.match).reduce((n, w) => n + w.length, 0) + score(t, p.context || []).length;
+    if (s > top) { best = id; top = s; }
   }
+  return best;
+}
+// a role word that belongs to hiring itself ("hire", "talent", "job") shouldn't also name the kind of person they want
+const strip = (t, words) => words.reduce((s, w) => s.replaceAll(` ${w} `, " ").replaceAll(` ${w}s `, " "), t);
+
+/** Typed answer → persona id (curious when nothing matches). "I work for Google" counts as an engineer;
+ *  "I'm looking to hire a designer" counts as someone hiring a designer. */
+export function personaFor(text) {
+  let t = clean(text);
+  const jobHunting = JOB_HUNT.test(t); JOB_HUNT.lastIndex = 0;
+  if (jobHunting) t = t.replace(JOB_HUNT, " ");   // "looking for a job as a designer" is a designer
+  // wanting a kind of person, said straight out ("hiring", "recruiter") or with a person after it ("I need a designer")
+  const hireHit = score(t, HIRE_WORDS).length > 0;
+  const seek = t.match(SEEK);
+  const after = seek ? t.slice(seek.index) : "";
+  const seekHit = seek && PEOPLE.test(after) && !/^\S+(?: \S+)? (to be|to become|to learn|to study|to get into|to try)\b/.test(after);
+  if (hireHit || seekHit) {
+    if (/ (co founder|cofounder|cto|technical partner|business partner) /.test(t)) return "founder";
+    // the kind they want comes after the asking word ("an engineer hiring designers"), else anywhere ("tech recruiter")
+    const kinds = ["security", "designer", "engineer"], hiringWords = [...HIRE_WORDS, ...personaById.hiring.match];
+    const at = hireHit ? Math.min(...score(t, HIRE_WORDS).map((w) => t.indexOf(` ${w}`))) : seek.index;
+    const kind = bestOf(strip(` ${t.slice(at)}`, hiringWords), kinds) || (hireHit ? bestOf(strip(t, hiringWords), kinds) : null);
+    if (kind) return `hiring-${kind}`;
+    if (hireHit || /\b(interns?|candidates?|talent|hires?|employees?|staff)\b/.test(after)) return "hiring";
+  }
+  const best = bestOf(t, PERSONAS.map((p) => p.id)) || "curious";
   // no role named, but a tech employer is: they're almost certainly in engineering
-  if (best === "curious") for (const p of PERSONAS) if ((p.companies || []).some(has)) return p.id;
+  if (best === "curious") for (const p of PERSONAS) if (score(t, p.companies || []).length) return p.id;
   return best;
 }
 
