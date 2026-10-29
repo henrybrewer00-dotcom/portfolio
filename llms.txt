@@ -1,6 +1,6 @@
 # Henry Brewer
 
-> Henry Brewer is a 14-year-old builder from Austin, Texas. He is the cofounder and CTO of Crawft, an AI-powered monitoring tool for schools and managers, and the founder and CEO of SiteLight, which checks whether AI assistants recommend a business. He built Vurn AI, a fully autonomous AI pentesting tool, and he goes to Alpha High School. He also builds voice AI, robots and an ROV submarine, has won hackathons at InsForge, Frontier Tower and a16z × Cursor, and has merged pull requests in SymPy, Biome and Astro.
+> Henry Brewer is a 14-year-old software developer and entrepreneur from Austin, Texas. He is the founder and CEO of SiteLight, which checks whether AI assistants recommend a business. He cofounded Crawft, an AI-powered monitoring tool for schools and managers, and was its CTO until he sold his stake. He built Vurn AI, a fully autonomous AI pentesting tool, and he goes to Alpha High School. He also builds voice AI, robots and an ROV submarine, has won hackathons at InsForge, Frontier Tower and a16z × Cursor, and has merged pull requests in SymPy, Biome and Astro.
 
 Site: https://www.henrybrewer.dev/
 GitHub: https://github.com/henrybrewer00-dotcom
@@ -8,9 +8,9 @@ Email: henrybrewer00@gmail.com
 
 ## Work
 
-- [Crawft](https://crawft.ai) (current job): I'm cofounder and CTO, since mid-August 2026. Crawft is an AI-powered monitoring tool for schools and managers: it turns activity data into answers backed by evidence, and sends smart nudges that steer people off bad websites.
-  - Henry is Crawft's cofounder and CTO.
-  - Crawft is running a beta trial right now.
+- [Crawft](https://crawft.ai) (cofounder · sold my stake): I cofounded Crawft and was its CTO from mid-August 2026, then sold my stake. Crawft is an AI-powered monitoring tool for schools and managers: it turns activity data into answers backed by evidence, and sends smart nudges that steer people off bad websites.
+  - Henry cofounded Crawft and was its CTO from mid-August 2026. He has since sold his own stake in the company, so he no longer works there. Crawft itself was not sold or acquired; it carries on without him.
+  - Crawft was running a beta trial while Henry was CTO.
   - It has a workplace mode (people, groups, managers) and a school mode (students, classes, teachers), on organization-owned computers.
   - It turns each person's activity into a written daily account of their day, with every line linked to evidence, so a manager or teacher can see what happened without chasing updates.
   - Nudges: an AI model judges whether activity is off task and sends the person a short message to get back on track; on-task work is never nudged.
