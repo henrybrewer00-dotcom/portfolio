@@ -38,7 +38,7 @@ document.body.classList.add("is-ready");
 pond.setTool("call");
 
 /* ---------- the model ---------- */
-fetch("model/model.json?v=20261023t")
+fetch("model/model.json?v=20261029c")
   .then((r) => r.json())
   .then((json) => { model = createModel(json); update(); })
   .catch((e) => console.warn("model failed to load; falling back to suggestions only", e));
@@ -429,15 +429,17 @@ setInterval(() => {
   play(restEl, backwards(old), 14, typeHint);
 }, 4200);
 
-// deep links: henry93.vercel.app/#crawft
+// deep links: henrybrewer.dev/#crawft
 if (location.hash && intentById[location.hash.slice(1)]) setTimeout(() => open(location.hash.slice(1)), 50);
 
 createTrail($("[data-trail]"));
 ditherTiles($("[data-pins]"));
 fillButtons(document.querySelectorAll(".key.fill"));
 renderPins();
-if (!persona && location.hash) { persona = "curious"; renderPins(); }   // deep links skip the intro
+// deep links and search-engine crawlers skip the intro, so a crawler sees the whole page, not the "who are you?" prompt
+const crawler = /bot|crawl|spider|slurp|inspectiontool/i.test(navigator.userAgent);
+if (!persona && (location.hash || crawler)) { persona = "curious"; renderPins(); }
 if (!persona) intro(false);
 else { update(); typeHint(); input.focus({ preventScroll: true }); }
 // the opening plays over all of that, once per browser; when it clears, the prompt is ready to type into
-boot({ pond, skip: !!location.hash, word: persona ? "henry." : "hello." }).then(() => input.focus({ preventScroll: true }));
+boot({ pond, skip: !!location.hash || crawler, word: persona ? "henry." : "hello." }).then(() => input.focus({ preventScroll: true }));

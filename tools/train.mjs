@@ -79,13 +79,3 @@ mkdirSync(new URL("../model/", import.meta.url), { recursive: true });
 const json = JSON.stringify(out);
 writeFileSync(new URL("../model/model.json", import.meta.url), json);
 console.log(`${samples.length} samples, ${C} intents, model.json ${(json.length / 1024).toFixed(0)} KB`);
-
-// ---------- the no-JS list in index.html, from the same content ----------
-import { readFileSync } from "node:fs";
-import { ITEMS } from "../src/content.js";
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-const html = ITEMS.map((it) => `        <article class="card"><p class="kicker">${esc(it.kicker)}</p><h3>${esc(it.title)}</h3>${it.body ? `<p>${esc(it.body)}</p>` : ""}${it.list ? `<p>${it.list.map(esc).join(" · ")}</p>` : ""}${(it.links || []).map((l) => ` <a class="act" href="${esc(l.href)}">${esc(l.label)}</a>`).join("")}</article>`).join("\n");
-const page = new URL("../index.html", import.meta.url);
-const before = readFileSync(page, "utf8");
-const after = before.replace(/(<!-- noscript:start -->)[\s\S]*?(<!-- noscript:end -->)/, `$1\n        <div class="noscript">\n${html}\n        </div>\n        $2`);
-if (after !== before) { writeFileSync(page, after); console.log("index.html: no-JS list updated"); }

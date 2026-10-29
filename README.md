@@ -27,7 +27,9 @@ No build step on deploy: `model/model.json` is committed.
    model can pick (which cards, the engraved word, example phrases, and the
    ghost-text suggestions).
 2. `npm run model` retrains and rewrites `model/model.json` (about 3 s, no
-   dependencies). It also refreshes the no-JS list in `index.html`.
+   dependencies). Then `tools/seo.mjs` rewrites the JSON-LD and the "About
+   Henry Brewer" section in `index.html`, `llms.txt` and `sitemap.xml`
+   (`npm run seo` runs just that part).
 3. `npm test` checks the model on phrases it never trained on (fails under
    90%) and prints how long a keystroke takes.
 4. Bump the `?v=` in `index.html` when files change.
@@ -46,4 +48,6 @@ No build step on deploy: `model/model.json` is committed.
 | `src/boot.js` | The intro: "henry." decodes in the pond, then becomes "hello." |
 | `src/app.js` | Wiring: keystrokes, Tab, Enter, cards, deep links (`/#sitelight`) |
 | `tools/train.mjs`, `tools/test.mjs` | Train and check the model |
+| `tools/seo.mjs` | JSON-LD, the about section, `llms.txt`, `sitemap.xml`, from content.js (`BIO`, `PROFILES`) |
+| `robots.txt`, `vercel.json` | Crawlers welcome; henry93.vercel.app redirects to www.henrybrewer.dev |
 | `deck/`, `old/` | The two previous portfolios (card deck, terminal) |

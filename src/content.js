@@ -12,6 +12,13 @@
 export const GH = "https://github.com/henrybrewer00-dotcom";
 export const MAIL = "mailto:henrybrewer00@gmail.com?subject=" + encodeURIComponent("You're hired") + "&body=" + encodeURIComponent("Hi Henry,\n\nHere's what I'd love to build with you:\n\n");
 
+// Who Henry is, in the third person, for search engines and AI answer engines: the about section under the
+// page, the JSON-LD and llms.txt (all written by tools/seo.mjs). Only facts that are already on the cards.
+export const SITE = "https://www.henrybrewer.dev";
+export const BIO = "Henry Brewer is a 14-year-old software developer and entrepreneur from Austin, Texas. He is the founder and CEO of SiteLight, which checks whether AI assistants recommend a business. He cofounded Crawft, an AI-powered monitoring tool for schools and managers, and was its CTO until he sold his stake. He built Vurn AI, a fully autonomous AI pentesting tool, and he goes to Alpha High School. He also builds voice AI, robots and an ROV submarine, has won hackathons at InsForge, Frontier Tower and a16z × Cursor, and has merged pull requests in SymPy, Biome and Astro.";
+// profiles that are Henry's (schema.org sameAs): add LinkedIn, X and others here
+export const PROFILES = [GH, "https://x.com/Henry_J_Brew"];
+
 /**
  * @typedef {{ label: string, href: string }} Link
  * @typedef {{
@@ -24,7 +31,7 @@ export const MAIL = "mailto:henrybrewer00@gmail.com?subject=" + encodeURICompone
 
 /** @type {Item[]} */
 export const ITEMS = [
-  { id: "me", kind: "about", kicker: "the maker", title: "I'm Henry.", body: "Fourteen, from Austin, and a proud vibecoder. I build voice AI, robots, a submarine, and a company. I go to Alpha High School. Right now I work at Crawft, and I founded SiteLight.", tags: ["14", "Austin, TX", "Alpha High School", "Proud vibecoder"], links: [{ label: "GitHub ↗", href: GH }, { label: "Email →", href: MAIL }] ,
+  { id: "me", kind: "about", kicker: "the maker", title: "I'm Henry.", body: "Fourteen, from Austin, and a proud vibecoder. I build voice AI, robots, a submarine, and a company. I go to Alpha High School. I founded SiteLight, and I cofounded Crawft, then sold my stake.", tags: ["14", "Austin, TX", "Alpha High School", "Proud vibecoder"], links: [{ label: "GitHub ↗", href: GH }, { label: "Email →", href: MAIL }] ,
     // answer-only facts about Henry's school, from alpha.school and alphahigh.school as of 2026-10-14
     facts: ["Henry goes to Alpha High School, part of Alpha School, which calls itself an AI-powered private school.",
       "Alpha's model is 2 Hour Learning: students do their academics in a short morning block with adaptive software that gives each of them 1:1 learning at their own pace, aiming for full mastery before moving on.",
@@ -32,9 +39,9 @@ export const ITEMS = [
       "Afternoons at Alpha are for life-skills workshops and students' own projects; at Alpha High that includes sports, arts and entrepreneurship.",
       "Alpha says its students learn twice as fast and rank in the top 1% nationwide; Alpha High lists a December 2024 school-wide SAT average of 1410.",
       "Alpha has campuses across the US; Alpha High has campuses in Austin, Miami, New York City, Oklahoma City, San Francisco and Santa Barbara."] },
-  { id: "crawft", tease: "Cofounder and CTO, since mid-August.", kind: "job", current: true, pinned: true, kicker: "current job", title: "Crawft", body: "I'm cofounder and CTO, since mid-August 2026. Crawft is an AI-powered monitoring tool for schools and managers: it turns activity data into answers backed by evidence, and sends smart nudges that steer people off bad websites.", tags: ["Current", "AI monitoring", "Schools"], links: [{ label: "crawft.ai ↗", href: "https://crawft.ai" }],
+  { id: "crawft", tease: "Cofounded it, then sold my stake.", kind: "job", pinned: true, kicker: "cofounder · sold my stake", title: "Crawft", body: "I cofounded Crawft and was its CTO from mid-August 2026, then sold my stake. Crawft is an AI-powered monitoring tool for schools and managers: it turns activity data into answers backed by evidence, and sends smart nudges that steer people off bad websites.", tags: ["Cofounder", "Sold stake", "AI monitoring", "Schools"], links: [{ label: "crawft.ai ↗", href: "https://crawft.ai" }],
     // answer-only facts (not shown on the card), from Henry, crawft.ai and the Crawft codebase, as of 2026-10-13
-    facts: ["Henry is Crawft's cofounder and CTO.", "Crawft is running a beta trial right now.",
+    facts: ["Henry cofounded Crawft and was its CTO from mid-August 2026. He has since sold his own stake in the company, so he no longer works there. Crawft itself was not sold or acquired; it carries on without him.", "Crawft was running a beta trial while Henry was CTO.",
       "It has a workplace mode (people, groups, managers) and a school mode (students, classes, teachers), on organization-owned computers.",
       "It turns each person's activity into a written daily account of their day, with every line linked to evidence, so a manager or teacher can see what happened without chasing updates.",
       "Nudges: an AI model judges whether activity is off task and sends the person a short message to get back on track; on-task work is never nudged.",
@@ -52,7 +59,6 @@ export const ITEMS = [
   { id: "sitelight", tease: "Nothing to revenue in 10 days.", kind: "job", pinned: true, kicker: "founder", title: "SiteLight", body: "A personal challenge: go from nothing to revenue in under two weeks. I made it in 10 days. It checks whether AI assistants recommend your business when someone asks, then hands you the to-do list to become the answer.", tags: ["Founder", "Marketing", "AI visibility", "10 days"], images: [
       { src: "assets/design/sitelight-landing.jpg", alt: "SiteLight's landing page: When AI recommends a business, is it you? with a live report card beside it.", cap: "the landing page" },
       { src: "assets/design/sitelight-scan.jpg", alt: "SiteLight's scan screen: balloons float while it asks ChatGPT, Gemini, Grok and Claude about a plumber.", cap: "the scan, while it asks each AI" },
-      { src: "assets/design/sitelight-overview.jpg", alt: "SiteLight's dashboard: an AI visibility score of 8 out of 100, grade F, with each assistant's result.", cap: "the score dashboard · demo data" },
       { src: "assets/design/sitelight-fixes.jpg", alt: "SiteLight's fixes page: a step-by-step plan to get named by AI.", cap: "the fix plan · demo data" },
       { src: "assets/sitelight-stripe.jpg", alt: "Stripe email: Congratulations, SiteLight! You've just received your first payment through Stripe. $2.00.", cap: "the first $2 · via stripe" }], links: [{ label: "sitelight.xyz ↗", href: "https://sitelight.xyz" }] ,
     // answer-only facts, from Henry and the SiteLight codebase as of 2026-10-13
@@ -96,17 +102,17 @@ export const ITEMS = [
 /** @type {Intent[]} */
 export const INTENTS = [
   { id: "crawft", title: "Crawft", engrave: "Crawft", ids: ["crawft"],
-    suggest: ["show me Henry's current job", "Henry's current job", "where does Henry work", "Crawft"],
-    subjects: ["current job", "job", "work", "crawft", "monitoring tool", "school monitoring", "nudges", "craft", "where he works", "what he does for work", "employer", "career", "role", "position", "occupation", "day job", "current role", "workplace"],
-    questions: ["where does henry work", "does henry have a job", "what does henry do for work", "is he working anywhere", "who does henry work for", "what's his job right now", "his day job", "what's he doing now", "where is he employed", "what is crawft"] },
+    suggest: ["show me Crawft", "the company Henry sold his stake in", "Crawft"],
+    subjects: ["crawft", "monitoring tool", "school monitoring", "nudges", "craft", "his old job", "last job", "previous job", "past job", "former role", "cto", "cto job", "the stake he sold", "his stake", "selling his stake", "employee monitoring"],
+    questions: ["what is crawft", "did henry sell a company", "what did henry sell", "what was his last job", "was henry a cto", "where did henry use to work", "why did he sell his stake", "is he still at crawft", "does he still work at crawft", "what happened with crawft"] },
   { id: "vurn", title: "Vurn AI", engrave: "Vurn AI", ids: ["vurn"],
     suggest: ["show me Henry's cyber work", "Henry's cybersecurity work", "Vurn AI"],
     subjects: ["cyber work", "cyber", "cybersecurity", "cyber security", "security", "security work", "hacking", "pentesting", "pen testing", "penetration testing", "vulnerability", "vulnerabilities", "bug bounty", "exploit", "vurn", "vurn ai", "infosec", "white hat", "security research", "shopify bug", "ai pentester", "red team"],
     questions: ["does henry do cyber", "is henry a hacker", "has he found any bugs", "what did he hack", "does he know security", "what security stuff has he built", "did he find a vulnerability", "what is vurn", "what's the shopify thing", "has henry done any pentesting"] },
   { id: "sitelight", title: "SiteLight", engrave: "SiteLight", ids: ["sitelight"],
-    suggest: ["show me Henry's company", "what's Henry's company", "SiteLight"],
-    subjects: ["marketing", "marketing work", "growth", "go to market", "getting customers", "sales", "seo", "ai seo", "selling", "his marketing", "company", "startup", "business", "sitelight", "site light", "his company", "the company he founded", "ai visibility tool", "first revenue", "first $2", "stripe payment", "founder"],
-    questions: ["can henry do marketing", "is he good at marketing", "how does he market things", "has he sold anything", "how did he get customers", "what is his company", "what company did henry found", "what is henry founder of", "how did he make money", "what's his startup", "is henry a founder", "what does sitelight do", "how did he get revenue in 10 days"] },
+    suggest: ["show me Henry's company", "what's Henry's company", "show me Henry's current job", "SiteLight"],
+    subjects: ["marketing", "marketing work", "growth", "go to market", "getting customers", "sales", "seo", "ai seo", "selling", "his marketing", "company", "startup", "business", "sitelight", "site light", "his company", "the company he founded", "ai visibility tool", "first revenue", "first $2", "stripe payment", "founder", "current job", "job", "work", "where he works", "what he does for work", "career", "role", "occupation", "day job", "current role", "ceo"],
+    questions: ["can henry do marketing", "is he good at marketing", "how does he market things", "has he sold anything", "how did he get customers", "what is his company", "what company did henry found", "what is henry founder of", "how did he make money", "what's his startup", "is henry a founder", "what does sitelight do", "how did he get revenue in 10 days", "where does henry work", "does henry have a job", "what does henry do for work", "what's his job right now", "what's he doing now", "is he working anywhere"] },
   { id: "about", title: "About Henry", engrave: "Henry", ids: ["me"],
     suggest: ["who is Henry", "tell me about Henry", "about Henry", "how long has Henry been building"],
     subjects: ["school", "his school", "where he goes to school", "alpha school", "alpha high", "alpha high school", "2 hour learning", "two hour learning", "about", "bio", "intro", "henry", "himself", "who he is", "age", "where he lives", "background", "experience", "his experience", "how long he's been coding", "when he started"],
