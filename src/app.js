@@ -209,7 +209,10 @@ function close(focus = true) {
 }
 
 function card(it, i = 0) {
-  const links = (it.links || []).map((l) => `<a class="act" href="${esc(l.href)}"${l.href.startsWith("http") ? ' target="_blank" rel="noreferrer"' : ""}>${esc(l.label)}</a>`).join("");
+  // a link with no href is a note in its place, like a site that was shut down
+  const links = (it.links || []).map((l) => l.href
+    ? `<a class="act" href="${esc(l.href)}"${l.href.startsWith("http") ? ' target="_blank" rel="noreferrer"' : ""}>${esc(l.label)}</a>`
+    : `<span class="act is-note">${esc(l.label)}</span>`).join("");
   const tilt = [-2, 1.5, -1, 2][i % 4];
   return `<article class="card" style="--i:${i};--r:${tilt}deg"${it.current ? " data-current" : ""}>
     <p class="kicker">${esc(it.kicker)}</p>
