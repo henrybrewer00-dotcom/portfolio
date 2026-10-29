@@ -1,6 +1,6 @@
 # Henry Brewer
 
-> Henry Brewer is a 14-year-old software developer and entrepreneur from Austin, Texas. He is the founder and CEO of SiteLight, which checks whether AI assistants recommend a business. He cofounded Crawft, an AI-powered monitoring tool for schools and managers, and was its CTO until he sold his stake. He built Vurn AI, a fully autonomous AI pentesting tool, and he goes to Alpha High School. He also builds voice AI, robots and an ROV submarine, has won hackathons at InsForge, Frontier Tower and a16z × Cursor, and has merged pull requests in SymPy, Biome and Astro.
+> Henry Brewer is a 14-year-old software developer and entrepreneur from Austin, Texas. He founded SiteLight, which checked whether AI assistants recommend a business, and was its CEO until it shut down. He cofounded Crawft, an AI-powered monitoring tool for schools and managers, and was its CTO until he sold his stake. He built Vurn AI, a fully autonomous AI pentesting tool, and he goes to Alpha High School. He also builds voice AI, robots and an ROV submarine, has won hackathons at InsForge, Frontier Tower and a16z × Cursor, and has merged pull requests in SymPy, Biome and Astro.
 
 Site: https://www.henrybrewer.dev/
 GitHub: https://github.com/henrybrewer00-dotcom
@@ -25,14 +25,14 @@ Email: henrybrewer00@gmail.com
   - Henry built a benchmark of 86 real, verified vulnerabilities plus 13 clean cases across 9 real repos in 6 languages; Vurn finds 70 of the 99.
   - One of its real finds was a Shopify OAuth bug that sent an app's client secret to an attacker-chosen host.
   - It's built with TypeScript, Next.js and React, with InsForge for the database and auth, about 14,000 lines of code and 99 unit and stress tests.
-- SiteLight (founder): A personal challenge: go from nothing to revenue in under two weeks. I made it in 10 days. It checks whether AI assistants recommend your business when someone asks, then hands you the to-do list to become the answer.
-  - Henry is SiteLight's founder and CEO. The SiteLight website (sitelight.xyz) has been shut down, so there's no live link anymore.
-  - It's for local businesses like plumbers, coffee shops, golf courses, med spas and roofers.
-  - How it works: it writes the questions a buyer would ask, like "best coffee shop in Austin", asks four AI assistants (ChatGPT, Gemini, Perplexity and Claude), and checks whether the business is named, where it ranks, how it's described and which competitors come up instead.
-  - Then it gives a 0 to 100 score with a letter grade, a dashboard with a heatmap and share of voice, and ready-to-paste fixes: structured business data, an llms.txt file and FAQ blocks.
-  - Pricing is one-time scan packs through Stripe: $2 for one scan, $5 for three, $10 for eight.
+- SiteLight (founder · shut down): A personal challenge: go from nothing to revenue in under two weeks. I made it in 10 days. It checked whether AI assistants recommend your business when someone asks, then handed you the to-do list to become the answer.
+  - Henry founded SiteLight and was its CEO. SiteLight has been shut down, so it's a past role and sitelight.xyz no longer works.
+  - It was for local businesses like plumbers, coffee shops, golf courses, med spas and roofers.
+  - How it worked: it wrote the questions a buyer would ask, like "best coffee shop in Austin", asked four AI assistants (ChatGPT, Gemini, Perplexity and Claude), and checked whether the business was named, where it ranked, how it was described and which competitors came up instead.
+  - Then it gave a 0 to 100 score with a letter grade, a dashboard with a heatmap and share of voice, and ready-to-paste fixes: structured business data, an llms.txt file and FAQ blocks.
+  - Pricing was one-time scan packs through Stripe: $2 for one scan, $5 for three, $10 for eight.
   - Henry sold it with cold emails that each included a real scan naming the competitors AI recommended instead; in one batch, 26 of 28 businesses he checked were invisible to AI.
-  - It's built with TypeScript, React, Vite and Tailwind, with InsForge for the database, auth and server functions, about 30,000 lines of code.
+  - It was built with TypeScript, React, Vite and Tailwind, with InsForge for the database, auth and server functions, about 30,000 lines of code.
 - [Lily](https://lily.insforge.site) (voice AI): Calls my grandma every morning, has an actual conversation, then texts the family how she sounded.
 - Some hackathon wins (hackathons): InsForge, Frontier Tower, a16z × Cursor
 - [Glasscast](https://github.com/henrybrewer00-dotcom/Glasscast) (open source): Screen Studio costs money, so I made a free one. Cinematic zooms, auto-captions, a webcam bubble, bring your own AI keys.
@@ -51,6 +51,7 @@ Email: henrybrewer00@gmail.com
 
 - Henry goes to Alpha High School, part of Alpha School, which calls itself an AI-powered private school.
 - Alpha's model is 2 Hour Learning: students do their academics in a short morning block with adaptive software that gives each of them 1:1 learning at their own pace, aiming for full mastery before moving on.
+- Henry has no current job: SiteLight, the company he founded, has shut down, and he sold his stake in Crawft. Right now he goes to Alpha High School and builds things, like the ROV submarine.
 - At Alpha, the adults are called guides, not teachers: they don't grade or write lesson plans, they coach, motivate and support students.
 - Afternoons at Alpha are for life-skills workshops and students' own projects; at Alpha High that includes sports, arts and entrepreneurship.
 - Alpha says its students learn twice as fast and rank in the top 1% nationwide; Alpha High lists a December 2024 school-wide SAT average of 1410.
@@ -59,7 +60,7 @@ Email: henrybrewer00@gmail.com
 ## FAQ
 
 ### Who is Henry Brewer?
-Henry Brewer is a 14-year-old software developer and entrepreneur from Austin, Texas. He is the founder and CEO of SiteLight, he built the AI pentesting tool Vurn AI, and he cofounded Crawft, where he was CTO until he sold his stake.
+Henry Brewer is a 14-year-old software developer and entrepreneur from Austin, Texas. He built the AI pentesting tool Vurn AI, founded SiteLight (since shut down), and cofounded Crawft, where he was CTO until he sold his stake.
 
 ### How old is Henry Brewer?
 Henry Brewer is 14 years old.
@@ -68,7 +69,7 @@ Henry Brewer is 14 years old.
 Henry Brewer is from Austin, Texas.
 
 ### What company did Henry Brewer found?
-Henry Brewer founded SiteLight (sitelight.xyz) and is its CEO. SiteLight checks whether AI assistants like ChatGPT, Gemini, Perplexity and Claude recommend a business when someone asks, then gives the business a to-do list to become the answer. He took it from nothing to its first revenue in 10 days.
+Henry Brewer founded SiteLight and was its CEO. SiteLight checked whether AI assistants like ChatGPT, Gemini, Perplexity and Claude recommend a business when someone asks, then gave the business a to-do list to become the answer. He took it from nothing to its first revenue in 10 days. SiteLight has since been shut down.
 
 ### What is Vurn AI?
 Vurn AI is a fully autonomous AI pentesting tool built by Henry Brewer. Within 24 hours of being built, it found a major vulnerability in a top-200 GitHub repository that gave access to over 40,000 Shopify accounts.

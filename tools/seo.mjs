@@ -28,15 +28,17 @@ const graph = {
       url: SITE + "/", mainEntityOfPage: { "@id": `${SITE}/#page` }, image: SITE + "/assets/share-henry-2.png",
       description: BIO,
       // what tells this Henry Brewer apart from the others in search (the illustrator, the provost-marshal...)
-      disambiguatingDescription: "14-year-old software developer and entrepreneur from Austin, Texas; founder and CEO of SiteLight, former cofounder and CTO of Crawft, and creator of the AI pentesting tool Vurn AI.",
-      jobTitle: ["Software developer", "Founder and CEO of SiteLight"],
+      disambiguatingDescription: "14-year-old software developer and entrepreneur from Austin, Texas; former founder and CEO of SiteLight (since shut down), former cofounder and CTO of Crawft, and creator of the AI pentesting tool Vurn AI.",
+      jobTitle: "Software developer",
       hasOccupation: [
         { "@type": "Occupation", name: "Software developer", skills: "AI agents, cybersecurity, voice AI, TypeScript, React, Python" },
         { "@type": "Occupation", name: "Entrepreneur" },
       ],
-      worksFor: { "@id": "https://sitelight.xyz/#org" },
-      // Crawft: cofounder and CTO from mid-August 2026 until he sold his stake
-      affiliation: { "@type": "OrganizationRole", roleName: "Cofounder and CTO (former; sold his stake)", startDate: "2026-08", affiliation: { "@id": "https://crawft.ai/#org" } },
+      // both past roles: Crawft cofounder and CTO from mid-August 2026 until he sold his stake; SiteLight founder and CEO until it shut down
+      affiliation: [
+        { "@type": "OrganizationRole", roleName: "Cofounder and CTO (former; sold his stake)", startDate: "2026-08", affiliation: { "@id": "https://crawft.ai/#org" } },
+        { "@type": "OrganizationRole", roleName: "Founder and CEO (former; SiteLight shut down)", affiliation: { "@id": "https://sitelight.xyz/#org" } },
+      ],
       alumniOf: { "@type": "EducationalOrganization", name: "Alpha High School", url: "https://alphahigh.school" },
       homeLocation: { "@type": "Place", name: "Austin, Texas", address: { "@type": "PostalAddress", addressLocality: "Austin", addressRegion: "TX", addressCountry: "US" } },
       nationality: { "@type": "Country", name: "United States" },
@@ -46,7 +48,7 @@ const graph = {
       sameAs: PROFILES,
     },
     { "@type": "Organization", "@id": "https://crawft.ai/#org", name: "Crawft", url: "https://crawft.ai", description: item("crawft").body.replace(/^I cofounded Crawft and was its CTO from mid-August 2026, then sold my stake\. /, ""), founder: { "@id": person } },
-    { "@type": "Organization", "@id": "https://sitelight.xyz/#org", name: "SiteLight", url: "https://sitelight.xyz", description: "Checks whether AI assistants recommend your business when someone asks, then hands you the to-do list to become the answer.", founder: { "@id": person } },
+    { "@type": "Organization", "@id": "https://sitelight.xyz/#org", name: "SiteLight", description: "Checked whether AI assistants recommend your business when someone asks, then handed you the to-do list to become the answer. Shut down in 2026.", founder: { "@id": person } },
     { "@type": "SoftwareApplication", name: "Vurn AI", applicationCategory: "SecurityApplication", operatingSystem: "Web", description: item("vurn").body, creator: { "@id": person }, author: { "@id": person } },
     { "@type": "WebSite", "@id": `${SITE}/#website`, url: SITE + "/", name: "Henry Brewer", inLanguage: "en", publisher: { "@id": person } },
     { "@type": "ProfilePage", "@id": `${SITE}/#page`, url: SITE + "/", name: "Henry Brewer", isPartOf: { "@id": `${SITE}/#website` }, mainEntity: { "@id": person }, about: { "@id": person }, dateCreated: "2026-10-25", dateModified: today },
