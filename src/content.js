@@ -17,7 +17,7 @@ export const MAIL = "mailto:henrybrewer00@gmail.com?subject=" + encodeURICompone
 export const SITE = "https://www.henrybrewer.dev";
 export const BIO = "Henry Brewer is a 14-year-old software developer and entrepreneur from Austin, Texas. He is the founder and CEO of SiteLight, which checks whether AI assistants recommend a business. He cofounded Crawft, an AI-powered monitoring tool for schools and managers, and was its CTO until he sold his stake. He built Vurn AI, a fully autonomous AI pentesting tool, and he goes to Alpha High School. He also builds voice AI, robots and an ROV submarine, has won hackathons at InsForge, Frontier Tower and a16z × Cursor, and has merged pull requests in SymPy, Biome and Astro.";
 // profiles that are Henry's (schema.org sameAs): add LinkedIn, X and others here
-export const PROFILES = [GH];
+export const PROFILES = [GH, "https://x.com/Henry_J_Brew"];
 
 /**
  * @typedef {{ label: string, href: string }} Link

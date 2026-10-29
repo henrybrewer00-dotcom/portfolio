@@ -58,7 +58,7 @@ const links = (it) => (it.links || []).map((l) => ` <a class="act is-soft" href=
 const about = `      <section class="about" id="about" aria-labelledby="about-title">
         <h2 class="about-title" id="about-title">About Henry Brewer, 14-year-old developer</h2>
         <p class="about-bio">${esc(BIO)}</p>
-        <p class="about-links"><a class="act is-soft" href="${GH}">GitHub ↗</a> <a class="act is-soft" href="https://crawft.ai">Crawft ↗</a> <a class="act is-soft" href="https://sitelight.xyz">SiteLight ↗</a> <a class="act is-soft" href="mailto:henrybrewer00@gmail.com">henrybrewer00@gmail.com</a></p>
+        <p class="about-links"><a class="act is-soft" href="${GH}">GitHub ↗</a> <a class="act is-soft" href="https://crawft.ai">Crawft ↗</a> <a class="act is-soft" href="https://sitelight.xyz">SiteLight ↗</a> <a class="act is-soft" href="https://x.com/Henry_J_Brew">X ↗</a> <a class="act is-soft" href="mailto:henrybrewer00@gmail.com">henrybrewer00@gmail.com</a></p>
         <ul class="about-list">
 ${shown.map((it) => `          <li><p class="kicker">${esc(it.kicker)}</p><h3>${esc(it.title)}</h3><p>${esc(text(it))}</p>${links(it) ? `<p>${links(it).trim()}</p>` : ""}</li>`).join("\n")}
         </ul>
@@ -78,6 +78,7 @@ const llms = `# Henry Brewer
 
 Site: ${SITE}/
 GitHub: ${GH}
+X: https://x.com/Henry_J_Brew
 Email: henrybrewer00@gmail.com
 
 ## Work
