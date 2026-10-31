@@ -15,22 +15,22 @@ export const MAIL = "mailto:henrybrewer00@gmail.com?subject=" + encodeURICompone
 // Who Henry is, in the third person, for search engines and AI answer engines: the about section under the
 // page, the JSON-LD and llms.txt (all written by tools/seo.mjs). Only facts that are already on the cards.
 export const SITE = "https://www.henrybrewer.dev";
-export const BIO = "Henry Brewer is a 14-year-old software developer and entrepreneur from Austin, Texas. He founded SiteLight, which checked whether AI assistants recommend a business, and was its CEO until it shut down. He cofounded Crawft, an AI-powered monitoring tool for schools and managers, and was its CTO until he sold his stake. He built Vurn AI, a fully autonomous AI pentesting tool, and he goes to Alpha High School. He also builds voice AI, robots and an ROV submarine, has won hackathons at InsForge, Frontier Tower and a16z × Cursor, and has merged pull requests in SymPy, Biome and Astro.";
+export const BIO = "Henry Brewer is a 14-year-old developer from Austin, Texas. He goes to Alpha High School and builds AI projects in his spare time, like Vurn AI, a tool that scans code for security holes, and Lily, a voice AI that calls his grandma every morning. He helped start Crawft and was its CTO before selling his stake. He also built SiteLight, a side project he got to its first $2 of revenue in 10 days. He has won a few hackathons and has merged pull requests in SymPy, Biome and Astro.";
 // Plain question-and-answer facts about Henry, for the /about page and its FAQ schema (written by tools/seo.mjs).
 // Only facts that are already on the cards. Never his campus or address.
-export const QUICK = [["Age", "14"], ["Based in", "Austin, Texas"], ["Does", "Software developer, entrepreneur"], 
-  ["Previously", "SiteLight (founder and CEO, since shut down); Crawft (cofounder and CTO, sold his stake)"], ["Known for", "Vurn AI, an autonomous AI pentesting tool"], ["School", "Alpha High School"]];
+export const QUICK = [["Age", "14"], ["Based in", "Austin, Texas"], ["School", "Alpha High School"], ["Does", "Builds software and AI projects"],
+  ["Projects", "Vurn AI, Lily, Glasscast, SiteLight"], ["Previously", "Crawft (cofounder and CTO, sold his stake)"]];
 export const FAQ = [
-  ["Who is Henry Brewer?", "Henry Brewer is a 14-year-old software developer and entrepreneur from Austin, Texas. He built the AI pentesting tool Vurn AI, founded SiteLight (since shut down), and cofounded Crawft, where he was CTO until he sold his stake."],
+  ["Who is Henry Brewer?", "Henry Brewer is a 14-year-old developer from Austin, Texas. He goes to Alpha High School and builds AI projects, like Vurn AI and Lily. He helped start Crawft and was its CTO before selling his stake."],
   ["How old is Henry Brewer?", "Henry Brewer is 14 years old."],
   ["Where is Henry Brewer from?", "Henry Brewer is from Austin, Texas."],
-  ["What company did Henry Brewer found?", "Henry Brewer founded SiteLight and was its CEO. SiteLight checked whether AI assistants like ChatGPT, Gemini, Perplexity and Claude recommend a business when someone asks, then gave the business a to-do list to become the answer. He took it from nothing to its first revenue in 10 days. SiteLight has since been shut down."],
-  ["What is Vurn AI?", "Vurn AI is a fully autonomous AI pentesting tool built by Henry Brewer. Within 24 hours of being built, it found a major vulnerability in a top-200 GitHub repository that gave access to over 40,000 Shopify accounts."],
-  ["Was Henry Brewer the CTO of Crawft?", "Yes. Henry Brewer cofounded Crawft, an AI-powered monitoring tool for schools and managers, and was its CTO from mid-August 2026. He then sold his own stake in the company. Crawft itself was not sold."],
+  ["What is Vurn AI?", "Vurn AI is a tool Henry Brewer built that uses AI to scan code for security holes. The day after he built it, it found critical vulnerabilities granting access to over 40,000 Shopify accounts."],
+  ["Was Henry Brewer the CTO of Crawft?", "Yes. Henry Brewer helped start Crawft, an AI monitoring tool for schools and managers, and was its CTO from mid-August 2026. He then sold his own stake. Crawft itself was not sold."],
+  ["What is SiteLight?", "SiteLight was a side project Henry Brewer built as a challenge to get something to revenue in 10 days. It checked whether AI assistants recommend a local business. It made $2 from its first sale, and he has since shut it down."],
   ["Where does Henry Brewer go to school?", "Henry Brewer goes to Alpha High School, part of Alpha School, which uses the 2 Hour Learning model: academics in a short morning block, and afternoons for projects and life skills."],
-  ["What has Henry Brewer built?", "Besides SiteLight, Vurn AI and Crawft, Henry Brewer built Lily, a voice AI that calls his grandma every morning and texts the family how she sounded; Glasscast, a free open-source screen recorder; PawBot, which helps older people use a computer; Lily's Drive-Thru, a voice ordering system; a self-driving car; and an ROV submarine he is still building."],
-  ["Has Henry Brewer won any hackathons?", "Yes. Henry Brewer has won hackathons at InsForge, Frontier Tower and a16z × Cursor."],
-  ["Does Henry Brewer contribute to open source?", "Yes. Henry Brewer has merged pull requests in SymPy, Biome and Astro."],
+  ["What has Henry Brewer built?", "Vurn AI; Lily, a voice AI that calls his grandma every morning and texts the family how she sounded; Glasscast, a free open-source screen recorder; PawBot, which helps older people use a computer; Lily's Drive-Thru, a voice ordering demo; SiteLight; a self-driving car; and an ROV submarine he is still building."],
+  ["Has Henry Brewer won any hackathons?", "Yes. He has won hackathons at InsForge, Frontier Tower and a16z × Cursor."],
+  ["Does Henry Brewer contribute to open source?", "Yes. He has merged pull requests in SymPy, Biome and Astro."],
   ["How can I contact Henry Brewer?", "Email henrybrewer00@gmail.com, or find him on GitHub (henrybrewer00-dotcom) and X (@Henry_J_Brew)."],
 ];
 
@@ -49,11 +49,11 @@ export const PROFILES = [GH, "https://x.com/Henry_J_Brew"];
 
 /** @type {Item[]} */
 export const ITEMS = [
-  { id: "me", kind: "about", kicker: "the maker", title: "I'm Henry.", body: "Fourteen, from Austin, and a proud vibecoder. I build voice AI, robots, a submarine, and companies. I go to Alpha High School. I founded SiteLight, which has since shut down, and I cofounded Crawft, then sold my stake.", tags: ["14", "Austin, TX", "Alpha High School", "Proud vibecoder"], links: [{ label: "GitHub ↗", href: GH }, { label: "Email →", href: MAIL }] ,
+  { id: "me", kind: "about", kicker: "the maker", title: "I'm Henry.", body: "Fourteen, from Austin, and a proud vibecoder. I build voice AI, robots, a submarine, and side projects. I go to Alpha High School. I helped start Crawft and was its CTO, then sold my stake.", tags: ["14", "Austin, TX", "Alpha High School", "Proud vibecoder"], links: [{ label: "GitHub ↗", href: GH }, { label: "Email →", href: MAIL }] ,
     // answer-only facts about Henry's school, from alpha.school and alphahigh.school as of 2026-10-14
     facts: ["Henry goes to Alpha High School, part of Alpha School, which calls itself an AI-powered private school.",
       "Alpha's model is 2 Hour Learning: students do their academics in a short morning block with adaptive software that gives each of them 1:1 learning at their own pace, aiming for full mastery before moving on.",
-      "Henry has no current job: SiteLight, the company he founded, has shut down, and he sold his stake in Crawft. Right now he goes to Alpha High School and builds things, like the ROV submarine.",
+      "Henry has no current job: he sold his stake in Crawft, and SiteLight, a side project, is shut down. Right now he goes to Alpha High School and builds things, like the ROV submarine.",
       "At Alpha, the adults are called guides, not teachers: they don't grade or write lesson plans, they coach, motivate and support students.",
       "Afternoons at Alpha are for life-skills workshops and students' own projects; at Alpha High that includes sports, arts and entrepreneurship.",
       "Alpha says its students learn twice as fast and rank in the top 1% nationwide; Alpha High lists a December 2024 school-wide SAT average of 1410.",
@@ -67,7 +67,7 @@ export const ITEMS = [
       "It's built from a native Mac agent in Swift, a Windows agent in Rust (in progress), a TypeScript backend on Fastify and PostgreSQL, Next.js web consoles, and infrastructure on AWS.",
       "It never records audio, camera video or location, and screenshot images are not sent to AI providers.",
       "Crawft's site headline is \"See the work you're paying for.\" Pricing isn't public; teams contact sales."] },
-  { id: "vurn", tease: "Found a hole in 40,000 Shopify accounts.", kind: "project", pinned: true, kicker: "cybersecurity", title: "Vurn AI", body: "A fully autonomous AI pentesting tool. 24 hours after I built it, it found a major vulnerability in a top-200 GitHub repo that gave access to over 40,000 Shopify accounts.", tags: ["Security", "Pentesting", "AI agents"],
+  { id: "vurn", tease: "Found bugs exposing 40,000+ Shopify accounts.", kind: "project", pinned: true, kicker: "cybersecurity", title: "Vurn AI", body: "An AI tool that scans code for security holes. The day after I built it, it found critical vulnerabilities granting access to over 40,000 Shopify accounts.", tags: ["Security", "Pentesting", "AI agents"],
     // answer-only facts, from the Vurn AI codebase as of 2026-10-13
     facts: ["Vurn AI scans the code of AI-written apps for security holes: leaked keys in the browser bundle, database tables with row-level security off, auth that only runs in the browser, IDOR and injection.",
       "It works in two passes: a fast deterministic pass for secrets and database rules, then a reasoning pass with Claude that reviews the code through focused security lenses using a map of the repo.",
@@ -75,13 +75,13 @@ export const ITEMS = [
       "Henry built a benchmark of 86 real, verified vulnerabilities plus 13 clean cases across 9 real repos in 6 languages; Vurn finds 70 of the 99.",
       "One of its real finds was a Shopify OAuth bug that sent an app's client secret to an attacker-chosen host.",
       "It's built with TypeScript, Next.js and React, with InsForge for the database and auth, about 14,000 lines of code and 99 unit and stress tests."] },
-  { id: "sitelight", tease: "Nothing to revenue in 10 days.", kind: "job", pinned: true, kicker: "founder · shut down", title: "SiteLight", body: "A personal challenge: go from nothing to revenue in under two weeks. I made it in 10 days. It checked whether AI assistants recommend your business when someone asks, then handed you the to-do list to become the answer.", tags: ["Founder", "Marketing", "AI visibility", "10 days"], images: [
+  { id: "sitelight", tease: "$2 of revenue in 10 days.", kind: "project", pinned: true, kicker: "side project · shut down", title: "SiteLight", body: "A challenge I set myself: build something and get it to revenue in 10 days. It made $2. It checked whether AI assistants recommend your business when someone asks, then gave you a to-do list. I've since shut it down.", tags: ["Side project", "Marketing", "AI visibility", "10 days"], images: [
       { src: "assets/design/sitelight-landing.jpg", alt: "SiteLight's landing page: When AI recommends a business, is it you? with a live report card beside it.", cap: "the landing page" },
       { src: "assets/design/sitelight-scan.jpg", alt: "SiteLight's scan screen: balloons float while it asks ChatGPT, Gemini, Grok and Claude about a plumber.", cap: "the scan, while it asks each AI" },
       { src: "assets/design/sitelight-fixes.jpg", alt: "SiteLight's fixes page: a step-by-step plan to get named by AI.", cap: "the fix plan · demo data" },
       { src: "assets/sitelight-stripe.jpg", alt: "Stripe email: Congratulations, SiteLight! You've just received your first payment through Stripe. $2.00.", cap: "the first $2 · via stripe" }], links: [{ label: "Sorry, SiteLight was shut down" }] ,
     // answer-only facts, from Henry and the SiteLight codebase as of 2026-10-13
-    facts: ["Henry founded SiteLight and was its CEO. SiteLight has been shut down, so it's a past role and sitelight.xyz no longer works.",
+    facts: ["SiteLight was a side project Henry built as a challenge to get something to revenue in 10 days. It made $2 from its first sale. It's shut down now and sitelight.xyz no longer works. It was a project, not a company, and Henry wasn't a CEO.",
       "It was for local businesses like plumbers, coffee shops, golf courses, med spas and roofers.",
       "How it worked: it wrote the questions a buyer would ask, like \"best coffee shop in Austin\", asked four AI assistants (ChatGPT, Gemini, Perplexity and Claude), and checked whether the business was named, where it ranked, how it was described and which competitors came up instead.",
       "Then it gave a 0 to 100 score with a letter grade, a dashboard with a heatmap and share of voice, and ready-to-paste fixes: structured business data, an llms.txt file and FAQ blocks.",
@@ -129,7 +129,7 @@ export const INTENTS = [
     subjects: ["cyber work", "cyber", "cybersecurity", "cyber security", "security", "security work", "hacking", "pentesting", "pen testing", "penetration testing", "vulnerability", "vulnerabilities", "bug bounty", "exploit", "vurn", "vurn ai", "infosec", "white hat", "security research", "shopify bug", "ai pentester", "red team"],
     questions: ["does henry do cyber", "is henry a hacker", "has he found any bugs", "what did he hack", "does he know security", "what security stuff has he built", "did he find a vulnerability", "what is vurn", "what's the shopify thing", "has henry done any pentesting"] },
   { id: "sitelight", title: "SiteLight", engrave: "SiteLight", ids: ["sitelight"],
-    suggest: ["show me Henry's company", "what's Henry's company", "the company Henry founded", "SiteLight"],
+    suggest: ["show me SiteLight", "the project that made $2 in 10 days", "SiteLight"],
     subjects: ["marketing", "marketing work", "growth", "go to market", "getting customers", "sales", "seo", "ai seo", "selling", "his marketing", "company", "startup", "business", "sitelight", "site light", "his company", "the company he founded", "ai visibility tool", "first revenue", "first $2", "stripe payment", "founder", "ceo", "shut down", "the company that shut down"],
     questions: ["can henry do marketing", "is he good at marketing", "how does he market things", "has he sold anything", "how did he get customers", "what is his company", "what company did henry found", "what is henry founder of", "how did he make money", "what's his startup", "is henry a founder", "what does sitelight do", "how did he get revenue in 10 days", "what happened to sitelight", "is sitelight still running", "why is sitelight shut down"] },
   { id: "about", title: "About Henry", engrave: "Henry", ids: ["me"],
@@ -210,7 +210,7 @@ export const INTENTS = [
     questions: ["what has henry built", "what has he made", "show me his projects", "what can he do", "what are his projects", "list everything", "show all", "what have you made", "what does he make"] },
 ];
 
-export const HINTS = ["show me Henry's current job", "show me Henry's cyber work", "what's Henry's company", "show me Henry's voice AI projects", "is he really building a submarine", "show me everything Henry has built", "how do I contact Henry"];
+export const HINTS = ["show me Henry's current job", "show me Henry's cyber work", "what did Henry build in 10 days", "show me Henry's voice AI projects", "is he really building a submarine", "show me everything Henry has built", "how do I contact Henry"];
 
 export const itemById = Object.fromEntries(ITEMS.map((i) => [i.id, i]));
 export const intentById = Object.fromEntries(INTENTS.map((i) => [i.id, i]));

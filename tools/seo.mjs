@@ -25,33 +25,29 @@ const graph = {
     {
       "@type": "Person", "@id": person, name: "Henry Brewer", givenName: "Henry", familyName: "Brewer",
       alternateName: ["Henry Brewer (developer)", "henrybrewer00-dotcom"],
-      url: SITE + "/", mainEntityOfPage: { "@id": `${SITE}/#page` }, image: SITE + "/assets/share-henry-2.png",
+      url: SITE + "/", mainEntityOfPage: { "@id": `${SITE}/#page` }, image: SITE + "/assets/share-henry-3.png",
       description: BIO,
       // what tells this Henry Brewer apart from the others in search (the illustrator, the provost-marshal...)
-      disambiguatingDescription: "14-year-old software developer and entrepreneur from Austin, Texas; former founder and CEO of SiteLight (since shut down), former cofounder and CTO of Crawft, and creator of the AI pentesting tool Vurn AI.",
+      disambiguatingDescription: "14-year-old developer from Austin, Texas, who goes to Alpha High School and builds AI projects such as Vurn AI; formerly cofounder and CTO of Crawft.",
       jobTitle: "Software developer",
-      hasOccupation: [
-        { "@type": "Occupation", name: "Software developer", skills: "AI agents, cybersecurity, voice AI, TypeScript, React, Python" },
-        { "@type": "Occupation", name: "Entrepreneur" },
-      ],
-      // both past roles: Crawft cofounder and CTO from mid-August 2026 until he sold his stake; SiteLight founder and CEO until it shut down
-      affiliation: [
-        { "@type": "OrganizationRole", roleName: "Cofounder and CTO (former; sold his stake)", startDate: "2026-08", affiliation: { "@id": "https://crawft.ai/#org" } },
-        { "@type": "OrganizationRole", roleName: "Founder and CEO (former; SiteLight shut down)", affiliation: { "@id": "https://sitelight.xyz/#org" } },
-      ],
+      hasOccupation: { "@type": "Occupation", name: "Software developer", skills: "AI agents, cybersecurity, voice AI, TypeScript, React, Python" },
+      // past role: Crawft cofounder and CTO from mid-August 2026 until he sold his stake (the company itself was not sold)
+      affiliation: { "@type": "OrganizationRole", roleName: "Cofounder and CTO (former; sold his stake)", startDate: "2026-08", affiliation: { "@id": "https://crawft.ai/#org" } },
       alumniOf: { "@type": "EducationalOrganization", name: "Alpha High School", url: "https://alphahigh.school" },
       homeLocation: { "@type": "Place", name: "Austin, Texas", address: { "@type": "PostalAddress", addressLocality: "Austin", addressRegion: "TX", addressCountry: "US" } },
       nationality: { "@type": "Country", name: "United States" },
       email: "mailto:henrybrewer00@gmail.com",
       award: ["Hackathon win: InsForge", "Hackathon win: Frontier Tower", "Hackathon win: a16z × Cursor"],
-      knowsAbout: ["Software development", "Artificial intelligence", "AI agents", "Cybersecurity", "Penetration testing", "Voice AI", "Robotics", "Web development", "Entrepreneurship", "Startups", "TypeScript", "React", "Python", "Open source"],
+      knowsAbout: ["Software development", "Artificial intelligence", "AI agents", "Cybersecurity", "Penetration testing", "Voice AI", "Robotics", "Web development", "TypeScript", "React", "Python", "Open source"],
       sameAs: PROFILES,
     },
     { "@type": "Organization", "@id": "https://crawft.ai/#org", name: "Crawft", url: "https://crawft.ai", description: item("crawft").body.replace(/^I cofounded Crawft and was its CTO from mid-August 2026, then sold my stake\. /, ""), founder: { "@id": person } },
-    { "@type": "Organization", "@id": "https://sitelight.xyz/#org", name: "SiteLight", description: "Checked whether AI assistants recommend your business when someone asks, then handed you the to-do list to become the answer. Shut down in 2026.", founder: { "@id": person } },
+    { "@type": "SoftwareApplication", name: "SiteLight", applicationCategory: "BusinessApplication", operatingSystem: "Web", description: item("sitelight").body, creator: { "@id": person } },
     { "@type": "SoftwareApplication", name: "Vurn AI", applicationCategory: "SecurityApplication", operatingSystem: "Web", description: item("vurn").body, creator: { "@id": person }, author: { "@id": person } },
     { "@type": "WebSite", "@id": `${SITE}/#website`, url: SITE + "/", name: "Henry Brewer", inLanguage: "en", publisher: { "@id": person } },
     { "@type": "ProfilePage", "@id": `${SITE}/#page`, url: SITE + "/", name: "Henry Brewer", isPartOf: { "@id": `${SITE}/#website` }, mainEntity: { "@id": person }, about: { "@id": person }, dateCreated: "2026-10-25", dateModified: today },
+    { "@type": "FAQPage", "@id": `${SITE}/#faq`, url: SITE + "/", about: { "@id": person },
+      mainEntity: FAQ.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
   ],
 };
 const jsonld = JSON.stringify(graph, null, 2).replace(/</g, "\\u003c").split("\n").map((l) => "    " + l).join("\n");
@@ -122,16 +118,17 @@ const aboutHtml = `<!doctype html>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>About Henry Brewer · 14-year-old developer and entrepreneur</title>
+    <title>About Henry Brewer · 14-year-old developer</title>
     <meta name="description" content="${esc(FAQ[0][1])}" />
     <meta name="author" content="Henry Brewer" />
+    <meta name="robots" content="noindex, follow" />
     <link rel="canonical" href="${aboutUrl}" />
     <meta name="theme-color" content="#000000" />
     <meta property="og:title" content="About Henry Brewer" />
     <meta property="og:description" content="${esc(FAQ[0][1])}" />
     <meta property="og:type" content="profile" />
     <meta property="og:url" content="${aboutUrl}" />
-    <meta property="og:image" content="${SITE}/assets/share-henry-2.png" />
+    <meta property="og:image" content="${SITE}/assets/share-henry-3.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:creator" content="@Henry_J_Brew" />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
@@ -184,7 +181,6 @@ writeFileSync(new URL("../about/index.html", import.meta.url), aboutHtml);
 writeFileSync(new URL("../sitemap.xml", import.meta.url), `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>${SITE}/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>${SITE}/about/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
 </urlset>
 `);
 console.log("llms.txt, about/index.html and sitemap.xml written");
