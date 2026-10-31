@@ -18,7 +18,7 @@ Email: henrybrewer00@gmail.com
   - It's built from a native Mac agent in Swift, a Windows agent in Rust (in progress), a TypeScript backend on Fastify and PostgreSQL, Next.js web consoles, and infrastructure on AWS.
   - It never records audio, camera video or location, and screenshot images are not sent to AI providers.
   - Crawft's site headline is "See the work you're paying for." Pricing isn't public; teams contact sales.
-- Vurn AI (cybersecurity): An AI tool that scans code for security holes. The day after I built it, it found a real bug in a popular GitHub repo: a Shopify login flaw that could send an app's secret key to an attacker.
+- Vurn AI (cybersecurity): An AI tool that scans code for security holes. The day after I built it, it found critical vulnerabilities granting access to over 40,000 Shopify accounts.
   - Vurn AI scans the code of AI-written apps for security holes: leaked keys in the browser bundle, database tables with row-level security off, auth that only runs in the browser, IDOR and injection.
   - It works in two passes: a fast deterministic pass for secrets and database rules, then a reasoning pass with Claude that reviews the code through focused security lenses using a map of the repo.
   - Every finding from the reasoning pass is checked against the actual file, and dropped if the quoted code isn't there, so it doesn't report made-up bugs.
@@ -69,7 +69,7 @@ Henry Brewer is 14 years old.
 Henry Brewer is from Austin, Texas.
 
 ### What is Vurn AI?
-Vurn AI is a tool Henry Brewer built that uses AI to scan code for security holes. The day after he built it, it found a real bug in a popular GitHub project: a Shopify login flaw that could send an app's secret key to an attacker.
+Vurn AI is a tool Henry Brewer built that uses AI to scan code for security holes. The day after he built it, it found critical vulnerabilities granting access to over 40,000 Shopify accounts.
 
 ### Was Henry Brewer the CTO of Crawft?
 Yes. Henry Brewer helped start Crawft, an AI monitoring tool for schools and managers, and was its CTO from mid-August 2026. He then sold his own stake. Crawft itself was not sold.

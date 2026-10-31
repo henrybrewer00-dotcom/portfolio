@@ -24,7 +24,7 @@ export const FAQ = [
   ["Who is Henry Brewer?", "Henry Brewer is a 14-year-old developer from Austin, Texas. He goes to Alpha High School and builds AI projects, like Vurn AI and Lily. He helped start Crawft and was its CTO before selling his stake."],
   ["How old is Henry Brewer?", "Henry Brewer is 14 years old."],
   ["Where is Henry Brewer from?", "Henry Brewer is from Austin, Texas."],
-  ["What is Vurn AI?", "Vurn AI is a tool Henry Brewer built that uses AI to scan code for security holes. The day after he built it, it found a real bug in a popular GitHub project: a Shopify login flaw that could send an app's secret key to an attacker."],
+  ["What is Vurn AI?", "Vurn AI is a tool Henry Brewer built that uses AI to scan code for security holes. The day after he built it, it found critical vulnerabilities granting access to over 40,000 Shopify accounts."],
   ["Was Henry Brewer the CTO of Crawft?", "Yes. Henry Brewer helped start Crawft, an AI monitoring tool for schools and managers, and was its CTO from mid-August 2026. He then sold his own stake. Crawft itself was not sold."],
   ["What is SiteLight?", "SiteLight was a side project Henry Brewer built as a challenge to get something to revenue in 10 days. It checked whether AI assistants recommend a local business. It made $2 from its first sale, and he has since shut it down."],
   ["Where does Henry Brewer go to school?", "Henry Brewer goes to Alpha High School, part of Alpha School, which uses the 2 Hour Learning model: academics in a short morning block, and afternoons for projects and life skills."],
@@ -67,7 +67,7 @@ export const ITEMS = [
       "It's built from a native Mac agent in Swift, a Windows agent in Rust (in progress), a TypeScript backend on Fastify and PostgreSQL, Next.js web consoles, and infrastructure on AWS.",
       "It never records audio, camera video or location, and screenshot images are not sent to AI providers.",
       "Crawft's site headline is \"See the work you're paying for.\" Pricing isn't public; teams contact sales."] },
-  { id: "vurn", tease: "Found a real bug in a popular GitHub repo.", kind: "project", pinned: true, kicker: "cybersecurity", title: "Vurn AI", body: "An AI tool that scans code for security holes. The day after I built it, it found a real bug in a popular GitHub repo: a Shopify login flaw that could send an app's secret key to an attacker.", tags: ["Security", "Pentesting", "AI agents"],
+  { id: "vurn", tease: "Found bugs exposing 40,000+ Shopify accounts.", kind: "project", pinned: true, kicker: "cybersecurity", title: "Vurn AI", body: "An AI tool that scans code for security holes. The day after I built it, it found critical vulnerabilities granting access to over 40,000 Shopify accounts.", tags: ["Security", "Pentesting", "AI agents"],
     // answer-only facts, from the Vurn AI codebase as of 2026-10-13
     facts: ["Vurn AI scans the code of AI-written apps for security holes: leaked keys in the browser bundle, database tables with row-level security off, auth that only runs in the browser, IDOR and injection.",
       "It works in two passes: a fast deterministic pass for secrets and database rules, then a reasoning pass with Claude that reviews the code through focused security lenses using a map of the repo.",
