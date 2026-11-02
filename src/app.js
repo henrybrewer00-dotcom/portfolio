@@ -300,12 +300,14 @@ function renderGh() {
   $("[data-days]").setAttribute("aria-label", live ? "GitHub contributions per week over the last year. Point at it, or use the arrow keys, to see a given week." : "Pull requests per week over the last six months.");
 
 }
-let span = 12;   // months shown: 12, or 6 when the half-year breakdown is there
+let span = 12;   // months shown: 12, 6 or 1 (the last 30 days), each only when GitHub sent its breakdown
 function drawGh() {
   // what they were: the headline split by kind (commits, pull requests, reviews...), so the rows add up to the
   // big number above them, for whichever span is picked. Without GitHub's breakdown (the fallbacks), the
   // pull requests split by repo instead, under a caption that says so
-  const half = span === 6 && gh.half, view = half ? gh.half : gh;
+  const views = { 12: gh, 6: gh.half, 1: gh.month };
+  if (!views[span]) span = 12;
+  const half = span !== 12, view = views[span];
   let rows, cap;
   if (gh.kinds) {
     rows = view.kinds.map((k) => [k.kind, k.n]);
@@ -323,16 +325,16 @@ function drawGh() {
   el.innerHTML = rows.map(([label, n]) => `<div class="row" tabindex="0"><span class="row-label">${esc(label)}</span><canvas class="row-bar"></canvas><span class="row-n">${n}</span></div>`).join("");
   const bars = [...el.querySelectorAll("canvas")].map((c, i) => dither.bar(c, rows[i][1] / max, false, reduceMotion));
   repaint = bars.map((b) => b.paint); regrow = bars.map((b) => b.grow);
-  $("[data-span]").hidden = !gh.half;
-  $("[data-span]").querySelectorAll("button").forEach((btn) => btn.setAttribute("aria-pressed", String(+btn.dataset.months === (gh.half ? span : 12))));
-  $("[data-gh-unit]").textContent = gh.source === "static" ? "pull requests · last 6 months" : `last ${half ? 6 : 12} months on GitHub`;
+  $("[data-span]").hidden = !gh.half && !gh.month;
+  $("[data-span]").querySelectorAll("button").forEach((btn) => { btn.hidden = !views[btn.dataset.months]; btn.setAttribute("aria-pressed", String(+btn.dataset.months === span)); });
+  $("[data-gh-unit]").textContent = gh.source === "static" ? "pull requests · last 6 months" : `${span === 1 ? "last 30 days" : `last ${span} months`} on GitHub`;
 
   // like a stock, week by week (Henry's pick): each point is how many PRs and contributions landed that week,
   // over the last year. At rest the readout shows the year's total (GitHub's own count, the one on his profile) and
   // this week; pointing at a week shows that week. Without GitHub, the hand-picked PRs stand in, per week
   const days = $("[data-days]"), today = new Date(); today.setHours(23, 59, 59, 999);
   const live = gh.source !== "static" && gh.weeks.length;
-  const weeks = live && !half ? gh.weeks : gh.weeks.slice(-26);
+  const weeks = live && !half ? gh.weeks : gh.weeks.slice(span === 1 ? -5 : -26);
   const series = weeks.map((w) => w.n), dates = weeks.map((w) => w.t);
   const N = series.length, t0 = dates[0];
   const total = live ? view.total : series.reduce((a, b) => a + b, 0), now = series.at(-1);

@@ -107,6 +107,11 @@ async function fromGraphQL() {
       out.half = { from: at(from + "T00:00:00Z"), total, kinds: kinds(c, total) };
     } catch (e) { /* the 12-month view still works */ }
   }
+  // and the last 30 days
+  try {
+    const from = Date.now() - 30 * DAY, c = await kindsSince(token, new Date(from).toISOString()), total = c.contributionCalendar.totalContributions;
+    out.month = { from, total, kinds: kinds(c, total) };
+  } catch (e) { /* the longer views still work */ }
   return out;
 }
 
