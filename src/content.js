@@ -148,7 +148,7 @@ export const INTENTS = [
     suggest: ["show me the rap battle app", "Eleven Mile"],
     subjects: ["eleven mile", "11 mile", "rap battle", "rap battles", "ai rap", "rapping ai", "diss track generator", "8 mile parody"],
     questions: ["can ai rap battle", "the rap battle thing", "where two people rap battle", "did he make a rap app", "what's eleven mile"] },
-  { id: "design", title: "Design work", engrave: "Design", ids: ["site", "sitelight", "glasscast"],
+  { id: "design", title: "Design work", engrave: "Design", ids: ["site", "glasscast"],
     suggest: ["show me Henry's design work", "Henry's designs", "show me what Henry designed"],
     subjects: ["design work", "design", "designs", "designer", "ui", "ux", "ui design", "ux design", "visual design", "web design", "product design", "interfaces", "his design", "screenshots", "photos of his work", "pictures of his work", "what it looks like", "this site", "this portfolio", "the portfolio", "his portfolio", "the website", "dither", "dithering", "branding", "figma"],
     questions: ["can henry design", "is he a designer", "does henry do design", "who designed this site", "did he design this", "how was this site made", "what does his work look like", "can i see screenshots", "does he have an eye for design", "show me pictures"] },
@@ -236,7 +236,7 @@ export const PERSONAS = [
     companies: ["google", "alphabet", "deepmind", "meta", "facebook", "instagram", "apple", "microsoft", "amazon", "aws", "netflix", "nvidia", "openai", "anthropic", "xai", "tesla", "spacex",
       "stripe", "shopify", "uber", "airbnb", "salesforce", "oracle", "ibm", "intel", "amd", "adobe", "linkedin", "github", "vercel", "cloudflare", "databricks", "palantir", "snowflake",
       "tiktok", "bytedance", "twitter", "snap", "spotify", "dropbox", "figma", "notion", "slack", "atlassian", "coinbase", "robinhood", "doordash", "lyft", "pinterest", "reddit", "discord"] },
-  { id: "designer", label: "I design things", noun: "a designer", picks: ["site", "sitelight", "glasscast"],
+  { id: "designer", label: "I design things", noun: "a designer", picks: ["site", "glasscast", "pawbot"],
     match: ["design", "designer", "ux", "ui", "product", "pm", "product manager", "art", "creative", "brand", "figma", "artist", "illustrator", "animator", "graphic", "visual", "typography", "art director", "creative director", "motion design", "interaction design", "web designer"] },
   { id: "educator", label: "I teach", noun: "an educator", picks: ["crawft", "receipts", "pawbot"],
     match: ["teacher", "teach", "teaching", "guide", "educator", "education", "tutor", "tutoring", "principal", "professor", "prof", "instructor", "lecturer", "coach", "mentor",
@@ -251,7 +251,7 @@ export const PERSONAS = [
 // designer" is someone hiring a designer, not a designer. The hiring persona's own picks are for when no kind is named.
 const HIRING_FOR = {
   engineer: { noun: "someone hiring an engineer", picks: ["crawft", "vurn", "oss"] },
-  designer: { noun: "someone hiring a designer", picks: ["site", "sitelight", "glasscast"] },
+  designer: { noun: "someone hiring a designer", picks: ["site", "glasscast", "pawbot"] },
   security: { noun: "someone hiring for security", picks: ["vurn", "crawft", "oss"] },
 };
 export const HIRING_PERSONAS = Object.entries(HIRING_FOR).map(([kind, p]) => ({ id: `hiring-${kind}`, label: "I'm hiring", ...p, match: [] }));
