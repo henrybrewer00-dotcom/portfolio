@@ -97,6 +97,11 @@ export const ITEMS = [
       { src: "assets/design/site-intro.jpg", alt: "The intro: henry. decoding into the pond tile by tile.", cap: "the intro, mid-decode" },
       { src: "assets/design/site-phone.jpg", alt: "The portfolio on a phone.", cap: "on a phone" }],
     links: [{ label: "Repo ↗", href: GH + "/portfolio" }] },
+  { id: "remynd", tease: "ReMynd's landing page, before and after.", kind: "design", kicker: "design · redesign", title: "ReMynd", body: "A redesign of the landing page for ReMynd, a Mac app that remembers what was on your screen and what was said on your calls. Before: a dark page with a rotating app name and a product mockup. After: an open notebook, with today's date as the page and your screen history as its index.", tags: ["Design", "Landing page", "Redesign"],
+    images: [
+      { src: "assets/design/remynd-before.jpg", alt: "ReMynd's old landing page: a dark page headed A photographic memory for everything in Notion, with an app mockup below.", cap: "before · remynd.coduck.app" },
+      { src: "assets/design/remynd-after.jpg", alt: "ReMynd's redesigned landing page: an open notebook headed Give your computer a photographic memory, with a grid of screen captures on the right page.", cap: "after · remyndai.com" }],
+    links: [{ label: "Before ↗", href: "https://remynd.coduck.app/" }, { label: "After ↗", href: "https://remyndai.com/" }] },
   { id: "drivethru", kind: "project", kicker: "voice AI", title: "Lily's Drive-Thru", body: "Order out loud. The AI takes it, upsells you once, reads the total back with tax, and fires a live ticket to the kitchen screen.", tags: ["ElevenLabs", "Express", "SSE"], links: [{ label: "Repo ↗", href: GH + "/voice-drive-thru" }] },
   { id: "elevenmile", kind: "project", kicker: "AI + audio", title: "Eleven Mile", body: "Pick two people and a topic and watch them rap-battle. Claude writes the bars, ElevenLabs raps them. A little dumb and I love it.", tags: ["Claude", "ElevenLabs"], links: [{ label: "Repo ↗", href: GH + "/eleven-mile" }] },
   { id: "pawbot", tease: "Walks older people through the computer.", kind: "project", kicker: "accessibility", title: "PawBot", body: "Helps older people use a computer one step at a time, like helping your grandparent figure out their email.", tags: ["Hackathon", "Assistive"], links: [{ label: "Repo ↗", href: GH + "/PawBot" }] },
@@ -148,10 +153,14 @@ export const INTENTS = [
     suggest: ["show me the rap battle app", "Eleven Mile"],
     subjects: ["eleven mile", "11 mile", "rap battle", "rap battles", "ai rap", "rapping ai", "diss track generator", "8 mile parody"],
     questions: ["can ai rap battle", "the rap battle thing", "where two people rap battle", "did he make a rap app", "what's eleven mile"] },
-  { id: "design", title: "Design work", engrave: "Design", ids: ["site", "sitelight", "glasscast"],
+  { id: "design", title: "Design work", engrave: "Design", ids: ["site", "remynd", "glasscast"],
     suggest: ["show me Henry's design work", "Henry's designs", "show me what Henry designed"],
     subjects: ["design work", "design", "designs", "designer", "ui", "ux", "ui design", "ux design", "visual design", "web design", "product design", "interfaces", "his design", "screenshots", "photos of his work", "pictures of his work", "what it looks like", "this site", "this portfolio", "the portfolio", "his portfolio", "the website", "dither", "dithering", "branding", "figma"],
     questions: ["can henry design", "is he a designer", "does henry do design", "who designed this site", "did he design this", "how was this site made", "what does his work look like", "can i see screenshots", "does he have an eye for design", "show me pictures"] },
+  { id: "remynd", title: "ReMynd", engrave: "ReMynd", ids: ["remynd"],
+    suggest: ["show me the ReMynd redesign", "ReMynd before and after"],
+    subjects: ["remynd", "re mynd", "remynd ai", "remyndai", "redesign", "redesigns", "before and after", "before after", "landing page redesign", "landing page"],
+    questions: ["what did he redesign", "show me a before and after", "has he redesigned a website", "what's remynd"] },
   { id: "glasscast", title: "Glasscast", engrave: "Glasscast", ids: ["glasscast"],
     suggest: ["show me Glasscast", "the free Screen Studio"],
     subjects: ["glasscast", "glass cast", "screen recorder", "screen recording app", "free screen studio", "screen studio alternative", "mac app", "electron app", "auto captions"],
@@ -236,7 +245,7 @@ export const PERSONAS = [
     companies: ["google", "alphabet", "deepmind", "meta", "facebook", "instagram", "apple", "microsoft", "amazon", "aws", "netflix", "nvidia", "openai", "anthropic", "xai", "tesla", "spacex",
       "stripe", "shopify", "uber", "airbnb", "salesforce", "oracle", "ibm", "intel", "amd", "adobe", "linkedin", "github", "vercel", "cloudflare", "databricks", "palantir", "snowflake",
       "tiktok", "bytedance", "twitter", "snap", "spotify", "dropbox", "figma", "notion", "slack", "atlassian", "coinbase", "robinhood", "doordash", "lyft", "pinterest", "reddit", "discord"] },
-  { id: "designer", label: "I design things", noun: "a designer", picks: ["site", "sitelight", "glasscast"],
+  { id: "designer", label: "I design things", noun: "a designer", picks: ["site", "remynd", "glasscast"],
     match: ["design", "designer", "ux", "ui", "product", "pm", "product manager", "art", "creative", "brand", "figma", "artist", "illustrator", "animator", "graphic", "visual", "typography", "art director", "creative director", "motion design", "interaction design", "web designer"] },
   { id: "educator", label: "I teach", noun: "an educator", picks: ["crawft", "receipts", "pawbot"],
     match: ["teacher", "teach", "teaching", "guide", "educator", "education", "tutor", "tutoring", "principal", "professor", "prof", "instructor", "lecturer", "coach", "mentor",
@@ -251,7 +260,7 @@ export const PERSONAS = [
 // designer" is someone hiring a designer, not a designer. The hiring persona's own picks are for when no kind is named.
 const HIRING_FOR = {
   engineer: { noun: "someone hiring an engineer", picks: ["crawft", "vurn", "oss"] },
-  designer: { noun: "someone hiring a designer", picks: ["site", "sitelight", "glasscast"] },
+  designer: { noun: "someone hiring a designer", picks: ["site", "remynd", "glasscast"] },
   security: { noun: "someone hiring for security", picks: ["vurn", "crawft", "oss"] },
 };
 export const HIRING_PERSONAS = Object.entries(HIRING_FOR).map(([kind, p]) => ({ id: `hiring-${kind}`, label: "I'm hiring", ...p, match: [] }));
