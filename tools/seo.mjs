@@ -67,8 +67,12 @@ ${shown.map((it) => `          <li><p class="kicker">${esc(it.kicker)}</p><h3>${
 const page = new URL("../index.html", import.meta.url);
 const before = readFileSync(page, "utf8");
 const after = before
-  .replace(/(<!-- jsonld:start -->)[\s\S]*?(<!-- jsonld:end -->)/, `$1\n    <script type="application/ld+json">\n${jsonld}\n    </script>\n    $2`)
-  .replace(/(<!-- about:start -->)[\s\S]*?(<!-- about:end -->)/, `$1\n${about}\n      $2`);
+  // Function replacers on purpose: a string replacement treats "$2" in the content
+  // (e.g. "It made $2") as a capture group, which once wrote the end marker into
+  // the text and duplicated the whole block. Greedy match up to the LAST end
+  // marker so a page damaged that way repairs itself on the next run.
+  .replace(/<!-- jsonld:start -->[\s\S]*<!-- jsonld:end -->/, () => `<!-- jsonld:start -->\n    <script type="application/ld+json">\n${jsonld}\n    </script>\n    <!-- jsonld:end -->`)
+  .replace(/<!-- about:start -->[\s\S]*<!-- about:end -->/, () => `<!-- about:start -->\n${about}\n      <!-- about:end -->`);
 if (after !== before) { writeFileSync(page, after); console.log("index.html: JSON-LD and about section updated"); }
 
 // ---------- llms.txt ----------
