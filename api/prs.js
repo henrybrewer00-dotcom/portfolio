@@ -17,7 +17,7 @@ const at = (d) => new Date(d).getTime();
 const KINDS = "totalCommitContributions totalPullRequestContributions totalPullRequestReviewContributions totalIssueContributions totalRepositoryContributions restrictedContributionsCount";
 const QUERY = `query($after: String) {
   viewer {
-    contributionsCollection { ${KINDS} contributionCalendar { totalContributions weeks { firstDay contributionDays { contributionCount } } } }
+    contributionsCollection { ${KINDS} contributionCalendar { totalContributions weeks { firstDay contributionDays { date contributionCount } } } }
     pullRequests(first: 100, after: $after, orderBy: { field: CREATED_AT, direction: DESC }) {
       pageInfo { hasNextPage endCursor }
       nodes { title number url createdAt mergedAt state repository { name nameWithOwner isPrivate } }
@@ -107,11 +107,14 @@ async function fromGraphQL() {
       out.half = { from: at(from + "T00:00:00Z"), total, kinds: kinds(c, total) };
     } catch (e) { /* the 12-month view still works */ }
   }
-  // and the last 30 days
-  try {
-    const from = Date.now() - 30 * DAY, c = await kindsSince(token, new Date(from).toISOString()), total = c.contributionCalendar.totalContributions;
-    out.month = { from, total, kinds: kinds(c, total) };
-  } catch (e) { /* the longer views still work */ }
+  // and the last 30 days, day by day (the calendar's own days, so the chart and the breakdown cover the same span)
+  const days = cal.weeks.flatMap((w) => w.contributionDays).slice(-30).map((d) => ({ t: at(d.date + "T00:00:00Z"), n: d.contributionCount }));
+  if (days.length) {
+    try {
+      const from = days[0].t, c = await kindsSince(token, new Date(from).toISOString()), total = c.contributionCalendar.totalContributions;
+      out.days = days; out.month = { from, total, kinds: kinds(c, total) };
+    } catch (e) { /* the 12-month view still works */ }
+  }
   return out;
 }
 
