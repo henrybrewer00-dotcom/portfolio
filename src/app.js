@@ -297,16 +297,21 @@ function renderGh() {
   $("[data-prs]").innerHTML = shown.map((p) => `<li class="post"><span class="post-role">${esc(p.repo)}${p.n ? " #" + p.n : ""}</span>${p.url
     ? `<a class="post-text" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.title)} ↗</a>` : `<span class="post-text is-private">a pull request</span>`}<span class="post-t">${dayName(p.at)}</span></li>`).join("");
   const live = gh.source !== "static";
-  $("[data-gh-unit]").textContent = live ? "last 12 months" : "pull requests · last 6 months";
-  $("[data-days]").setAttribute("aria-label", live ? "PRs and contributions per week over the last year. Point at it, or use the arrow keys, to see a given week." : "Pull requests per week over the last six months.");
+  $("[data-gh-unit]").textContent = live ? "last 12 months on GitHub · commits, PRs, issues and reviews" : "pull requests · last 6 months";
+  $("[data-days]").setAttribute("aria-label", live ? "GitHub contributions per week over the last year. Point at it, or use the arrow keys, to see a given week." : "Pull requests per week over the last six months.");
 
 }
 function drawGh() {
-  // where they went: one dithered row per repo, holding (or hovering) a row lights it and shows its share
-  const counts = {}; gh.prs.forEach((p) => { counts[p.repo] = (counts[p.repo] || 0) + 1; });
-  const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 6), max = rows.length ? rows[0][1] : 1;
+  // where they went: one dithered row per repo, all in one unit (pull requests opened in the same window as the
+  // chart), so the rows add up to the number in the caption. Past five repos the rest share one "other repos" row
+  const since = gh.weeks.length ? gh.weeks[0].t : 0, recent = gh.prs.filter((p) => p.at >= since);
+  const counts = {}; recent.forEach((p) => { counts[p.repo] = (counts[p.repo] || 0) + 1; });
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const rows = sorted.length > 6 ? sorted.slice(0, 5).concat([[`${sorted.length - 5} other repos`, sorted.slice(5).reduce((a, r) => a + r[1], 0)]]) : sorted;
+  const max = Math.max(1, ...rows.map((r) => r[1]));
+  $("[data-roles-cap]").textContent = `where the ${plural(recent.length, "pull requests")} went`;
   const el = $("[data-roles]");
-  el.innerHTML = rows.map(([repo, n]) => `<div class="row" tabindex="0"><span class="row-label">${esc(repo)}</span><canvas class="row-bar"></canvas><span class="row-n" data-plain="${n}" data-pct="${Math.round((n / gh.prs.length) * 100)}%">${n}</span></div>`).join("");
+  el.innerHTML = rows.map(([repo, n]) => `<div class="row" tabindex="0"><span class="row-label">${esc(repo)}</span><canvas class="row-bar"></canvas><span class="row-n">${n}</span></div>`).join("");
   const bars = [...el.querySelectorAll("canvas")].map((c, i) => dither.bar(c, rows[i][1] / max, false, reduceMotion));
   repaint = bars.map((b) => b.paint); regrow = bars.map((b) => b.grow);
 
@@ -320,19 +325,19 @@ function drawGh() {
   const N = series.length, t0 = dates[0];
   const total = live ? gh.total : series.reduce((a, b) => a + b, 0), now = series.at(-1);
   const fresh = days.cloneNode(true); days.replaceWith(fresh);   // a redraw (GitHub answering) starts on a clean canvas
-  $("[data-days-from]").textContent = dayName(t0); $("[data-days-to]").textContent = "today";
+  $("[data-days-from]").textContent = new Date(t0).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }); $("[data-days-to]").textContent = "today";
   chart = dither.stock(fresh, series, { stride: 1,
     reduce: reduceMotion,
     onFocus: (i) => {
       // the hand-picked stand-ins are only a few PRs, so they never get counted out loud
       if (gh.source === "static") { $("[data-readout-n]").textContent = "pull requests"; $("[data-readout-d]").textContent = "in the last 6 months"; return; }
-      $("[data-readout-n]").textContent = i < 0 ? `${total} PRs and contributions` : plural(series[i], "PRs and contributions").replace(/^1 PRs and contributions$/, "1 PR or contribution");
+      $("[data-readout-n]").textContent = i < 0 ? `${total} contributions` : plural(series[i], "contributions");
       $("[data-readout-d]").textContent = i < 0 ? `${now} this week` : i === N - 1 ? "this week" : `the week of ${dayName(dates[i])}`;
     },
   });
 }
-const lightRow = (row, on) => { const el = $("[data-roles]"), i = [...el.children].indexOf(row), c = row.querySelector("canvas"), nEl = row.querySelector(".row-n");
-  c.dataset.lit = on ? "1" : ""; nEl.textContent = on ? nEl.dataset.pct : nEl.dataset.plain; row.classList.toggle("is-lit", on); repaint[i](); };
+const lightRow = (row, on) => { const el = $("[data-roles]"), i = [...el.children].indexOf(row), c = row.querySelector("canvas");
+  c.dataset.lit = on ? "1" : ""; row.classList.toggle("is-lit", on); repaint[i](); };
 $("[data-roles]").addEventListener("pointerover", (e) => { const r = e.target.closest(".row"); if (r) lightRow(r, true); });
 $("[data-roles]").addEventListener("pointerout", (e) => { const r = e.target.closest(".row"); if (r && !r.contains(e.relatedTarget)) lightRow(r, false); });
 $("[data-roles]").addEventListener("focusin", (e) => { if (e.target.closest(".row")) lightRow(e.target, true); });
