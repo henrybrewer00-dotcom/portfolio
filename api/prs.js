@@ -78,7 +78,7 @@ function kinds(c, total) {
   const rows = [
     ["commits", c.totalCommitContributions], ["pull requests", c.totalPullRequestContributions],
     ["code reviews", c.totalPullRequestReviewContributions], ["issues", c.totalIssueContributions],
-    ["new repos", c.totalRepositoryContributions], ["private (not itemised)", c.restrictedContributionsCount],
+    ["new repos", c.totalRepositoryContributions], ["in private repos", c.restrictedContributionsCount],
   ].map(([kind, n]) => ({ kind, n: n || 0 }));
   const rest = total - rows.reduce((a, r) => a + r.n, 0);
   if (rest > 0) rows.push({ kind: "other", n: rest });
