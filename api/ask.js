@@ -72,7 +72,7 @@ export default async function handler(req, res) {
     try {
       const d = await getPrs(), six = Date.now() - 182 * 864e5, recent = d.prs.filter((p) => p.at >= six);
       const named = d.prs.filter((p) => !p.private).slice(0, 8).map((p) => `${p.repo} #${p.n} "${p.title}"${p.merged ? " (merged)" : ""}`).join("; ");
-      const big = d.unit === "contributions" ? `${d.total} PRs and contributions on GitHub in the last year (the only count to give: call it exactly "PRs and contributions", and never quote a separate pull request count). For background only: ` : "";
+      const big = d.unit === "contributions" ? `${d.total} contributions on GitHub in the last year (commits, PRs, issues and reviews together; call them "contributions", never "PRs", and keep that number separate from the pull request count). Pull requests: ` : "";
       live = `\n(Live from GitHub, use these numbers over any older fact: ${big}${d.prs.length} pull requests in all, ${d.prs.filter((p) => p.merged).length} merged${recent.length < d.prs.length ? `, ${recent.length} in the last six months` : ", nearly all in the last six months"}, ${d.prs.filter((p) => p.private).length} of them in private work repos he can't name. Newest public ones: ${named}. The whole list and a chart are in the section further down this page. Still answer in two short sentences: the count, one standout, and that the full list is further down.)`;
     } catch { /* GitHub is slow or down: answer from content.js alone */ }
   }
