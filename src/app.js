@@ -219,7 +219,6 @@ function card(it, i = 0) {
     <h3>${esc(it.title)}</h3>
     ${it.body ? `<p>${esc(it.body)}</p>` : ""}
     ${it.list ? `<ul class="list">${it.list.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
-    ${it.tags ? `<p class="tags">${it.tags.map((t) => `<span>${esc(t)}</span>`).join("")}</p>` : ""}
     ${it.images ? `<div class="gallery">${it.images.map((im) => `<figure class="fig"><a href="${esc(im.src)}" target="_blank" rel="noreferrer"><img src="${esc(im.src)}" alt="${esc(im.alt)}" loading="lazy" /></a><figcaption>${esc(im.cap)}</figcaption></figure>`).join("")}</div>` : ""}
     ${it.image ? `<figure class="fig"><img src="${esc(it.image.src)}" alt="${esc(it.image.alt)}" loading="lazy" /><figcaption>${esc(it.image.cap)}</figcaption></figure>` : ""}
     ${links ? `<div class="acts">${links}</div>` : ""}
@@ -293,7 +292,7 @@ function staticGh() {
 let gh = staticGh(), chart = null, repaint = [], regrow = [], seen = false;
 const plural = (n, unit) => `${n} ${n === 1 ? unit.replace(/s$/, "") : unit}`;
 function renderGh() {
-  const shown = gh.prs.slice(0, 12);
+  const shown = gh.prs.slice(0, 5);
   $("[data-prs]").innerHTML = shown.map((p) => `<li class="post"><span class="post-role">${esc(p.repo)}${p.n ? " #" + p.n : ""}</span>${p.url
     ? `<a class="post-text" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.title)} ↗</a>` : `<span class="post-text is-private">a pull request</span>`}<span class="post-t">${dayName(p.at)}</span></li>`).join("");
   const live = gh.source !== "static";
