@@ -92,4 +92,3 @@ Yes. He has merged pull requests in SymPy, Biome and Astro.
 ### How can I contact Henry Brewer?
 Email henrybrewer00@gmail.com, or find him on GitHub (henrybrewer00-dotcom) and X (@Henry_J_Brew).
 
-More: https://www.henrybrewer.dev/about/

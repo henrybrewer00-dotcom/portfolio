@@ -16,7 +16,7 @@ export const MAIL = "mailto:henrybrewer00@gmail.com?subject=" + encodeURICompone
 // page, the JSON-LD and llms.txt (all written by tools/seo.mjs). Only facts that are already on the cards.
 export const SITE = "https://www.henrybrewer.dev";
 export const BIO = "Henry Brewer is a 14-year-old developer from Austin, Texas. He goes to Alpha High School and builds AI projects in his spare time, like Vurn AI, a tool that scans code for security holes, and Lily, a voice AI that calls his grandma every morning. He helped start Crawft and was its CTO before selling his stake. He also built SiteLight, a side project he got to its first $2 of revenue in 10 days. He has won a few hackathons and has merged pull requests in SymPy, Biome and Astro.";
-// Plain question-and-answer facts about Henry, for the /about page and its FAQ schema (written by tools/seo.mjs).
+// Plain question-and-answer facts about Henry, for the FAQ schema on the home page (written by tools/seo.mjs).
 // Only facts that are already on the cards. Never his campus or address.
 export const QUICK = [["Age", "14"], ["Based in", "Austin, Texas"], ["School", "Alpha High School"], ["Does", "Builds software and AI projects"],
   ["Projects", "Vurn AI, Lily, Glasscast, SiteLight"], ["Previously", "Crawft (cofounder and CTO, sold his stake)"]];

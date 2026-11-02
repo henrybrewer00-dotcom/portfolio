@@ -1,6 +1,8 @@
 {
   "redirects": [
-    { "source": "/:path*", "has": [{ "type": "host", "value": "henry93.vercel.app" }], "destination": "https://www.henrybrewer.dev/:path*", "permanent": true }
+    { "source": "/:path*", "has": [{ "type": "host", "value": "henry93.vercel.app" }], "destination": "https://www.henrybrewer.dev/:path*", "permanent": true },
+    { "source": "/about", "destination": "/", "permanent": true },
+    { "source": "/about/", "destination": "/", "permanent": true }
   ],
   "headers": [
     { "source": "/llms.txt", "headers": [{ "key": "Content-Type", "value": "text/plain; charset=utf-8" }] },
