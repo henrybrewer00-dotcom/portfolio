@@ -13,9 +13,11 @@ const LOGIN = "henrybrewer00-dotcom";
 const DAY = 864e5;
 const at = (d) => new Date(d).getTime();
 
+// what each contribution was: these add up (with "other" for anything GitHub counts but doesn't type) to the calendar total
+const KINDS = "totalCommitContributions totalPullRequestContributions totalPullRequestReviewContributions totalIssueContributions totalRepositoryContributions restrictedContributionsCount";
 const QUERY = `query($after: String) {
   viewer {
-    contributionsCollection { contributionCalendar { totalContributions weeks { firstDay contributionDays { contributionCount } } } }
+    contributionsCollection { ${KINDS} contributionCalendar { totalContributions weeks { firstDay contributionDays { date contributionCount } } } }
     pullRequests(first: 100, after: $after, orderBy: { field: CREATED_AT, direction: DESC }) {
       pageInfo { hasNextPage endCursor }
       nodes { title number url createdAt mergedAt state repository { name nameWithOwner isPrivate } }
@@ -51,12 +53,36 @@ async function viewerPrs(token) {
     const j = await r.json();
     if (!r.ok || j.errors || !j.data) throw new Error("graphql " + r.status);
     const v = j.data.viewer;
-    cal = cal || v.contributionsCollection.contributionCalendar;
+    cal = cal || { ...v.contributionsCollection.contributionCalendar, kinds: v.contributionsCollection };
     nodes = nodes.concat(v.pullRequests.nodes);
     if (!v.pullRequests.pageInfo.hasNextPage) break;
     after = v.pullRequests.pageInfo.endCursor;
   }
   return { nodes, cal };
+}
+
+// the same breakdown from a given day on (the last 26 weeks of the chart), so the 6-month view adds up too
+async function kindsSince(token, from) {
+  const r = await fetch("https://api.github.com/graphql", {
+    method: "POST",
+    headers: { authorization: `bearer ${token}`, "content-type": "application/json", "user-agent": "henry93-portfolio" },
+    body: JSON.stringify({ query: `query($from: DateTime) { viewer { contributionsCollection(from: $from) { ${KINDS} contributionCalendar { totalContributions } } } }`, variables: { from } }),
+  });
+  const j = await r.json();
+  if (!r.ok || j.errors || !j.data) throw new Error("graphql " + r.status);
+  return j.data.viewer.contributionsCollection;
+}
+
+// [{ kind, n }] biggest first, always summing to total: whatever GitHub counts but doesn't name goes in "other"
+function kinds(c, total) {
+  const rows = [
+    ["commits", c.totalCommitContributions], ["pull requests", c.totalPullRequestContributions],
+    ["code reviews", c.totalPullRequestReviewContributions], ["issues", c.totalIssueContributions],
+    ["new repos", c.totalRepositoryContributions], ["in private repos", c.restrictedContributionsCount],
+  ].map(([kind, n]) => ({ kind, n: n || 0 }));
+  const rest = total - rows.reduce((a, r) => a + r.n, 0);
+  if (rest > 0) rows.push({ kind: "other", n: rest });
+  return rows.filter((r) => r.n > 0).sort((a, b) => b.n - a.n);
 }
 
 // A fine-grained token only sees private repos under one owner, so work in an organization's private repos
@@ -68,13 +94,28 @@ async function fromGraphQL() {
   if (!views.some(Boolean)) throw new Error("graphql: no token worked");
   const seen = new Set(), nodes = [];
   for (const v of views) if (v) for (const p of v.nodes) if (!seen.has(p.url)) { seen.add(p.url); nodes.push(p); }
-  const cal = views.find(Boolean).cal;
+  const cal = views.find(Boolean).cal, token = tokens()[views.findIndex(Boolean)];
   // every PR he opened counts, merged, open or closed
   const prs = nodes.map((p) => shape(p, repoName));
-  return {
-    source: "github", unit: "contributions", total: cal.totalContributions, prCount: prs.length, prs,
-    weeks: cal.weeks.map((w) => ({ t: at(w.firstDay + "T00:00:00Z"), n: w.contributionDays.reduce((a, d) => a + d.contributionCount, 0) })),
-  };
+  const weeks = cal.weeks.map((w) => ({ t: at(w.firstDay + "T00:00:00Z"), n: w.contributionDays.reduce((a, d) => a + d.contributionCount, 0) }));
+  const out = { source: "github", unit: "contributions", total: cal.totalContributions, prCount: prs.length, prs, weeks, kinds: kinds(cal.kinds, cal.totalContributions) };
+  // the last six months, from the first day of the chart's 26th-from-last week
+  if (cal.weeks.length > 26) {
+    const from = cal.weeks.at(-26).firstDay;
+    try {
+      const c = await kindsSince(token, from + "T00:00:00Z"), total = c.contributionCalendar.totalContributions;
+      out.half = { from: at(from + "T00:00:00Z"), total, kinds: kinds(c, total) };
+    } catch (e) { /* the 12-month view still works */ }
+  }
+  // and the last 30 days, day by day (the calendar's own days, so the chart and the breakdown cover the same span)
+  const days = cal.weeks.flatMap((w) => w.contributionDays).slice(-30).map((d) => ({ t: at(d.date + "T00:00:00Z"), n: d.contributionCount }));
+  if (days.length) {
+    try {
+      const from = days[0].t, c = await kindsSince(token, new Date(from).toISOString()), total = c.contributionCalendar.totalContributions;
+      out.days = days; out.month = { from, total, kinds: kinds(c, total) };
+    } catch (e) { /* the 12-month view still works */ }
+  }
+  return out;
 }
 
 async function fromSearch() {
