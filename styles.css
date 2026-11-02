@@ -205,6 +205,11 @@ body.has-results .crowd { margin-top: 3rem; }
 .chart figcaption { display: flex; justify-content: space-between; }
 .drag-hint { letter-spacing: 0.04em; text-transform: none; color: var(--muted); opacity: 0.8; }
 .chart-roles { margin-top: 2rem; }
+.span { display: flex; gap: 0.9rem; }
+.span[hidden] { display: none; }
+.span button { all: unset; cursor: pointer; font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--muted); border-bottom: 1px solid transparent; padding-bottom: 1px; }
+.span button[aria-pressed="true"] { color: var(--accent); border-bottom-color: currentColor; }
+.span button:focus-visible { outline: 1px solid var(--accent); outline-offset: 3px; }
 .readout { font: 400 0.85rem var(--mono); color: var(--muted); margin: -0.2rem 0 0.6rem; min-height: 1.3em; }
 .readout b { font: 400 1.6rem/1 var(--serif); color: var(--accent); margin-right: 0.3rem; }
 .cols { cursor: grab; touch-action: pan-y; user-select: none; outline: 0; border-radius: 6px; }
