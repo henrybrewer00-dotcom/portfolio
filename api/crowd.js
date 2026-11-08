@@ -26,6 +26,7 @@ const hits = new Map();
 function limited(key, max) {
   const now = Date.now(), list = (hits.get(key) || []).filter((t) => now - t < 36e5);
   list.push(now); hits.set(key, list);
+  if (hits.size > 5000) for (const [k, v] of hits) if (now - v.at(-1) >= 36e5) hits.delete(k);
   return list.length > max;
 }
 
@@ -33,8 +34,10 @@ export default async function handler(req, res) {
   res.setHeader("cache-control", "no-store");
   if (req.method === "GET") { res.status(200).json(await store.read()); return; }
   if (req.method !== "POST") { res.status(405).end(); return; }
-  const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
-  const role = personaById[body.role] ? body.role : "curious";
+  let body = req.body;
+  if (typeof body === "string") { try { body = JSON.parse(body || "{}"); } catch { body = null; } }
+  if (!body || typeof body !== "object") { res.status(400).end(); return; }
+  const role = typeof body.role === "string" && Object.hasOwn(personaById, body.role) ? body.role : "curious";
   const ip = String(req.headers["x-forwarded-for"] || "").split(",")[0] || "?";
   if (body.type === "visit") {
     if (!limited("v" + ip, 5)) await store.visit(role);

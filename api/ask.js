@@ -33,11 +33,28 @@ Facts:
 ${FACTS}`;
 
 // a tiny per-instance limiter: the page asks once per Enter, so this only stops loops and scripts
+// (Vercel runs several instances, so the real cap is the firewall rule on /api/ask; see README.)
 const hits = new Map();
 function limited(ip) {
   const now = Date.now(), h = (hits.get(ip) || []).filter((t) => now - t < 60_000);
   h.push(now); hits.set(ip, h);
+  if (hits.size > 5000) for (const [k, v] of hits) if (now - v.at(-1) >= 60_000) hits.delete(k);   // don't grow forever
   return h.length > 12;
+}
+
+// only the page itself may ask from a browser: another site can't borrow this endpoint as a free model
+// (curl can still call it, which is what the rate limits are for)
+function foreign(req) {
+  const origin = req.headers.origin;
+  if (!origin) return false;
+  try { return new URL(origin).host !== req.headers.host; } catch { return true; }
+}
+const own = (o, k) => (typeof k === "string" && Object.hasOwn(o, k) ? o[k] : undefined);
+
+// the body as an object, or null when it isn't one (a bad body is a 400, not a crash)
+function parse(b) {
+  if (typeof b === "string") { try { b = JSON.parse(b || "{}"); } catch { return null; } }
+  return b && typeof b === "object" && !Array.isArray(b) ? b : b == null ? {} : null;
 }
 
 export default async function handler(req, res) {
@@ -48,11 +65,13 @@ export default async function handler(req, res) {
   if (req.method === "GET" && !previewGet) { res.status(200).json({ ready: Boolean(key), model: MODEL }); return; }
   if (req.method !== "POST" && !previewGet) { res.status(405).end(); return; }
   if (!key) { res.status(503).end(); return; }
+  if (foreign(req)) { res.status(403).end(); return; }
   const ip = String(req.headers["x-forwarded-for"] || "").split(",")[0] || "?";
   if (limited(ip)) { res.status(429).end(); return; }
 
   const debug = previewGet && req.query.debug === "1";   // preview only: append the token usage, to check the cache
-  const body = previewGet ? { q: req.query.q, intent: req.query.intent, who: req.query.who } : typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
+  const body = previewGet ? { q: req.query.q, intent: req.query.intent, who: req.query.who } : parse(req.body);
+  if (!body) { res.status(400).end(); return; }
   const q = String(body.q || "").slice(0, 200).trim();
   if (!q) { res.status(400).end(); return; }
   // earlier turns of this conversation, so follow-ups ("what did he use for it?") make sense
@@ -62,8 +81,8 @@ export default async function handler(req, res) {
     const pq = String(t && t.q || "").slice(0, 200).trim(), pa = String(t && t.a || "").slice(0, 400).trim();
     return pq && pa ? [{ role: "user", content: pq }, { role: "assistant", content: pa }] : [];
   });
-  const intent = intentById[body.intent];
-  const visitor = personaById[body.who];
+  const intent = own(intentById, body.intent);
+  const visitor = own(personaById, body.who);
   // questions about his pull requests get today's numbers from GitHub (private repos stay unnamed); they ride in the
   // user turn, not the system prompt, so the cached prompt stays the same on every call
   const aboutPrs = (intent && intent.id === "oss") || /\b(prs?|pr's|pull requests?|contribut\w*|open[- ]source|commits?)\b/i.test(q + " " + prior.map((m) => m.content).join(" "));

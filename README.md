@@ -51,3 +51,12 @@ No build step on deploy: `model/model.json` is committed.
 | `tools/seo.mjs` | JSON-LD, the about section, `llms.txt`, `sitemap.xml`, from content.js (`BIO`, `PROFILES`) |
 | `robots.txt`, `vercel.json` | Crawlers welcome; henry93.vercel.app redirects to www.henrybrewer.dev |
 | `deck/`, `old/` | The two previous portfolios (card deck, terminal) |
+
+## Security notes
+
+- `api/ask` calls Claude, so it costs money per call. Its in-code limiter only works per server instance, so the real cap is a
+  Vercel Firewall rate-limit rule on `/api/ask` (e.g. 10 requests per minute per IP), plus a monthly spend limit on the
+  Anthropic API key.
+- `api/ask` refuses browser requests from other sites (Origin must match the host).
+- Security headers and the Content-Security-Policy live in `vercel.json`. The page's one inline script is allowed by its
+  hash; `npm test` fails if the script changes and the hash wasn't updated.
