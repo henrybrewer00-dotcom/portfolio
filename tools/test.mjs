@@ -86,3 +86,13 @@ console.log(`roles: ${ROLES.length - wrongRoles.length}/${ROLES.length}`);
 if (wrongRoles.length) process.exit(1);
 
 if (acc < 0.9) { console.error("accuracy under 90%"); process.exit(1); }
+
+// the page's one inline script is allowed by its hash in vercel.json's Content-Security-Policy: if it changes, so must the hash
+{
+  const { createHash } = await import("node:crypto");
+  const html = readFileSync(new URL("../index.html", import.meta.url), "utf8"), csp = readFileSync(new URL("../vercel.json", import.meta.url), "utf8");
+  const inline = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => "sha256-" + createHash("sha256").update(m[1]).digest("base64"));
+  const missing = inline.filter((h) => !csp.includes(h));
+  if (missing.length) { console.error("inline script not in the CSP; put this hash in vercel.json:", missing.join(" ")); process.exit(1); }
+  console.log(`csp: ${inline.length} inline script hash ok`);
+}
