@@ -53,13 +53,19 @@ const jsonld = JSON.stringify(graph, null, 2).replace(/</g, "\\u003c").split("\n
 
 // ---------- the about section (real text in the HTML, visible to everyone) ----------
 const links = (it) => (it.links || []).map((l) => l.href ? ` <a class="act is-soft" href="${esc(abs(l.href))}">${esc(l.label)}</a>` : ` <span class="act is-soft">${esc(l.label)}</span>`).join("");
+// Up front, just the first two sentences; the rest and the full list sit in a closed <details> (still in the HTML for search engines).
+const bioParts = BIO.split(/(?<=\.)\s+/), bioShort = bioParts.slice(0, 2).join(" "), bioRest = bioParts.slice(2).join(" ");
 const about = `      <section class="about" id="about" aria-labelledby="about-title">
         <h2 class="about-title" id="about-title">About Henry Brewer, 14-year-old developer</h2>
-        <p class="about-bio">${esc(BIO)}</p>
-        <p class="about-links"><a class="act is-soft" href="${GH}">GitHub ↗</a> <a class="act is-soft" href="https://crawft.ai">Crawft ↗</a> <a class="act is-soft" href="https://x.com/Henry_J_Brew">X ↗</a> <a class="act is-soft" href="mailto:henrybrewer00@gmail.com">henrybrewer00@gmail.com</a></p>
-        <ul class="about-list">
-${shown.map((it) => `          <li><p class="kicker">${esc(it.kicker)}</p><h3>${esc(it.title)}</h3><p>${esc(text(it))}</p>${links(it) ? `<p>${links(it).trim()}</p>` : ""}</li>`).join("\n")}
-        </ul>
+        <p class="about-bio">${esc(bioShort)}</p>
+        <p class="about-links"><a class="act is-soft" href="${GH}">GitHub ↗</a> <a class="act is-soft" href="https://x.com/Henry_J_Brew">X ↗</a> <a class="act is-soft" href="mailto:henrybrewer00@gmail.com">henrybrewer00@gmail.com</a></p>
+        <details class="about-more">
+          <summary>More about Henry, and everything he's built</summary>
+          <p class="about-bio">${esc(bioRest)}</p>
+          <ul class="about-list">
+${shown.map((it) => `            <li><p class="kicker">${esc(it.kicker)}</p><h3>${esc(it.title)}</h3><p>${esc(text(it))}</p>${links(it) ? `<p>${links(it).trim()}</p>` : ""}</li>`).join("\n")}
+          </ul>
+        </details>
       </section>`;
 
 const page = new URL("../index.html", import.meta.url);

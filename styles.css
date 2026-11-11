@@ -148,8 +148,14 @@ body.has-results .pinned { display: none; }
 @media (max-width: 700px) { .about { padding: 1.2rem; } }
 .about-title { font: 400 2rem/1 var(--serif); letter-spacing: -0.01em; color: var(--ink); margin-bottom: 1rem; }
 .about-bio { max-width: 46rem; font-size: 1rem; line-height: 1.6; }
-.about-more { margin: 0.6rem 0 0 -0.5rem; }
-.about-links { margin: 0.4rem 0 2rem -0.5rem; }
+.about-more { margin: 0; border-top: 1px solid var(--border); padding-top: 1rem; }
+.about-more summary { display: inline-flex; align-items: center; gap: 0.5em; cursor: pointer; list-style: none; font: 500 0.84rem var(--sans); color: var(--muted); transition: color 0.2s; }
+.about-more summary::-webkit-details-marker { display: none; }
+.about-more summary::after { content: "+"; font-family: "Geist Mono", monospace; }
+.about-more[open] summary::after { content: "−"; }
+.about-more summary:hover, .about-more summary:focus-visible { color: var(--ink); outline: 0; }
+.about-more > .about-bio { margin: 1rem 0 1.6rem; }
+.about-links { margin: 0.4rem 0 1.2rem -0.5rem; }
 .about-links .act { font-size: 0.8rem; }
 .about-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1.6rem 2rem; border-top: 1px solid var(--border); padding-top: 1.6rem; }
 .about-list .kicker { margin-bottom: 0.35rem; font-size: 0.62rem; }

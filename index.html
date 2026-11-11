@@ -116,7 +116,7 @@
           "@id": "https://crawft.ai/#org",
           "name": "Crawft",
           "url": "https://crawft.ai",
-          "description": "Crawft is an AI-powered monitoring tool for schools and managers: it turns activity data into answers backed by evidence, and sends smart nudges that steer people off bad websites.",
+          "description": "I cofounded Crawft and was its CTO, then sold my stake. It's an AI monitoring tool for schools and managers.",
           "founder": {
             "@id": "https://www.henrybrewer.dev/#henry"
           }
@@ -126,7 +126,7 @@
           "name": "SiteLight",
           "applicationCategory": "BusinessApplication",
           "operatingSystem": "Web",
-          "description": "A challenge I set myself: build something and get it to revenue in 10 days. It made $2. It checked whether AI assistants recommend your business when someone asks, then gave you a to-do list. I've since shut it down.",
+          "description": "A 10-day challenge to get something to revenue. It made $2. It checked whether AI assistants recommend your business.",
           "creator": {
             "@id": "https://www.henrybrewer.dev/#henry"
           }
@@ -278,7 +278,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
     <script>try { if (!location.hash && !/bot|crawl|spider|slurp|inspectiontool/i.test(navigator.userAgent) && !matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("is-booting"); } catch (e) {}</script>
     <link rel="preload" href="model/model.json?v=20261031plain" as="fetch" crossorigin />
-    <link rel="stylesheet" href="styles.css?v=20261029about" />
+    <link rel="stylesheet" href="styles.css?v=20261102read" />
   </head>
   <body>
     <canvas class="pond" data-pond aria-hidden="true"></canvas>
@@ -322,7 +322,7 @@
         <div class="cards" data-cards></div>
       </section>
 
-      <p class="foot"><button type="button" class="act is-soft" data-browse>browse everything</button> · <a class="act is-soft" href="deck/">older site: card deck</a> · <a class="act is-soft" href="old/">older site: terminal</a></p>
+      <p class="foot"><button type="button" class="act is-soft" data-browse>browse everything</button> · older versions: <a class="act is-soft" href="deck/">deck</a> <a class="act is-soft" href="old/">terminal</a></p>
 
       <section class="crowd prs" id="prs" data-crowd aria-labelledby="prs-title">
         <div class="crowd-head">
@@ -348,31 +348,35 @@
       <!-- about:start -->
       <section class="about" id="about" aria-labelledby="about-title">
         <h2 class="about-title" id="about-title">About Henry Brewer, 14-year-old developer</h2>
-        <p class="about-bio">Henry Brewer is a 14-year-old developer from Austin, Texas. He goes to Alpha High School and builds AI projects in his spare time, like Vurn AI, a tool that scans code for security holes, and Lily, a voice AI that calls his grandma every morning. He helped start Crawft and was its CTO before selling his stake. He also built SiteLight, a side project he got to its first $2 of revenue in 10 days. He has won a few hackathons and has merged pull requests in SymPy, Biome and Astro.</p>
-        <p class="about-links"><a class="act is-soft" href="https://github.com/henrybrewer00-dotcom">GitHub ↗</a> <a class="act is-soft" href="https://crawft.ai">Crawft ↗</a> <a class="act is-soft" href="https://x.com/Henry_J_Brew">X ↗</a> <a class="act is-soft" href="mailto:henrybrewer00@gmail.com">henrybrewer00@gmail.com</a></p>
-        <ul class="about-list">
-          <li><p class="kicker">cofounder · sold my stake</p><h3>Crawft</h3><p>I cofounded Crawft and was its CTO from mid-August 2026, then sold my stake. Crawft is an AI-powered monitoring tool for schools and managers: it turns activity data into answers backed by evidence, and sends smart nudges that steer people off bad websites.</p><p><a class="act is-soft" href="https://crawft.ai">crawft.ai ↗</a></p></li>
-          <li><p class="kicker">cybersecurity</p><h3>Vurn AI</h3><p>An AI tool that scans code for security holes. The day after I built it, it found critical vulnerabilities granting access to over 40,000 Shopify accounts.</p></li>
-          <li><p class="kicker">side project · shut down</p><h3>SiteLight</h3><p>A challenge I set myself: build something and get it to revenue in 10 days. It made $2. It checked whether AI assistants recommend your business when someone asks, then gave you a to-do list. I've since shut it down.</p><p><span class="act is-soft">Sorry, SiteLight was shut down</span></p></li>
-          <li><p class="kicker">voice AI</p><h3>Lily</h3><p>Calls my grandma every morning, has an actual conversation, then texts the family how she sounded.</p><p><a class="act is-soft" href="https://lily.insforge.site">Live ↗</a> <a class="act is-soft" href="https://github.com/henrybrewer00-dotcom/lily">Repo ↗</a></p></li>
-          <li><p class="kicker">hackathons</p><h3>Some hackathon wins</h3><p>InsForge, Frontier Tower, a16z × Cursor</p></li>
-          <li><p class="kicker">open source</p><h3>Glasscast</h3><p>Screen Studio costs money, so I made a free one. Cinematic zooms, auto-captions, a webcam bubble, bring your own AI keys.</p><p><a class="act is-soft" href="https://github.com/henrybrewer00-dotcom/Glasscast">Repo ↗</a></p></li>
-          <li><p class="kicker">design</p><h3>This site</h3><p>My portfolio, designed from scratch. Behind the page is a koi pond drawn in ASCII tiles: black and white koi, little fish that scatter from your cursor, and wakes that light up where they swim. Rest the cursor and the koi come to look, and tiles flip over as you pass across them. The koi follow your cursor, and a click calls them over to that spot. My name decodes into the pond tile by tile. Black and white only.</p><p><a class="act is-soft" href="https://github.com/henrybrewer00-dotcom/portfolio">Repo ↗</a></p></li>
-          <li><p class="kicker">design · redesign</p><h3>ReMynd</h3><p>A redesign of the landing page for ReMynd, a Mac app that remembers what was on your screen and what was said on your calls. Before: a dark page with a rotating app name and a product mockup. After: an open notebook, with today's date as the page and your screen history as its index.</p><p><a class="act is-soft" href="https://remynd.coduck.app/">Before ↗</a> <a class="act is-soft" href="https://remyndai.com/">After ↗</a></p></li>
-          <li><p class="kicker">voice AI</p><h3>Lily's Drive-Thru</h3><p>Order out loud. The AI takes it, upsells you once, reads the total back with tax, and fires a live ticket to the kitchen screen.</p><p><a class="act is-soft" href="https://github.com/henrybrewer00-dotcom/voice-drive-thru">Repo ↗</a></p></li>
-          <li><p class="kicker">AI + audio</p><h3>Eleven Mile</h3><p>Pick two people and a topic and watch them rap-battle. Claude writes the bars, ElevenLabs raps them. A little dumb and I love it.</p><p><a class="act is-soft" href="https://github.com/henrybrewer00-dotcom/eleven-mile">Repo ↗</a></p></li>
-          <li><p class="kicker">accessibility</p><h3>PawBot</h3><p>Helps older people use a computer one step at a time, like helping your grandparent figure out their email.</p><p><a class="act is-soft" href="https://github.com/henrybrewer00-dotcom/PawBot">Repo ↗</a></p></li>
-          <li><p class="kicker">robotics</p><h3>S.I.E.G.E.</h3><p>A self-driving car that chases my dogs around while I'm busy. Sensors, steering logic, a lot of calibration, and wiring that looks worse than it works.</p></li>
-          <li><p class="kicker">hardware · building now</p><h3>ROV Submarine</h3><p>A remote-controlled sub that has to survive real water. Most of the work is the unglamorous part: watertight, buoyant, and a battery that behaves.</p></li>
-          <li><p class="kicker">merged pull requests</p><h3>Open source</h3><p>Real, merged pull requests to tools I use: SymPy, Biome, Astro. Small fixes, shipped, and people actually run them.</p><p><a class="act is-soft" href="#prs">All my PRs ↓</a> <a class="act is-soft" href="https://github.com/pulls?q=is%3Apr+author%3Ahenrybrewer00-dotcom">On GitHub ↗</a></p></li>
-          <li><p class="kicker">made with</p><h3>The stack</h3><p>React, TypeScript, Python, Electron, Arduino, Twilio, ElevenLabs, Claude, Vercel, GitHub</p></li>
-          <li><p class="kicker">also</p><h3>Receipts</h3><p>Straight A's, 99.5 in math, 125 words a minute. Hackathon wins at InsForge, Frontier Tower and a16z × Cursor. Merged PRs in SymPy, Biome and Astro.</p></li>
-        </ul>
+        <p class="about-bio">Henry Brewer is a 14-year-old developer from Austin, Texas. He goes to Alpha High School and builds AI projects in his spare time, like Vurn AI, a tool that scans code for security holes, and Lily, a voice AI that calls his grandma every morning.</p>
+        <p class="about-links"><a class="act is-soft" href="https://github.com/henrybrewer00-dotcom">GitHub ↗</a> <a class="act is-soft" href="https://x.com/Henry_J_Brew">X ↗</a> <a class="act is-soft" href="mailto:henrybrewer00@gmail.com">henrybrewer00@gmail.com</a></p>
+        <details class="about-more">
+          <summary>More about Henry, and everything he's built</summary>
+          <p class="about-bio">He helped start Crawft and was its CTO before selling his stake. He also built SiteLight, a side project he got to its first $2 of revenue in 10 days. He has won a few hackathons and has merged pull requests in SymPy, Biome and Astro.</p>
+          <ul class="about-list">
+            <li><p class="kicker">cofounder · sold my stake</p><h3>Crawft</h3><p>I cofounded Crawft and was its CTO, then sold my stake. It's an AI monitoring tool for schools and managers.</p><p><a class="act is-soft" href="https://crawft.ai">crawft.ai ↗</a></p></li>
+            <li><p class="kicker">cybersecurity</p><h3>Vurn AI</h3><p>An AI tool that scans code for security holes. The day after I built it, it found critical vulnerabilities granting access to over 40,000 Shopify accounts.</p></li>
+            <li><p class="kicker">side project · shut down</p><h3>SiteLight</h3><p>A 10-day challenge to get something to revenue. It made $2. It checked whether AI assistants recommend your business.</p><p><span class="act is-soft">Sorry, SiteLight was shut down</span></p></li>
+            <li><p class="kicker">voice AI</p><h3>Lily</h3><p>Calls my grandma every morning, has an actual conversation, then texts the family how she sounded.</p><p><a class="act is-soft" href="https://lily.insforge.site">Live ↗</a> <a class="act is-soft" href="https://github.com/henrybrewer00-dotcom/lily">Repo ↗</a></p></li>
+            <li><p class="kicker">hackathons</p><h3>Some hackathon wins</h3><p>InsForge, Frontier Tower, a16z × Cursor</p></li>
+            <li><p class="kicker">open source</p><h3>Glasscast</h3><p>A free Screen Studio: zooms, auto-captions and a webcam bubble.</p><p><a class="act is-soft" href="https://github.com/henrybrewer00-dotcom/Glasscast">Repo ↗</a></p></li>
+            <li><p class="kicker">design</p><h3>This site</h3><p>My portfolio, designed from scratch. Behind it is a koi pond drawn in ASCII. The koi follow your cursor, and a click calls them over.</p><p><a class="act is-soft" href="https://github.com/henrybrewer00-dotcom/portfolio">Repo ↗</a></p></li>
+            <li><p class="kicker">design · redesign</p><h3>ReMynd</h3><p>I redesigned the landing page for ReMynd, a Mac app that remembers your screen and your calls. Dark product page before, an open notebook after.</p><p><a class="act is-soft" href="https://remynd.coduck.app/">Before ↗</a> <a class="act is-soft" href="https://remyndai.com/">After ↗</a></p></li>
+            <li><p class="kicker">voice AI</p><h3>Lily's Drive-Thru</h3><p>Order out loud. The AI takes the order and sends a live ticket to the kitchen screen.</p><p><a class="act is-soft" href="https://github.com/henrybrewer00-dotcom/voice-drive-thru">Repo ↗</a></p></li>
+            <li><p class="kicker">AI + audio</p><h3>Eleven Mile</h3><p>Pick two people and a topic and watch them rap-battle. Claude writes the bars, ElevenLabs raps them. A little dumb and I love it.</p><p><a class="act is-soft" href="https://github.com/henrybrewer00-dotcom/eleven-mile">Repo ↗</a></p></li>
+            <li><p class="kicker">accessibility</p><h3>PawBot</h3><p>Helps older people use a computer one step at a time, like helping your grandparent figure out their email.</p><p><a class="act is-soft" href="https://github.com/henrybrewer00-dotcom/PawBot">Repo ↗</a></p></li>
+            <li><p class="kicker">robotics</p><h3>S.I.E.G.E.</h3><p>A self-driving car that chases my dogs around while I'm busy.</p></li>
+            <li><p class="kicker">hardware · building now</p><h3>ROV Submarine</h3><p>A remote-controlled sub that has to survive real water. Still building it.</p></li>
+            <li><p class="kicker">merged pull requests</p><h3>Open source</h3><p>Merged pull requests in SymPy, Biome and Astro.</p><p><a class="act is-soft" href="#prs">All my PRs ↓</a> <a class="act is-soft" href="https://github.com/pulls?q=is%3Apr+author%3Ahenrybrewer00-dotcom">On GitHub ↗</a></p></li>
+            <li><p class="kicker">made with</p><h3>The stack</h3><p>React, TypeScript, Python, Electron, Arduino, Twilio, ElevenLabs, Claude, Vercel, GitHub</p></li>
+            <li><p class="kicker">also</p><h3>Receipts</h3><p>Straight A's, 99.5 in math, 125 words a minute.</p></li>
+          </ul>
+        </details>
       </section>
       <!-- about:end -->
     </main>
 
     <canvas class="trail" data-trail aria-hidden="true"></canvas>
-    <script type="module" src="src/app.js?v=20261031plain"></script>
+    <script type="module" src="src/app.js?v=20261102read"></script>
   </body>
 </html>
