@@ -15,11 +15,11 @@ export const MAIL = "mailto:henrybrewer00@gmail.com?subject=" + encodeURICompone
 // Who Henry is, in the third person, for search engines and AI answer engines: the about section under the
 // page, the JSON-LD and llms.txt (all written by tools/seo.mjs). Only facts that are already on the cards.
 export const SITE = "https://www.henrybrewer.dev";
-export const BIO = "Henry Brewer is a 14-year-old developer from Austin, Texas. He goes to Alpha High School and builds AI projects in his spare time, like Vurn AI, a tool that scans code for security holes, and Lily, a voice AI that calls his grandma every morning. He helped start Crawft and was its CTO before selling his stake. He also built SiteLight, a side project he got to its first $2 of revenue in 10 days. He has won a few hackathons and has merged pull requests in SymPy, Biome and Astro.";
+export const BIO = "Henry Brewer is a 14-year-old developer from Austin, Texas. He goes to Alpha High School and builds AI projects in his spare time, like Vurn AI, a tool that scans code for security holes, and Lily, a voice AI that calls his grandma every morning. He helped start Crawft and was its CTO before selling his stake. He also built SiteLight, a side project he got to its first $2 of revenue in 10 days. He built Temper, an agentic software factory that took 3rd place at EVOLVE, the 8090 Software Factory hackathon. He has won a few hackathons and has merged pull requests in SymPy, Biome and Astro.";
 // Plain question-and-answer facts about Henry, for the FAQ schema on the home page (written by tools/seo.mjs).
 // Only facts that are already on the cards. Never his campus or address.
 export const QUICK = [["Age", "14"], ["Based in", "Austin, Texas"], ["School", "Alpha High School"], ["Does", "Builds software and AI projects"],
-  ["Projects", "Vurn AI, Lily, Glasscast, SiteLight"], ["Previously", "Crawft (cofounder and CTO, sold his stake)"]];
+  ["Projects", "Temper, Vurn AI, Lily, Glasscast, SiteLight"], ["Previously", "Crawft (cofounder and CTO, sold his stake)"]];
 export const FAQ = [
   ["Who is Henry Brewer?", "Henry Brewer is a 14-year-old developer from Austin, Texas. He goes to Alpha High School and builds AI projects, like Vurn AI and Lily. He helped start Crawft and was its CTO before selling his stake."],
   ["How old is Henry Brewer?", "Henry Brewer is 14 years old."],
@@ -28,8 +28,9 @@ export const FAQ = [
   ["Was Henry Brewer the CTO of Crawft?", "Yes. Henry Brewer helped start Crawft, an AI monitoring tool for schools and managers, and was its CTO from mid-August 2026. He then sold his own stake. Crawft itself was not sold."],
   ["What is SiteLight?", "SiteLight was a side project Henry Brewer built as a challenge to get something to revenue in 10 days. It checked whether AI assistants recommend a local business. It made $2 from its first sale, and he has since shut it down."],
   ["Where does Henry Brewer go to school?", "Henry Brewer goes to Alpha High School, part of Alpha School, which uses the 2 Hour Learning model: academics in a short morning block, and afternoons for projects and life skills."],
-  ["What has Henry Brewer built?", "Vurn AI; Lily, a voice AI that calls his grandma every morning and texts the family how she sounded; Glasscast, a free open-source screen recorder; PawBot, which helps older people use a computer; Lily's Drive-Thru, a voice ordering demo; SiteLight; a self-driving car; and an ROV submarine he is still building."],
-  ["Has Henry Brewer won any hackathons?", "Yes. He has won hackathons at InsForge, Frontier Tower and a16z × Cursor."],
+  ["What is Temper?", "Temper is an agentic software factory Henry Brewer built. It turns tickets into checked, ready-to-merge code, and the agents that check the work are separate from the agent that writes it. It took 3rd place at EVOLVE, the 8090 Software Factory hackathon."],
+  ["What has Henry Brewer built?", "Temper, an agentic software factory; Vurn AI; Lily, a voice AI that calls his grandma every morning and texts the family how she sounded; Glasscast, a free open-source screen recorder; PawBot, which helps older people use a computer; Lily's Drive-Thru, a voice ordering demo; SiteLight; a self-driving car; and an ROV submarine he is still building."],
+  ["Has Henry Brewer won any hackathons?", "Yes. He took 3rd place at EVOLVE, the 8090 Software Factory hackathon, with Temper, and has won hackathons at InsForge, Frontier Tower and a16z × Cursor."],
   ["Does Henry Brewer contribute to open source?", "Yes. He has merged pull requests in SymPy, Biome and Astro."],
   ["How can I contact Henry Brewer?", "Email henrybrewer00@gmail.com, or find him on GitHub (henrybrewer00-dotcom) and X (@Henry_J_Brew)."],
 ];
@@ -88,8 +89,27 @@ export const ITEMS = [
       "Pricing was one-time scan packs through Stripe: $2 for one scan, $5 for three, $10 for eight.",
       "Henry sold it with cold emails that each included a real scan naming the competitors AI recommended instead; in one batch, 26 of 28 businesses he checked were invisible to AI.",
       "It was built with TypeScript, React, Vite and Tailwind, with InsForge for the database, auth and server functions, about 30,000 lines of code."] },
+  { id: "temper", tease: "Checks AI code with agents the builder can't see.", kind: "project", kicker: "agentic software factory", title: "Temper", body: "An agentic software factory: it turns tickets into checked, ready-to-merge code. The agents that check the work are separate from the agent that writes it, and they test real behavior, not the AI's own tests. On 18 bugs it had never seen, Temper caught 17 and plain Claude caught 13. It took 3rd place at EVOLVE, the 8090 Software Factory hackathon.", tags: ["AI agents", "TypeScript", "Node", "3rd place"],
+    images: [
+      { src: "assets/design/temper-overview.jpg", alt: "Temper's overview: every run, check and finding on one screen, with runs waiting for a person and runs ready to merge.", cap: "the overview" },
+      { src: "assets/design/temper-graph.jpg", alt: "One Temper run as a graph: ticket, context, builder, then seven checks the builder can't see, then the fixer.", cap: "one run, as a graph" },
+      { src: "assets/design/temper-claim.jpg", alt: "A Temper run stopped for a person: the builder said all tests passed and nothing was skipped, and the log shows 3 skipped.", cap: "a claim the logs contradicted" },
+      { src: "assets/design/temper-ready.jpg", alt: "A Temper run that is ready to merge, with nothing open.", cap: "ready to merge" }],
+    links: [{ label: "Repo ↗", href: GH + "/temper" }],
+    // answer-only facts, from Henry as of 2026-11-15
+    facts: ["Temper is a software factory that turns tickets into verified, ready-to-merge code. The agents that check the work are independent from the agent that writes it.",
+      "Tickets come in from Linear, a team inbox or a typed idea. For an idea, it asks clarifying questions and splits it into reviewable tickets. A list of what done means is locked before any code is written, and company rules are pulled from the team's Notion docs.",
+      "Every run gets its own sandbox: its own container, database copy and branch. A memory of past runs and bugs feeds the next build.",
+      "Model mixing: Haiku or Opus builds and Opus checks. Haiku building with Opus checking cost half as much as plain Opus ($10.80 vs $21.60) with zero broken builds.",
+      "The checks: half the tests are hidden from the builder and run by a separate agent it can't talk to; the old and new app get the same inputs and must match to the cent; what the builder claims is compared with the real logs; a security scan with Vurn, Henry's own scanner; an access check that logs in as 7 users and tries to open each other's data; a UI check where a computer-use agent clicks through the app and records video; a scope check; and a speed check.",
+      "Risk tiers: a typo gets a light check, anything touching money or access gets every check. Every check has to catch a planted bug before it is trusted.",
+      "Failures go to a fixer with proof attached, and the same check reruns. Runs pause for a person to approve, and a named person signs off last before merge. An audit trail records who built, what checked and who approved each change.",
+      "Results: in a blind test on 18 pre-registered bugs, Temper caught 17 and plain Claude caught 13. Temper caught 4 that Claude missed, and Claude caught none that Temper missed. In a 13-ticket Opus run, 13 of 13 shipped.",
+      "It's built in TypeScript on Node. The demo moved a PHP billing app to TypeScript without changing its behavior.",
+      "Temper took 3rd place at EVOLVE, the 8090 Software Factory hackathon, in November 2026."] },
   { id: "lily", tease: "Calls my grandma every morning.", kind: "project", kicker: "voice AI", title: "Lily", body: "Calls my grandma every morning, has an actual conversation, then texts the family how she sounded.", tags: ["ElevenLabs", "Twilio", "InsForge"], image: { src: "assets/lily-demo-poster.jpg", alt: "Lily's demo screen", cap: "lily · demo" }, links: [{ label: "Live ↗", href: "https://lily.insforge.site" }, { label: "Repo ↗", href: GH + "/lily" }] },
-  { id: "wins", tease: "InsForge, Frontier Tower, a16z × Cursor.", kind: "win", kicker: "hackathons", title: "Some hackathon wins", list: ["InsForge", "Frontier Tower", "a16z × Cursor"] },
+  { id: "wins", tease: "3rd at EVOLVE, plus InsForge, Frontier Tower, a16z × Cursor.", kind: "win", kicker: "hackathons", title: "Some hackathon wins", list: ["EVOLVE (8090 Software Factory): 3rd place with Temper", "InsForge", "Frontier Tower", "a16z × Cursor"],
+    image: { src: "assets/hackathon/evolve-third-place.jpg", alt: "Henry and Chamath Palihapitiya holding Henry's EVOLVE third place certificate for Temper.", cap: "3rd place at EVOLVE · with Chamath" } },
   { id: "glasscast", tease: "A free Screen Studio, with AI built in.", kind: "oss", kicker: "open source", title: "Glasscast", body: "Screen Studio costs money, so I made a free one. Cinematic zooms, auto-captions, a webcam bubble, bring your own AI keys.", tags: ["Electron", "TypeScript", "macOS"], links: [{ label: "Repo ↗", href: GH + "/Glasscast" }] },
   { id: "site", tease: "This portfolio: a koi pond drawn in ASCII.", kind: "design", kicker: "design", title: "This site", body: "My portfolio, designed from scratch. Behind the page is a koi pond drawn in ASCII tiles: black and white koi, little fish that scatter from your cursor, and wakes that light up where they swim. Rest the cursor and the koi come to look, and tiles flip over as you pass across them. The koi follow your cursor, and a click calls them over to that spot. My name decodes into the pond tile by tile. Black and white only.", tags: ["Design", "ASCII", "Vanilla JS", "Canvas"],
     images: [
@@ -109,7 +129,7 @@ export const ITEMS = [
   { id: "sub", tease: "A sub that has to survive real water.", kind: "hardware", current: true, kicker: "hardware · building now", title: "ROV Submarine", body: "A remote-controlled sub that has to survive real water. Most of the work is the unglamorous part: watertight, buoyant, and a battery that behaves.", tags: ["CAD", "Marine", "Physics"] },
   { id: "oss", tease: "Merged PRs in SymPy, Biome and Astro.", kind: "oss", kicker: "merged pull requests", title: "Open source", body: "Real, merged pull requests to tools I use: SymPy, Biome, Astro. Small fixes, shipped, and people actually run them.", tags: ["SymPy", "Biome", "Astro"], facts: ["Some of his merged open-source PRs (examples, not the full count): SymPy #29951 (type hints for series acceleration, merged Jul 2026), Biome #10759 (lint rule ignores Svelte special elements, Jun 2026), Biome #10758 (formatter keeps parens around await/yield, Jun 2026), Astro #16703 (case-mismatched project paths, Jun 2026). He also opens many PRs in his own repos and in private work repos; the live count and full list are in the pull requests section of this page."], links: [{ label: "All my PRs ↓", href: "#prs" }, { label: "On GitHub ↗", href: "https://github.com/pulls?q=is%3Apr+author%3Ahenrybrewer00-dotcom" }] },
   { id: "stack", kind: "fact", kicker: "made with", title: "The stack", list: ["React", "TypeScript", "Python", "Electron", "Arduino", "Twilio", "ElevenLabs", "Claude", "Vercel", "GitHub"] },
-  { id: "receipts", tease: "Straight A's, 125 words a minute.", kind: "fact", kicker: "also", title: "Receipts", body: "Straight A's, 99.5 in math, 125 words a minute. Hackathon wins at InsForge, Frontier Tower and a16z × Cursor. Merged PRs in SymPy, Biome and Astro." },
+  { id: "receipts", tease: "Straight A's, 125 words a minute.", kind: "fact", kicker: "also", title: "Receipts", body: "Straight A's, 99.5 in math, 125 words a minute. 3rd place at EVOLVE, plus hackathon wins at InsForge, Frontier Tower and a16z × Cursor. Merged PRs in SymPy, Biome and Astro." },
   { id: "hire", kind: "contact", kicker: "say hi", title: "Got an idea?", body: "Let's build it this weekend.", links: [{ label: "Email me →", href: MAIL }, { label: "GitHub ↗", href: GH }, { label: "Older site: card deck", href: "deck/" }, { label: "Older site: terminal", href: "old/" }] },
 ];
 
@@ -129,6 +149,10 @@ export const INTENTS = [
     suggest: ["show me Crawft", "the company Henry sold his stake in", "Crawft"],
     subjects: ["crawft", "monitoring tool", "school monitoring", "nudges", "craft", "his old job", "last job", "previous job", "past job", "former role", "cto", "cto job", "the stake he sold", "his stake", "selling his stake", "employee monitoring"],
     questions: ["what is crawft", "did henry sell a company", "what did henry sell", "what was his last job", "was henry a cto", "where did henry use to work", "why did he sell his stake", "is he still at crawft", "does he still work at crawft", "what happened with crawft"] },
+  { id: "temper", title: "Temper", engrave: "Temper", ids: ["temper"],
+    suggest: ["show me Temper", "the agentic software factory", "Temper"],
+    subjects: ["temper", "software factory", "agentic software factory", "ai software factory", "code verification", "verifying ai code", "checking ai code", "hidden tests", "ai code review", "agent orchestration", "multi agent system", "ticket to pull request", "evolve project", "8090 project"],
+    questions: ["what is temper", "how does he check ai code", "what did he build at evolve", "what got third place", "can ai code be trusted", "what is a software factory", "what did he build for 8090"] },
   { id: "vurn", title: "Vurn AI", engrave: "Vurn AI", ids: ["vurn"],
     suggest: ["show me Henry's cyber work", "Henry's cybersecurity work", "Vurn AI"],
     subjects: ["cyber work", "cyber", "cybersecurity", "cyber security", "security", "security work", "hacking", "pentesting", "pen testing", "penetration testing", "vulnerability", "vulnerabilities", "bug bounty", "exploit", "vurn", "vurn ai", "infosec", "white hat", "security research", "shopify bug", "ai pentester", "red team"],
@@ -183,8 +207,8 @@ export const INTENTS = [
     questions: ["has he contributed to open source", "did he get prs merged", "what repos has he contributed to", "does he contribute to sympy"] },
   { id: "wins", title: "Hackathon wins", engrave: "Hackathons", ids: ["wins"],
     suggest: ["show me Henry's hackathon wins", "hackathon wins"],
-    subjects: ["hackathons", "hackathon wins", "awards", "prizes", "competitions", "trophies", "insforge", "frontier tower", "a16z cursor"],
-    questions: ["has he won anything", "did he win any hackathons", "what has he won", "what awards does he have"] },
+    subjects: ["hackathons", "hackathon wins", "awards", "prizes", "competitions", "trophies", "insforge", "frontier tower", "a16z cursor", "evolve", "evolve hackathon", "8090", "8090 hackathon", "chamath", "third place", "3rd place"],
+    questions: ["has he won anything", "did he win any hackathons", "what has he won", "what awards does he have", "did he meet chamath", "what place did he get at evolve"] },
   { id: "stack", title: "The stack", engrave: "The stack", ids: ["stack"],
     suggest: ["what does Henry build with", "Henry's tech stack"],
     subjects: ["stack", "tech stack", "tools", "languages", "skills", "frameworks", "programming languages", "what he codes in", "typescript", "javascript", "react", "python", "coding languages"],
@@ -209,7 +233,7 @@ export const INTENTS = [
     suggest: ["show me Henry's open source work", "open source stuff"],
     subjects: ["open source", "open source work", "open source projects", "public repos", "free tools he made", "oss"],
     questions: ["is his code open source", "what has he open sourced", "any public repos"] },
-  { id: "ai", title: "AI projects", engrave: "AI", ids: ["vurn", "sitelight", "lily", "drivethru", "elevenmile", "pawbot"],
+  { id: "ai", title: "AI projects", engrave: "AI", ids: ["temper", "vurn", "sitelight", "lily", "drivethru", "elevenmile", "pawbot"],
     suggest: ["show me Henry's AI projects", "AI stuff"],
     subjects: ["ai projects", "ai stuff", "ai apps", "machine learning", "llm projects", "claude projects", "things with ai", "artificial intelligence"],
     questions: ["what ai has he built", "does he use ai", "has he made ai apps", "anything with claude"] },
