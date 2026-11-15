@@ -1,6 +1,6 @@
 # Henry Brewer
 
-> Henry Brewer is a 14-year-old developer from Austin, Texas. He goes to Alpha High School and builds AI projects in his spare time, like Vurn AI, a tool that scans code for security holes, and Lily, a voice AI that calls his grandma every morning. He helped start Crawft and was its CTO before selling his stake. He also built SiteLight, a side project he got to its first $2 of revenue in 10 days. He has won a few hackathons and has merged pull requests in SymPy, Biome and Astro.
+> Henry Brewer is a 14-year-old developer from Austin, Texas. He goes to Alpha High School and builds AI projects in his spare time, like Vurn AI, a tool that scans code for security holes, and Lily, a voice AI that calls his grandma every morning. He helped start Crawft and was its CTO before selling his stake. He also built SiteLight, a side project he got to its first $2 of revenue in 10 days. He built Temper, an agentic software factory that took 3rd place at EVOLVE, the 8090 Software Factory hackathon. He has won a few hackathons and has merged pull requests in SymPy, Biome and Astro.
 
 Site: https://www.henrybrewer.dev/
 GitHub: https://github.com/henrybrewer00-dotcom
@@ -33,8 +33,19 @@ Email: henrybrewer00@gmail.com
   - Pricing was one-time scan packs through Stripe: $2 for one scan, $5 for three, $10 for eight.
   - Henry sold it with cold emails that each included a real scan naming the competitors AI recommended instead; in one batch, 26 of 28 businesses he checked were invisible to AI.
   - It was built with TypeScript, React, Vite and Tailwind, with InsForge for the database, auth and server functions, about 30,000 lines of code.
+- [Temper](https://github.com/henrybrewer00-dotcom/temper) (agentic software factory): An agentic software factory: it turns tickets into checked, ready-to-merge code. The agents that check the work are separate from the agent that writes it, and they test real behavior, not the AI's own tests. On 18 bugs it had never seen, Temper caught 17 and plain Claude caught 13. It took 3rd place at EVOLVE, the 8090 Software Factory hackathon.
+  - Temper is a software factory that turns tickets into verified, ready-to-merge code. The agents that check the work are independent from the agent that writes it.
+  - Tickets come in from Linear, a team inbox or a typed idea. For an idea, it asks clarifying questions and splits it into reviewable tickets. A list of what done means is locked before any code is written, and company rules are pulled from the team's Notion docs.
+  - Every run gets its own sandbox: its own container, database copy and branch. A memory of past runs and bugs feeds the next build.
+  - Model mixing: Haiku or Opus builds and Opus checks. Haiku building with Opus checking cost half as much as plain Opus ($10.80 vs $21.60) with zero broken builds.
+  - The checks: half the tests are hidden from the builder and run by a separate agent it can't talk to; the old and new app get the same inputs and must match to the cent; what the builder claims is compared with the real logs; a security scan with Vurn, Henry's own scanner; an access check that logs in as 7 users and tries to open each other's data; a UI check where a computer-use agent clicks through the app and records video; a scope check; and a speed check.
+  - Risk tiers: a typo gets a light check, anything touching money or access gets every check. Every check has to catch a planted bug before it is trusted.
+  - Failures go to a fixer with proof attached, and the same check reruns. Runs pause for a person to approve, and a named person signs off last before merge. An audit trail records who built, what checked and who approved each change.
+  - Results: in a blind test on 18 pre-registered bugs, Temper caught 17 and plain Claude caught 13. Temper caught 4 that Claude missed, and Claude caught none that Temper missed. In a 13-ticket Opus run, 13 of 13 shipped.
+  - It's built in TypeScript on Node. The demo moved a PHP billing app to TypeScript without changing its behavior.
+  - Temper took 3rd place at EVOLVE, the 8090 Software Factory hackathon, in November 2026.
 - [Lily](https://lily.insforge.site) (voice AI): Calls my grandma every morning, has an actual conversation, then texts the family how she sounded.
-- Some hackathon wins (hackathons): InsForge, Frontier Tower, a16z × Cursor
+- Some hackathon wins (hackathons): EVOLVE (8090 Software Factory): 3rd place with Temper, InsForge, Frontier Tower, a16z × Cursor
 - [Glasscast](https://github.com/henrybrewer00-dotcom/Glasscast) (open source): Screen Studio costs money, so I made a free one. Cinematic zooms, auto-captions, a webcam bubble, bring your own AI keys.
 - [This site](https://github.com/henrybrewer00-dotcom/portfolio) (design): My portfolio, designed from scratch. Behind the page is a koi pond drawn in ASCII tiles: black and white koi, little fish that scatter from your cursor, and wakes that light up where they swim. Rest the cursor and the koi come to look, and tiles flip over as you pass across them. The koi follow your cursor, and a click calls them over to that spot. My name decodes into the pond tile by tile. Black and white only.
 - [ReMynd](https://remynd.coduck.app/) (design · redesign): A redesign of the landing page for ReMynd, a Mac app that remembers what was on your screen and what was said on your calls. Before: a dark page with a rotating app name and a product mockup. After: an open notebook, with today's date as the page and your screen history as its index.
@@ -46,7 +57,7 @@ Email: henrybrewer00@gmail.com
 - [Open source](https://github.com/pulls?q=is%3Apr+author%3Ahenrybrewer00-dotcom) (merged pull requests): Real, merged pull requests to tools I use: SymPy, Biome, Astro. Small fixes, shipped, and people actually run them.
   - Some of his merged open-source PRs (examples, not the full count): SymPy #29951 (type hints for series acceleration, merged Jul 2026), Biome #10759 (lint rule ignores Svelte special elements, Jun 2026), Biome #10758 (formatter keeps parens around await/yield, Jun 2026), Astro #16703 (case-mismatched project paths, Jun 2026). He also opens many PRs in his own repos and in private work repos; the live count and full list are in the pull requests section of this page.
 - The stack (made with): React, TypeScript, Python, Electron, Arduino, Twilio, ElevenLabs, Claude, Vercel, GitHub
-- Receipts (also): Straight A's, 99.5 in math, 125 words a minute. Hackathon wins at InsForge, Frontier Tower and a16z × Cursor. Merged PRs in SymPy, Biome and Astro.
+- Receipts (also): Straight A's, 99.5 in math, 125 words a minute. 3rd place at EVOLVE, plus hackathon wins at InsForge, Frontier Tower and a16z × Cursor. Merged PRs in SymPy, Biome and Astro.
 
 ## School
 
@@ -81,11 +92,14 @@ SiteLight was a side project Henry Brewer built as a challenge to get something 
 ### Where does Henry Brewer go to school?
 Henry Brewer goes to Alpha High School, part of Alpha School, which uses the 2 Hour Learning model: academics in a short morning block, and afternoons for projects and life skills.
 
+### What is Temper?
+Temper is an agentic software factory Henry Brewer built. It turns tickets into checked, ready-to-merge code, and the agents that check the work are separate from the agent that writes it. It took 3rd place at EVOLVE, the 8090 Software Factory hackathon.
+
 ### What has Henry Brewer built?
-Vurn AI; Lily, a voice AI that calls his grandma every morning and texts the family how she sounded; Glasscast, a free open-source screen recorder; PawBot, which helps older people use a computer; Lily's Drive-Thru, a voice ordering demo; SiteLight; a self-driving car; and an ROV submarine he is still building.
+Temper, an agentic software factory; Vurn AI; Lily, a voice AI that calls his grandma every morning and texts the family how she sounded; Glasscast, a free open-source screen recorder; PawBot, which helps older people use a computer; Lily's Drive-Thru, a voice ordering demo; SiteLight; a self-driving car; and an ROV submarine he is still building.
 
 ### Has Henry Brewer won any hackathons?
-Yes. He has won hackathons at InsForge, Frontier Tower and a16z × Cursor.
+Yes. He took 3rd place at EVOLVE, the 8090 Software Factory hackathon, with Temper, and has won hackathons at InsForge, Frontier Tower and a16z × Cursor.
 
 ### Does Henry Brewer contribute to open source?
 Yes. He has merged pull requests in SymPy, Biome and Astro.
