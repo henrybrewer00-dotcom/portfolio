@@ -36,6 +36,9 @@ export const FAQ = [
 ];
 
 // profiles that are Henry's (schema.org sameAs): add LinkedIn, X and others here
+// Henry's post about taking 3rd place at EVOLVE with Temper
+export const EVOLVE_POST = "https://x.com/Henry_J_Brew/status/2122059577512611991";
+
 export const PROFILES = [GH, "https://x.com/Henry_J_Brew"];
 
 /**
@@ -91,11 +94,12 @@ export const ITEMS = [
       "It was built with TypeScript, React, Vite and Tailwind, with InsForge for the database, auth and server functions, about 30,000 lines of code."] },
   { id: "temper", tease: "Checks AI code with agents the builder can't see.", kind: "project", kicker: "agentic software factory", title: "Temper", body: "An agentic software factory: it turns tickets into checked, ready-to-merge code. The agents that check the work are separate from the agent that writes it, and they test real behavior, not the AI's own tests. On 18 bugs it had never seen, Temper caught 17 and plain Claude caught 13. It took 3rd place at EVOLVE, the 8090 Software Factory hackathon.", tags: ["AI agents", "TypeScript", "Node", "3rd place"],
     images: [
+      { src: "assets/design/temper-home.jpg", alt: "Temper's home screen: a prompt box for a new ticket over an ASCII wave, with running runs and recent runs in the sidebar.", cap: "the home screen" },
       { src: "assets/design/temper-overview.jpg", alt: "Temper's overview: every run, check and finding on one screen, with runs waiting for a person and runs ready to merge.", cap: "the overview" },
       { src: "assets/design/temper-graph.jpg", alt: "One Temper run as a graph: ticket, context, builder, then seven checks the builder can't see, then the fixer.", cap: "one run, as a graph" },
       { src: "assets/design/temper-claim.jpg", alt: "A Temper run stopped for a person: the builder said all tests passed and nothing was skipped, and the log shows 3 skipped.", cap: "a claim the logs contradicted" },
       { src: "assets/design/temper-ready.jpg", alt: "A Temper run that is ready to merge, with nothing open.", cap: "ready to merge" }],
-    links: [{ label: "Repo ↗", href: GH + "/temper" }],
+    links: [{ label: "Repo ↗", href: GH + "/temper" }, { label: "Post on X ↗", href: EVOLVE_POST }],
     // answer-only facts, from Henry as of 2026-11-15
     facts: ["Temper is a software factory that turns tickets into verified, ready-to-merge code. The agents that check the work are independent from the agent that writes it.",
       "Tickets come in from Linear, a team inbox or a typed idea. For an idea, it asks clarifying questions and splits it into reviewable tickets. A list of what done means is locked before any code is written, and company rules are pulled from the team's Notion docs.",
@@ -106,10 +110,11 @@ export const ITEMS = [
       "Failures go to a fixer with proof attached, and the same check reruns. Runs pause for a person to approve, and a named person signs off last before merge. An audit trail records who built, what checked and who approved each change.",
       "Results: in a blind test on 18 pre-registered bugs, Temper caught 17 and plain Claude caught 13. Temper caught 4 that Claude missed, and Claude caught none that Temper missed. In a 13-ticket Opus run, 13 of 13 shipped.",
       "It's built in TypeScript on Node. The demo moved a PHP billing app to TypeScript without changing its behavior.",
-      "Temper took 3rd place at EVOLVE, the 8090 Software Factory hackathon, in November 2026."] },
+      "Temper took 3rd place at EVOLVE, the 8090 Software Factory hackathon, in November 2026.",
+      "From Henry's post about it on X: red team agents attack every pull request, UI gets tested on real devices across Linux, Mac, Windows and Android with video, and depending on risk, fixes roll out gradually and get watched in production through tools teams already use, like Sentry. On 13 real tickets, Temper shipped all 13 with no bugs reaching users, while Claude on its own shipped an access bug."] },
   { id: "lily", tease: "Calls my grandma every morning.", kind: "project", kicker: "voice AI", title: "Lily", body: "Calls my grandma every morning, has an actual conversation, then texts the family how she sounded.", tags: ["ElevenLabs", "Twilio", "InsForge"], image: { src: "assets/lily-demo-poster.jpg", alt: "Lily's demo screen", cap: "lily · demo" }, links: [{ label: "Live ↗", href: "https://lily.insforge.site" }, { label: "Repo ↗", href: GH + "/lily" }] },
   { id: "wins", tease: "3rd at EVOLVE, plus InsForge, Frontier Tower, a16z × Cursor.", kind: "win", kicker: "hackathons", title: "Some hackathon wins", list: ["EVOLVE (8090 Software Factory): 3rd place with Temper", "InsForge", "Frontier Tower", "a16z × Cursor"],
-    image: { src: "assets/hackathon/evolve-third-place.jpg", alt: "Henry and Chamath Palihapitiya holding Henry's EVOLVE third place certificate for Temper.", cap: "3rd place at EVOLVE · with Chamath" } },
+    image: { src: "assets/hackathon/evolve-third-place.jpg", alt: "Henry and Chamath Palihapitiya holding Henry's EVOLVE third place certificate for Temper.", cap: "3rd place at EVOLVE · with Chamath" }, links: [{ label: "Post on X ↗", href: EVOLVE_POST }] },
   { id: "glasscast", tease: "A free Screen Studio, with AI built in.", kind: "oss", kicker: "open source", title: "Glasscast", body: "Screen Studio costs money, so I made a free one. Cinematic zooms, auto-captions, a webcam bubble, bring your own AI keys.", tags: ["Electron", "TypeScript", "macOS"], links: [{ label: "Repo ↗", href: GH + "/Glasscast" }] },
   { id: "site", tease: "This portfolio: a koi pond drawn in ASCII.", kind: "design", kicker: "design", title: "This site", body: "My portfolio, designed from scratch. Behind the page is a koi pond drawn in ASCII tiles: black and white koi, little fish that scatter from your cursor, and wakes that light up where they swim. Rest the cursor and the koi come to look, and tiles flip over as you pass across them. The koi follow your cursor, and a click calls them over to that spot. My name decodes into the pond tile by tile. Black and white only.", tags: ["Design", "ASCII", "Vanilla JS", "Canvas"],
     images: [
