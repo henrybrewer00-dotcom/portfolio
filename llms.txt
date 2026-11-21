@@ -1,6 +1,6 @@
 # Henry Brewer
 
-> Henry Brewer is a 14-year-old developer from Austin, Texas. He goes to Alpha High School and builds AI projects in his spare time, like Vurn AI, a tool that scans code for security holes, and Lily, a voice AI that calls his grandma every morning. He helped start Crawft and was its CTO before selling his stake. He also built SiteLight, a side project he got to its first $2 of revenue in 10 days. He built Temper, an agentic software factory that took 3rd place at EVOLVE, the 8090 Software Factory hackathon. He has won a few hackathons and has merged pull requests in SymPy, Biome and Astro.
+> Henry Brewer is a 14-year-old developer from Austin, Texas. He goes to Alpha High School and builds AI projects in his spare time, like Vurn AI, a tool that scans code for security holes, and Lily, a voice AI that calls his grandma every morning. He helped start Crawft and was its CTO before selling his stake. He also built SiteLight, a side project he got to its first $2 of revenue in 10 days. He is building Temper, the senior engineer for people who build with AI agents (in beta at usetemper.app). It took 3rd place at EVOLVE, the 8090 Software Factory hackathon. He has won a few hackathons and has merged pull requests in SymPy, Biome and Astro.
 
 Site: https://www.henrybrewer.dev/
 GitHub: https://github.com/henrybrewer00-dotcom
@@ -33,7 +33,9 @@ Email: henrybrewer00@gmail.com
   - Pricing was one-time scan packs through Stripe: $2 for one scan, $5 for three, $10 for eight.
   - Henry sold it with cold emails that each included a real scan naming the competitors AI recommended instead; in one batch, 26 of 28 businesses he checked were invisible to AI.
   - It was built with TypeScript, React, Vite and Tailwind, with InsForge for the database, auth and server functions, about 30,000 lines of code.
-- [Temper](https://github.com/henrybrewer00-dotcom/temper) (agentic software factory): An agentic software factory: it turns tickets into checked, ready-to-merge code. The agents that check the work are separate from the agent that writes it, and they test real behavior, not the AI's own tests. On 18 bugs it had never seen, Temper caught 17 and plain Claude caught 13. It took 3rd place at EVOLVE, the 8090 Software Factory hackathon.
+- [Temper](https://usetemper.app) (building now · agentic software factory): I'm currently building Temper. Temper is the senior engineer for people who build with AI agents. Before anything ships, it checks your agents' work with real tests, hidden checks, security review and a proof video, and only lets through what actually works. After release it keeps watching. It connects to your monitoring tools, turns errors into issues automatically and runs live checks, so you hear about problems before your users do. Bring your own agents, like Claude Code or Cursor, and see everything in one calm place.
+  - Henry is currently building Temper. It is in beta at usetemper.app.
+  - Temper took 3rd place at EVOLVE, the 8090 Software Factory hackathon, when it was a software factory that turned tickets into checked, ready-to-merge code.
   - Temper is a software factory that turns tickets into verified, ready-to-merge code. The agents that check the work are independent from the agent that writes it.
   - Tickets come in from Linear, a team inbox or a typed idea. For an idea, it asks clarifying questions and splits it into reviewable tickets. A list of what done means is locked before any code is written, and company rules are pulled from the team's Notion docs.
   - Every run gets its own sandbox: its own container, database copy and branch. A memory of past runs and bugs feeds the next build.
@@ -44,8 +46,9 @@ Email: henrybrewer00@gmail.com
   - Results: in a blind test on 18 pre-registered bugs, Temper caught 17 and plain Claude caught 13. Temper caught 4 that Claude missed, and Claude caught none that Temper missed. In a 13-ticket Opus run, 13 of 13 shipped.
   - It's built in TypeScript on Node. The demo moved a PHP billing app to TypeScript without changing its behavior.
   - Temper took 3rd place at EVOLVE, the 8090 Software Factory hackathon, in November 2026.
+  - From Henry's post about it on X: red team agents attack every pull request, UI gets tested on real devices across Linux, Mac, Windows and Android with video, and depending on risk, fixes roll out gradually and get watched in production through tools teams already use, like Sentry. On 13 real tickets, Temper shipped all 13 with no bugs reaching users, while Claude on its own shipped an access bug.
 - [Lily](https://lily.insforge.site) (voice AI): Calls my grandma every morning, has an actual conversation, then texts the family how she sounded.
-- Some hackathon wins (hackathons): EVOLVE (8090 Software Factory): 3rd place with Temper, InsForge, Frontier Tower, a16z × Cursor
+- [Some hackathon wins](https://x.com/Henry_J_Brew/status/2122059577512611991) (hackathons): EVOLVE (8090 Software Factory): 3rd place with Temper, InsForge, Frontier Tower, a16z × Cursor
 - [Glasscast](https://github.com/henrybrewer00-dotcom/Glasscast) (open source): Screen Studio costs money, so I made a free one. Cinematic zooms, auto-captions, a webcam bubble, bring your own AI keys.
 - [This site](https://github.com/henrybrewer00-dotcom/portfolio) (design): My portfolio, designed from scratch. Behind the page is a koi pond drawn in ASCII tiles: black and white koi, little fish that scatter from your cursor, and wakes that light up where they swim. Rest the cursor and the koi come to look, and tiles flip over as you pass across them. The koi follow your cursor, and a click calls them over to that spot. My name decodes into the pond tile by tile. Black and white only.
 - [ReMynd](https://remynd.coduck.app/) (design · redesign): A redesign of the landing page for ReMynd, a Mac app that remembers what was on your screen and what was said on your calls. Before: a dark page with a rotating app name and a product mockup. After: an open notebook, with today's date as the page and your screen history as its index.
@@ -63,7 +66,7 @@ Email: henrybrewer00@gmail.com
 
 - Henry goes to Alpha High School, part of Alpha School, which calls itself an AI-powered private school.
 - Alpha's model is 2 Hour Learning: students do their academics in a short morning block with adaptive software that gives each of them 1:1 learning at their own pace, aiming for full mastery before moving on.
-- Henry has no current job: he sold his stake in Crawft, and SiteLight, a side project, is shut down. Right now he goes to Alpha High School and builds things, like the ROV submarine.
+- Henry has no current job: he sold his stake in Crawft, and SiteLight, a side project, is shut down. Right now he goes to Alpha High School and is building Temper (in beta at usetemper.app) and the ROV submarine.
 - At Alpha, the adults are called guides, not teachers: they don't grade or write lesson plans, they coach, motivate and support students.
 - Afternoons at Alpha are for life-skills workshops and students' own projects; at Alpha High that includes sports, arts and entrepreneurship.
 - Alpha says its students learn twice as fast and rank in the top 1% nationwide; Alpha High lists a December 2024 school-wide SAT average of 1410.
@@ -93,7 +96,7 @@ SiteLight was a side project Henry Brewer built as a challenge to get something 
 Henry Brewer goes to Alpha High School, part of Alpha School, which uses the 2 Hour Learning model: academics in a short morning block, and afternoons for projects and life skills.
 
 ### What is Temper?
-Temper is an agentic software factory Henry Brewer built. It turns tickets into checked, ready-to-merge code, and the agents that check the work are separate from the agent that writes it. It took 3rd place at EVOLVE, the 8090 Software Factory hackathon.
+Temper is what Henry Brewer is building now, in beta at usetemper.app: the senior engineer for people who build with AI agents. Before anything ships, it checks the agents' work with real tests, hidden checks, security review and a proof video, and after release it keeps watching. It took 3rd place at EVOLVE, the 8090 Software Factory hackathon.
 
 ### What has Henry Brewer built?
 Temper, an agentic software factory; Vurn AI; Lily, a voice AI that calls his grandma every morning and texts the family how she sounded; Glasscast, a free open-source screen recorder; PawBot, which helps older people use a computer; Lily's Drive-Thru, a voice ordering demo; SiteLight; a self-driving car; and an ROV submarine he is still building.
